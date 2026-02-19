@@ -1,0 +1,123 @@
+spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기시 공백개수를 반드시 꼭 지켜야 한다.
+  application:
+    name: finalProject_3
+
+  profiles: #실행환경(dev(개발),test(테스트),local(로컬),prod(운영))
+    active: local
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/  # classpath: 은 src/main/resources 경로를 말한다.
+    suffix: .html
+
+#  datasource: #DB 접속이 1개만 있을 경우
+#    driver-class-name: oracle.jdbc.OracleDriver
+#   #url: jdbc:oracle:thin:@211.63.89.70:1521:xe    # SID 방식
+#    url: jdbc:oracle:thin:@//211.63.89.70:1521/xe  # oracle 12c 이후부터 PDB 사용시 방식
+#    username: FINAL_ORAUSER3
+#    password: sistsix
+#    type: com.zaxxer.hikari.HikariDataSource
+#    hikari: #커넥션풀
+#     #driver-class-name: oracle.jdbc.OracleDriver
+#     #jdbc-url: jdbc:oracle:thin:@211.63.89.70:1521:xe
+#     #username: FINAL_ORAUSER3
+#     #password: sistsix
+#      connection-timeout: 30000 #클라이언트가 pool에 connection을 요청하는데 기다리는 최대시간을 설정 30초
+#      maximum-pool-size: 10     #최대 커넥션 개수 설정
+#      max-lifetime: 1800000     #커넥션 풀에서 살아있을 수 있는 커넥션의 최대 수명시간 1,800초(30분)
+#      minimum-idle: 5           # 최소 유휴(쓰지 않고 놀리는 것) 커넥션 (5개)
+#      idle-timeout: 30000       # 30초 후 연결 실패시 예외 발생
+
+#  datasource-myspringbootuser: #첫번째 DB 접속. 2개의 datasource 를 설정할때 이름을 다르게 해서 쓰되 _ 가 들어가면 작동안됨.
+#    driver-class-name: oracle.jdbc.OracleDriver
+#   #url: jdbc:oracle:thin:@211.63.89.70:1521:xe    # SID 방식
+#   #url: jdbc:oracle:thin:@//211.63.89.70:1521/xe  # oracle 12c 이후부터 PDB 사용시 방식
+#    jdbcUrl: jdbc:oracle:thin:@211.63.89.70:1521:xe # 2개의 datasource 를 설정하려면 기본 스프링 부트 datasource 설정과는 다르게 url 로 되어있던 부분을 jdbcUrl 로 변경해야 한다.
+#    username: FINAL_ORAUSER3
+#    password: sistsix
+#    type: com.zaxxer.hikari.HikariDataSource
+#    hikari: #커넥션풀
+#      minimum-idle: 5
+#      maximum-pool-size: 10
+#      idle-timeout: 30000
+#      max-lifetime: 1800000
+#      connection-timeout: 30000
+
+#  datasource-hr: #두번째 DB 접속. 2개의 datasource 를 설정할때 이름을 다르게 해서 쓰되 _ 가 들어가면 작동안됨.
+#    driver-class-name: oracle.jdbc.OracleDriver
+#   #url: jdbc:oracle:thin:@127.0.0.1:1521:xe
+#   #url: jdbc:oracle:thin:@//127.0.0.1:1521/xe  # oracle 12c 이후부터 PDB 사용시 방식
+#    jdbcUrl: jdbc:oracle:thin:@127.0.0.1:1521:xe
+#    username: hr
+#    password: sistsix
+#    type: com.zaxxer.hikari.HikariDataSource
+#    hikari: #커넥션풀
+#      minimum-idle: 5
+#      maximum-pool-size: 10
+#      idle-timeout: 30000
+#      max-lifetime: 1800000
+#      connection-timeout: 30000
+
+  datasource: #DB 접속이 1개만 있을 경우 (멀티 datasource 대신 단일 datasource 사용)
+    driver-class-name: oracle.jdbc.OracleDriver
+   #url: jdbc:oracle:thin:@211.63.89.70:1521:xe    # SID 방식
+    url: jdbc:oracle:thin:@//211.63.89.70:1521/xe  # oracle 12c 이후부터 PDB 사용시 방식
+    username: FINAL_ORAUSER3
+    password: sistsix
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari: #커넥션풀
+     #driver-class-name: oracle.jdbc.OracleDriver
+     #jdbc-url: jdbc:oracle:thin:@211.63.89.70:1521:xe
+     #username: FINAL_ORAUSER3
+     #password: sistsix
+      connection-timeout: 30000 #클라이언트가 pool에 connection을 요청하는데 기다리는 최대시간을 설정 30초
+      maximum-pool-size: 10     #최대 커넥션 개수 설정
+      max-lifetime: 1800000     #커넥션 풀에서 살아있을 수 있는 커넥션의 최대 수명시간 1,800초(30분)
+      minimum-idle: 5           # 최소 유휴(쓰지 않고 놀리는 것) 커넥션 (5개)
+      idle-timeout: 30000       # 30초 후 연결 실패시 예외 발생
+
+#  jpa:
+#    database-platform: org.hibernate.dialect.OracleDialect
+#    hibernate:
+#      ddl-auto: none
+
+  messages: #메시지(파일이 여러개일 경우 ,로 구분)
+    basename: messages.validation
+    encoding: UTF-8
+
+  devtools: #View reload
+    livereload:
+      enabled: true
+
+    restart: #컨트롤러, 모델단이 바뀌었을 때 프로젝트 재시작(reload) 설정 (정확히는 classpath에 있는 모든 파일)
+      enabled: true #재시작(reload) 함
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+mybatis: #mybatis 설정
+  mapper-locations: classpath:mybatis/mapper/**/*.xml
+                  # classpath: 은 src/main/resources 경로를 말한다.
+
+logging: #로그 지정
+  level:
+    '[com.spring.app]': debug
+
+server:
+  port: 9080
+  servlet:
+    context-path: /finalProject_3
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  tomcat:
+    max-part-count: 30
+
+file:
+  upload-dir: file_upload
+  photoupload-dir: file_photoupload
+  emailattachfile-dir: file_emailattachfile
+  images-dir: file_images

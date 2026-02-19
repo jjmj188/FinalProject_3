@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!-- domain(DTO) package -->
+	<typeAliases>
+		
+		<typeAlias type="com.spring.app.begin.domain.BeginDTO" alias="BeginDTO"/>
+		<typeAlias type="com.spring.app.begin.domain.BeginDateDTO" alias="BeginDateDTO"/>
+		<typeAlias type="com.spring.app.begin.domain.HaksaengDTO" alias="HaksaengDTO"/>
+		 
+		<typeAlias type="com.spring.app.security.domain.MemberDTO" alias="MemberDTO"/>
+
+		<typeAlias type="com.spring.app.board.domain.BoardDTO" alias="BoardDTO"/>
+		<typeAlias type="com.spring.app.board.domain.CommentDTO" alias="CommentDTO"/>
+		
+		<typeAlias type="com.spring.app.product.domain.ProductDTO" alias="ProductDTO"/>
+		  
+	</typeAliases>
+
+</configuration>
