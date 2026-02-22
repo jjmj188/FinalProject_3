@@ -1,0 +1,136 @@
+<div th:fragment="main_header"
+     xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+  <!-- header.html -->
+  <header class="site-header">
+    <!-- 상단 프로모 배너 -->
+    <div class="promo-banner" role="banner">
+      <div class="promo-inner">
+        <p class="promo-text">
+          카페 1900만 고객이 판매하는 하루 10만개의 상품을 편리하게 검색해보세요
+        </p>
+      </div>
+    </div>
+
+    <!-- 메인 헤더 -->
+    <div class="header-main">
+      <div class="header-inner">
+        <!-- 로고 -->
+        <a class="logo" th:href="@{/}">
+          LOGO
+          <!-- <img th:src="@{/images/logo.png}" alt="logo"> -->
+        </a>
+
+        <!-- 우측 유틸 -->
+        <nav class="util" aria-label="유틸 메뉴">
+          <!-- 로그인/회원가입 -->
+          <!-- (나중에 Spring Security 붙이면 sec:authorize로 분기 가능) -->
+          <a class="util-link" th:href="@{/member/login}">
+            로그인/회원가입
+          </a>
+
+          <span class="util-sep" aria-hidden="true">|</span>
+
+          <!-- 채팅 -->
+          <a th:href="@{/chat}">
+            <div class="notification">
+              <button type="button" class="not-btn">
+                <i class="fa-solid fa-comment-dots"></i>
+                <span class="number">2</span>
+              </button>
+            </div>
+          </a>
+
+          <span class="util-sep" aria-hidden="true">|</span>
+
+          <!-- 마이페이지 -->
+          <a class="util-link" th:href="@{/mypage}">
+            <button type="button" class="not-btn">
+              <i class="fa-solid fa-circle-user"></i>
+            </button>
+          </a>
+
+          <span class="util-sep" aria-hidden="true">|</span>
+
+          <!-- 알림 -->
+          <a th:href="@{/notification}">
+            <div class="notification">
+              <button type="button" class="not-btn">
+                <i class="fas fa-bell"></i>
+                <span class="number">2</span>
+              </button>
+
+              <!-- 드롭다운 알림 박스 -->
+              <div class="not-box">
+                <div class="not-list">
+                  <div class="not-item">
+                    <img class="profile"
+                         src="https://c1.staticflickr.com/4/3725/10214643804_75c0b6eeab_b.jpg"
+                         alt="profile">
+                    <div class="not-text">
+                      <p>Madison liked your post</p>
+                      <span>11/6 - 4:04 pm</span>
+                    </div>
+                  </div>
+
+                  <div class="not-item">
+                    <img class="profile"
+                         src="https://c1.staticflickr.com/4/3725/10214643804_75c0b6eeab_b.jpg"
+                         alt="profile">
+                    <div class="not-text">
+                      <p>Madison liked your post</p>
+                      <span>11/6 - 4:04 pm</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </nav>
+      </div>
+
+      <!-- 하단 네비 -->
+      <div class="nav-wrap">
+        <div class="nav-inner">
+
+          <div class="topbar">
+            <div class="category-trigger" id="categoryTrigger">
+              <button class="btn-category" id="btnCategory" type="button"
+                      aria-haspopup="true" aria-expanded="false" aria-controls="categoryPanel">
+                <span class="btn-icon">☰</span>
+                <span class="btn-text">카테고리</span>
+              </button>
+
+              <!-- 패널 -->
+              <section class="category-panel" id="categoryPanel" role="menu">
+                <div class="category-wrap">
+                  <aside class="category-left">
+                    <ul class="category-left-list" id="mainMenu">
+                      <li class="is-active"><button type="button">패션(수입명품 / 패션의류 / 패션잡화)</button></li>
+                      <li><button type="button">육아(출산 / 유아동)</button></li>
+                      <li><button type="button">디지털·전자기기(모바일 / 태블릿 / 노트북 / PC / 카메라 / 캠코더)</button></li>
+                      <li><button type="button">가전(가전제품)</button></li>
+                      <li><button type="button">홈·인테리어(가구 / 인테리어 / 리빙 / 생활)</button></li>
+                      <li><button type="button">취미(게임, 반려동물, 독서)</button></li>
+                      <li><button type="button">여행(등산, 캠핑 등등)</button></li>
+                      <li><button type="button">공구/산업용품</button></li>
+                    </ul>
+                  </aside>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <nav class="gnb" aria-label="주요 메뉴">
+            <a th:href="@{/product/list}" class="gnb-link">장터</a>
+            <a th:href="@{/price-check}" class="gnb-link">시세조회</a>
+            <a th:href="@{/auction}" class="gnb-link">경매장</a>
+            <a th:href="@{/product-form/sell}" class="gnb-link">판매하기</a>
+          </nav>
+
+        </div>
+      </div>
+    </div>
+  </header>
+</div>

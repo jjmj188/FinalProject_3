@@ -1,11 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html th:replace="~{layout/layout_main :: layout(~{::title}, ~{::section})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <title>메인페이지</title>
+
+  <!-- ✅ 페이지 전용 CSS/JS는 여기에 그냥 추가하면 됨 (원하면) -->
+  <!-- <link rel="stylesheet" th:href="@{/css/index.css}"> -->
+  <!-- <script defer th:src="@{/js/index.js}"></script> -->
 </head>
+
 <body>
-    메인페이지 입니다 개인브랜치에서 수정을 했습니다
+<section>
+  메인페이지 입니다
+</section>
 </body>
 </html>

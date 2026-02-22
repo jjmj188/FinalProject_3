@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html th:fragment="layout(title, content)"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title th:replace="${title}">레이아웃 타이틀</title>
+
+  <!-- 공통 CSS -->
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/header.css}">
+  <link rel="stylesheet" th:href="@{/css/footer.css}">
+
+  <!-- 공통 JS -->
+  <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+  <!-- 네이버스마트 에디터 -->
+  <script th:src="@{/smarteditor/js/HuskyEZCreator.js}" charset="utf-8"></script>
+   <!-- 주소찾기 -->
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <!--  ===== 스피너 및 datepicker 를 사용하기 위해  jquery-ui 사용하기 ===== -->
+  <link rel="stylesheet" th:href="@{/jquery-ui-1.13.1.custom/jquery-ui.css}">
+  <script th:src="@{/jquery-ui-1.13.1.custom/jquery-ui.js}"></script>
+	
+  <script defer th:src="@{/js/header.js}"></script>
+</head>
+
+<body>
+<div id="mycontainer">
+  <div id="myheader" th:insert="~{fragment/header :: main_header}"></div>
+
+  <div id="mycontent" th:insert="${content}"></div>
+
+  <div id="myfooter" th:insert="~{fragment/footer :: footer}"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,767 @@
+
+    .spx-wrap {
+      width: min(1100px, calc(100% - 48px));
+      margin: 48px auto 18px;
+    }
+
+    .spx-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: start;
+    }
+
+    /* left */
+    .spx-sellerCard {
+      padding: 6px 0;
+    }
+
+    .spx-sellerTop {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .spx-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #d9d9d9;
+      flex: 0 0 auto;
+    }
+
+    .spx-sellerName {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 2px;
+    }
+
+    .spx-sellerSub {
+      margin-top: 6px;
+      font-size: 12.5px;
+      color: #666;
+    }
+
+    .spx-tempBlock {
+      margin-top: 18px;
+    }
+
+    .spx-tempLabel {
+      font-size: 12px;
+      color: #111;
+      margin-bottom: 6px;
+    }
+
+    .spx-tempValue {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .spx-tempValue strong {
+      font-size: 22px;
+      letter-spacing: -0.3px;
+    }
+
+    .spx-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #ececec;
+      overflow: hidden;
+      margin: 10px 0 8px;
+    }
+
+    .spx-bar>i {
+      display: block;
+      height: 100%;
+      width: 64%;
+      background: #111;
+      border-radius: 999px;
+    }
+
+    .spx-tempNote {
+      font-size: 12px;
+      color: #7a7a7a;
+      line-height: 1.35;
+    }
+
+    .spx-stats {
+      margin-top: 16px;
+      border: 1px solid #d7d7d7;
+      background: #f4f4f4;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .spx-statsRow {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr 1px 1fr;
+      align-items: center;
+    }
+
+    .spx-statsDiv {
+      height: 60%;
+      background: #d7d7d7;
+    }
+
+    .spx-stat {
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .spx-stat .k {
+      font-size: 12px;
+      color: #555;
+      letter-spacing: -0.1px;
+    }
+
+    .spx-stat .v {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #111;
+      font-weight: bold;
+    }
+
+    /* right */
+    .spx-revHead {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .spx-revTitle {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: -0.2px;
+    }
+
+    .spx-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .spx-chip {
+      border: 1px solid #d3d3d3;
+      background: #fff;
+      color: #333;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .spx-revList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .spx-review {
+      border: 1px solid #d7d7d7;
+      background: #efefef;
+      border-radius: 6px;
+      padding: 12px 12px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .spx-reviewLeft {
+      min-width: 0;
+    }
+
+    .spx-reviewWho {
+      font-size: 12.5px;
+      color: #111;
+      margin-bottom: 6px;
+    }
+
+    .spx-reviewTxt {
+      font-size: 12px;
+      color: #5d5d5d;
+      line-height: 1.35;
+      word-break: keep-all;
+    }
+
+    .spx-stars {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 3px;
+      align-items: center;
+      margin-top: 2px;
+      color: #111;
+      font-size: 12px;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .spx-stars i {
+      transform: translateY(0.5px);
+    }
+
+
+
+    .sps-wrap {
+      width: min(1100px, calc(100% - 48px));
+      margin: 14px auto 70px;
+    }
+
+    .sps-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid #e9e9e9;
+      margin-bottom: 16px;
+    }
+
+    .sps-tabs {
+      display: flex;
+      gap: 18px;
+      position: relative;
+      padding-bottom: 14px;
+    }
+
+    .sps-tab {
+      font: inherit;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      padding: 10px 2px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #777;
+      position: relative;
+    }
+
+    .sps-tab.is-active {
+      color: #111;
+    }
+
+    .sps-tab.is-active::after {
+      content: none;
+    }
+
+    .sps-panel {
+      display: none;
+    }
+
+    .sps-panel.is-show {
+      display: block;
+    }
+
+    .sps-sellTop {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 14px;
+    }
+
+    .sps-sort {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: #777;
+      user-select: none;
+    }
+
+    .sps-sortBtn {
+      font: inherit;
+      border: 0;
+      background: transparent;
+      color: #777;
+      padding: 6px 0;
+      cursor: pointer;
+      line-height: 1;
+      transition: color .12s ease, opacity .12s ease;
+    }
+
+    .sps-sortBtn:hover {
+      color: #111;
+    }
+
+    .sps-sortBtn.is-active {
+      color: #111;
+      font-weight: 700;
+    }
+
+    .sps-sep {
+      width: 1px;
+      height: 10px;
+      background: #d8d8d8;
+      opacity: .9;
+      transform: translateY(1px);
+    }
+
+    .sps-empty {
+      border: 1px dashed #dcdcdc;
+      border-radius: 12px;
+      padding: 16px;
+      color: #777;
+      font-size: 13px;
+      background: #fafafa;
+    }
+
+    .sps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .sps-card {
+      border: 1px solid #e8e8e8;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .sps-card:hover {
+      transform: translateY(-2px);
+      border-color: #e2e2e2;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, .06);
+    }
+
+    .sps-thumb {
+      display: block;
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background: #f2f2f2;
+      overflow: hidden;
+    }
+
+    .sps-thumb img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transform: scale(1);
+      transition: transform .25s ease;
+    }
+
+    .sps-card:hover .sps-thumb img {
+      transform: scale(1.04);
+    }
+
+    .sps-badge {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      font-size: 11px;
+      color: #fff;
+      background: #27ae60;
+      padding: 5px 8px;
+      border-radius: 999px;
+      line-height: 1;
+      z-index: 2;
+    }
+
+    .sps-like {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, .10);
+      background: rgba(255, 255, 255, .92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+
+    .sps-like:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .10);
+    }
+
+    .sps-like i {
+      font-size: 14px;
+      color: #111;
+      transition: color .12s ease, transform .12s ease;
+    }
+
+    /* ✅ 하트 클릭 시 빨간색 */
+    .sps-like.is-on i {
+      color: #e53935;
+    }
+
+    .sps-like.is-on:hover i {
+      transform: scale(1.05);
+    }
+
+    .sps-body {
+      padding: 10px 10px 12px;
+    }
+
+    .sps-title {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: -0.1px;
+      color: #111;
+      line-height: 1.25;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      min-height: 26px;
+    }
+
+    .sps-price {
+      font-size: 16px;
+      font-weight: bold;
+      color: #111;
+    }
+
+    .sps-meta {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .sps-meta i {
+      margin-right: 4px;
+      color: #9a9a9a;
+    }
+
+
+    .sps-more {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .sps-moreBtn {
+      height: 46px;
+      padding: 0 28px;
+      border-radius: 10px;
+      border: 1px solid #d7d7d7;
+      background: #111;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.1px;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    }
+
+    .sps-moreBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .10);
+      opacity: .98;
+    }
+
+
+
+    .sps-rvSummary {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 0 18px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 16px;
+    }
+
+    .sps-rvScore {
+      min-width: 220px;
+    }
+
+    .sps-rvScoreBig {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      line-height: 1;
+    }
+
+    .sps-rvScoreBig strong {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+    }
+
+    .sps-rvScoreBig span {
+      font-size: 14px;
+      color: #666;
+      font-weight: 700;
+    }
+
+    .sps-rvStars {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #111;
+      font-size: 13px;
+    }
+
+    .sps-rvStars i {
+      transform: translateY(0.5px);
+    }
+
+    .sps-rvCount {
+      font-style: normal;
+      color: #666;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    .sps-rvHint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #888;
+    }
+
+
+    .sps-rvBadges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+      flex: 1;
+    }
+
+    .sps-rvChip {
+      border: 1px solid #d8d8d8;
+      background: #fff;
+      color: #333;
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, color .12s ease;
+    }
+
+    .sps-rvChip span {
+      color: #777;
+      font-weight: 700;
+    }
+
+    .sps-rvChip:hover {
+      transform: translateY(-1px);
+      border-color: #cfcfcf;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .06);
+    }
+
+    .sps-rvChip.is-active {
+      border-color: #111;
+      color: #111;
+      font-weight: 800;
+    }
+
+    .sps-rvChip.is-active span {
+      color: #111;
+    }
+
+
+    .sps-rvSortBar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 14px;
+    }
+
+    .sps-rvSort {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: #777;
+      user-select: none;
+    }
+
+    .sps-rvSortBtn {
+      font: inherit;
+      border: 0;
+      background: transparent;
+      color: #777;
+      padding: 6px 0;
+      cursor: pointer;
+      line-height: 1;
+      transition: color .12s ease, opacity .12s ease;
+    }
+
+    .sps-rvSortBtn:hover {
+      color: #111;
+    }
+
+    .sps-rvSortBtn.is-active {
+      color: #111;
+      font-weight: 700;
+    }
+
+    .sps-underline {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 2px;
+      width: 0;
+      background: #111;
+      border-radius: 999px;
+      transform: translateX(0);
+      transition: transform .22s ease, width .22s ease;
+      /* ✅ 자연스럽게 이동 */
+      will-change: transform, width;
+    }
+
+    .sps-rvList {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sps-rvCard {
+      border: 1px solid #e7e7e7;
+      border-radius: 12px;
+      background: #fff;
+      padding: 14px 14px 12px;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+
+
+    .sps-rvTop {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .sps-rvWho {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sps-rvUser {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .sps-rvAvatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #d9d9d9;
+      flex: 0 0 auto;
+    }
+
+    .sps-rvUser strong {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #111;
+    }
+
+    .sps-rvMeta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .sps-rvStarsSm {
+      color: #111;
+      font-size: 12px;
+      display: inline-flex;
+      gap: 2px;
+    }
+
+    .sps-rvDate i {
+      margin-right: 4px;
+      color: #9a9a9a;
+    }
+
+    .sps-rvTag {
+      flex: 0 0 auto;
+      font-size: 12px;
+      font-weight: 800;
+      color: #111;
+      background: #f2f2f2;
+      border: 1px solid #e1e1e1;
+      padding: 6px 10px;
+      border-radius: 999px;
+      line-height: 1;
+    }
+
+    .sps-rvTag.is-gray {
+      color: #333;
+      background: #f6f6f6;
+    }
+
+    .sps-rvProduct {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #666;
+      margin: 2px 0 10px;
+    }
+
+    .sps-rvProduct i {
+      color: #9a9a9a;
+    }
+
+    .sps-rvText {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+    .sps-rvPhotos {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sps-rvPhoto {
+      width: 84px;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f2f2f2;
+      border: 1px solid #e7e7e7;
+      display: block;
+    }
+
+    .sps-rvPhoto img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transform: scale(1);
+      transition: transform .2s ease;
+    }
+
+    .sps-rvPhoto:hover img {
+      transform: scale(1.05);
+    }
