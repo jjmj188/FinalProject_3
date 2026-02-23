@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html th:fragment="layout(title, content)"
+<html th:fragment="layout(title, head, content)"
       lang="ko"
       xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -13,6 +13,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" th:href="@{/css/header.css}">
   <link rel="stylesheet" th:href="@{/css/footer.css}">
+  
+    <!-- 페이지별 head(CSS/JS 등) -->
+  <th:block th:replace="${head}"></th:block>
 
   <!-- 공통 JS -->
   <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
