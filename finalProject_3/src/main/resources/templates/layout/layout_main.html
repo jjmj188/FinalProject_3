@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html th:fragment="layout(headCss, content, bodyJs)"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- 공통 CSS -->
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/css/header.css}">
+  <link rel="stylesheet" th:href="@{/css/footer.css}">
+
+  <!-- 페이지별 CSS (head 전용) -->
+  <th:block th:replace="${headCss}"></th:block>
+
+  <!-- 공통 JS 중 "head에 있어야 하는 것"만 유지 -->
+  <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+
+  <!--  ===== spinner/datepicker 위해 jquery-ui ===== -->
+  <link rel="stylesheet" th:href="@{/jquery-ui-1.13.1.custom/jquery-ui.css}">
+  <script th:src="@{/jquery-ui-1.13.1.custom/jquery-ui.js}"></script>
+
+  <!-- 주소찾기(외부 스크립트) -->
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+  <!-- 네이버스마트에디터: 필요하면 head에 두거나, 페이지별 bodyJs로 빼도 됨 -->
+  <script th:src="@{/smarteditor/js/HuskyEZCreator.js}" charset="utf-8"></script>
+</head>
+
+<body>
+<div id="mycontainer">
+  <div id="myheader" th:insert="~{fragment/header :: main_header}"></div>
+
+  <div id="mycontent" th:replace="${content}"></div>
+
+  <div id="myfooter" th:insert="~{fragment/footer :: footer}"></div>
+</div>
+
+<!-- 공통 JS (body 끝) -->
+<script defer th:src="@{/js/header.js}"></script>
+
+<!-- 페이지별 JS (body 끝 전용) -->
+<th:block th:replace="${bodyJs}"></th:block>
+</body>
+</html>

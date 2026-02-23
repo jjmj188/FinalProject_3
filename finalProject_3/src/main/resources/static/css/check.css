@@ -1,0 +1,174 @@
+ :root{
+      --bg:#ffffff;
+      --panel:#ffffff;
+      --line:#e9eef5;
+      --text:#111;
+      --muted:#6b7684;
+
+      --green:#16c36c;   /* 등록가 */
+      --blue:#2f7df6;    /* 판매가 */
+      --chip:#f3f6fb;
+
+      --radius:18px;
+    }
+  
+   /* 전체 시세 카드 40% 축소 */
+.mk-wrap{
+  width:min(700px, 100%);
+  margin:75px auto;
+
+}
+
+
+
+    /* 카드 */
+    .mk-card{
+      background:var(--panel);
+      border:1px solid #eef2f7;
+      border-radius:24px;
+      padding:22px 22px 18px;
+      box-shadow: 0 10px 30px rgba(16,24,40,.06);
+    }
+
+    /* 상단 헤더 */
+    .mk-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:14px;
+    }
+    .mk-title{
+      font-size:14px;
+      color:var(--muted);
+      font-weight:bold;
+      letter-spacing:-.2px;
+    }
+    .mk-price{
+      margin-top:8px;
+      font-size:32px;
+      font-weight:900;
+      letter-spacing:-1px;
+      color:var(--green);
+      line-height:1;
+    }
+    .mk-price small{
+      font-size:.55em;
+      font-weight:900;
+    }
+
+    /* 탭 */
+    .mk-tabs{
+      display:inline-flex;
+      background:#fff;
+      border:1px solid #e7edf6;
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow: 0 6px 16px rgba(16,24,40,.05);
+    }
+    .mk-tab{
+      appearance:none;
+      border:0;
+      background:transparent;
+      padding:10px 14px;
+      font-weight:bold;
+      color:#3b4653;
+      cursor:pointer;
+      font-size:14px;
+      letter-spacing:-.2px;
+      min-width:70px;
+      transition:background .15s ease, color .15s ease;
+    }
+    .mk-tab.is-active{
+      background:var(--green);
+      color:#fff;
+    }
+
+    /* 차트 영역 */
+    .mk-chartBox{
+      margin-top:14px;
+      border-radius:20px;
+      border:1px solid #eef2f7;
+      background:#fff;
+      padding:14px 14px 10px;
+      position:relative;
+      overflow:hidden;
+    }
+    .mk-canvasWrap{
+      position:relative;
+      height:360px;
+    }
+    canvas{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    /* 범례 */
+    .mk-legend{
+      margin-top:12px;
+      background:#fff;
+      border:1px solid #eef2f7;
+      border-radius:16px;
+      padding:12px 14px;
+      display:flex;
+      gap:18px;
+      justify-content:center;
+      align-items:center;
+    }
+    .mk-legItem{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:800;
+      color:#3b4653;
+    }
+    .mk-dot{
+      width:10px; height:10px;
+      border-radius:999px;
+      display:inline-block;
+    }
+    .mk-dot.green{ background:var(--green); }
+    .mk-dot.blue{ background:var(--blue); }
+
+    /* 툴팁 */
+    .mk-tip{
+      position:absolute;
+      pointer-events:none;
+      transform:translate(-50%, -110%);
+      background:#111;
+      color:#fff;
+      padding:10px 10px;
+      border-radius:12px;
+      font-size:12px;
+      line-height:1.2;
+      box-shadow:0 14px 30px rgba(0,0,0,.18);
+      opacity:0;
+      transition:opacity .08s ease;
+      white-space:nowrap;
+    }
+    .mk-tip b{ font-size:12px; }
+    .mk-tip .mk-tipRow{
+      display:flex; gap:8px; align-items:center;
+      justify-content:space-between;
+      margin-top:6px;
+      font-weight:700;
+    }
+    .mk-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(255,255,255,.12);
+      padding:4px 8px;
+      border-radius:999px;
+      font-weight:800;
+    }
+
+    /* 반응형 */
+    @media (max-width:720px){
+      .mk-price{ font-size:38px; }
+      .mk-canvasWrap{ height:320px; }
+      .mk-head{ align-items:flex-start; flex-direction:column; }
+      .mk-tabs{ width:100%; }
+      .mk-tab{ flex:1; }
+    }

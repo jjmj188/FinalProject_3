@@ -1,11 +1,247 @@
 <!DOCTYPE html>
-<html lang="en">
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+
+  <link rel="stylesheet" th:href="@{/css/index.css}">
+  <script defer th:src="@{/js/index.js}"></script> 
 </head>
+
 <body>
-    메인페이지 입니다
+<main>
+    <!-- 이벤트 -->
+   <section class="evb-section">
+    <div class="evb-head">
+      <h2 class="evb-head-title"></h2>
+      <div class="evb-nav">
+        <button class="evb-btn" type="button" aria-label="이전" data-dir="prev"></button>
+        <button class="evb-btn" type="button" aria-label="다음" data-dir="next"></button>
+      </div>
+    </div>
+
+    <div class="evb-viewport" aria-label="이벤트 배너 슬라이더">
+      <div class="evb-track">
+
+       <!-- slide  -->
+      <div class="evb-slide">
+        <div class="evb-card">
+          <img th:src="@{/images/main4.jpg}" alt="이벤트 배너" class="evb-bg">
+          <div class="evb-content">
+            <div class="evb-title">이벤트 제목</div>
+            <div class="evb-desc">이벤트 설명</div>
+            <a class="evb-more" href="#">
+              자세히보기
+              <i class="fa-solid fa-angle-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+       <div class="evb-slide">
+        <div class="evb-card">
+          <img th:src="@{/images/event_01.jpg}" alt="이벤트 배너" class="evb-bg">
+          <div class="evb-content">
+            <div class="evb-title">이벤트 제목</div>
+            <div class="evb-desc">이벤트 설명</div>
+            <a class="evb-more" href="#">
+              자세히보기
+              <i class="fa-solid fa-angle-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      </div>
+    </div>
+
+    <div class="evb-dots" aria-label="이벤트 페이지네이션"></div>
+  </section>
+
+    <!-- BEST 상품 -->
+   <section class="best-section">
+    <div class="best-head">
+      <div class="best-title"><span class="best-red">BEST</span><span>상품</span></div>
+      <div class="best-sub">현재 주목을 많이 받은 상품 입니다.</div>
+    </div>
+
+    <div class="best-row" id="bestRow">
+      <button class="best-nav prev" type="button" aria-label="이전" id="bestPrev">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button class="best-nav next" type="button" aria-label="다음" id="bestNext">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+
+      <div class="best-deco-layer" aria-hidden="true">
+        <img class="best-deco-fixed best-deco-left" th:src="@{/images/arc_left.png}" alt="">
+        <img class="best-deco-fixed best-deco-right" th:src="@{/images/arc_right.png}" alt="">
+      </div>
+
+      <div class="best-viewport">
+        <div class="best-track" id="bestTrack">
+          <article class="best-card is-left">
+            <div class="best-card-inner">
+              <a class="best-card-link" href="#">
+                <div class="best-img">
+                  <img th:src="@{/images/중고물건.jpg}" alt="상품 이미지" decoding="async">
+                </div>
+                <div class="best-info">
+                  <div class="best-name">맥북 프로 13인치</div>
+                  <div class="best-price">30,000원</div>
+                  <div class="best-like"><i class="fa-regular fa-heart"></i><span>10</span></div>
+                </div>
+              </a>
+            </div>
+          </article>
+
+          <article class="best-card is-center">
+            <div class="best-card-inner">
+              <a class="best-card-link" href="#">
+                <div class="best-img">
+                  <img th:src="@{/images/중고물건.jpg}" alt="상품 이미지" decoding="async">
+                </div>
+                <div class="best-info">
+                  <div class="best-name">아이패드 에어 5세대</div>
+                  <div class="best-price">250,000원</div>
+                  <div class="best-like"><i class="fa-regular fa-heart"></i><span>24</span></div>
+                </div>
+              </a>
+            </div>
+          </article>
+
+          <article class="best-card is-right">
+            <div class="best-card-inner">
+              <a class="best-card-link" href="#">
+                <div class="best-img">
+                  <img th:src="@{/images/중고물건.jpg}" alt="상품 이미지" decoding="async">
+                </div>
+                <div class="best-info">
+                  <div class="best-name">소니 WH-1000XM5</div>
+                  <div class="best-price">180,000원</div>
+                  <div class="best-like"><i class="fa-regular fa-heart"></i><span>31</span></div>
+                </div>
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+   <!-- 추천 상품 -->
+  <section class="suggest-section">
+    <section class="suggest-card">
+      <div class="wm-new">NEW</div>
+      <div class="wm-rec">RECOMMENDED</div>
+
+      <div class="suggest-titleBox">
+        <h2 class="suggest-title">이런 <span class="accent">상품</span>은 어떠신가요?</h2>
+        <p class="suggest-sub">고객님을 위한 추천 상품 입니다.</p>
+      </div>
+
+      <div class="suggest-grid">
+        <div class="suggest-cta">
+          <a class="suggest-pill" href="#">
+            <span class="chev"> <i class="fa-solid fa-chevron-left"></i></span>
+            <span>최신상품 보러가기</span>
+          </a>
+          <p class="suggest-desc">최근에 등록된 상품을 입니다.</p>
+        </div>
+
+        <div class="thumbRow">
+          <div class="thumb"><img th:src="@{/images/sample_01.jpg}" alt=""></div>
+          <div class="thumb"><img th:src="@{/images/sample_01.jpg}" alt=""></div>
+          <div class="thumb"><img th:src="@{/images/sample_01.jpg}" alt=""></div>
+        </div>
+
+        <div class="thumbStack">
+          <div class="thumb t1"><img th:src="@{/images/sample_01.jpg}" alt=""></div>
+          <div class="thumb t2"><img th:src="@{/images/sample_01.jpg}" alt=""></div>
+          <div class="thumb t3"><img th:src="@{/images/sample_01.jpg}" alt=""></div>
+        </div>
+
+        <div class="suggest-ctaRight">
+          <a class="suggest-pill" href="#">
+            <span>추천상품 보러가기</span>
+            <span class="chev"> <i class="fa-solid fa-chevron-right"></i></span>
+          </a>
+          <p class="suggest-desc">
+            고객님을 위한 추천 상품 입니다.<br>
+            <span style="font-size:11px; color:#8a929c;">최근에 본 상품을 입니다.</span>
+          </p>
+        </div>
+      </div>
+    </section>
+  </section>
+
+<section class="startdeal-section">
+  <div class="startdeal-wrap">
+    <div class="startdeal-left">
+      <div class="startdeal-badge">NEARBY DEALS</div>
+
+      <h2 class="startdeal-title">
+        지금 바로<br />
+        동네거래 시작하러가기
+      </h2>
+
+      <p class="startdeal-desc">
+        내 위치 기준으로 가까운 거래를 빠르게 찾고,<br />
+        채팅으로 바로 약속까지 잡아보세요.
+      </p>
+
+      <div class="startdeal-actions">
+        <a href="#" class="startdeal-btn startdeal-btn--primary">
+          동네거래 시작하기 <span class="startdeal-arrow">→</span>
+        </a>
+        <a href="#" class="startdeal-btn startdeal-btn--ghost">
+          인기 상품 구경하기
+        </a>
+      </div>
+
+      <div class="startdeal-pills" aria-label="기능 요약">
+        <span class="startdeal-pill">📍 근처 상품 자동 추천</span>
+        <span class="startdeal-pill">💬 1:1 채팅 거래</span>
+        <span class="startdeal-pill">🛡️ 안전결제 지원</span>
+        <span class="startdeal-pill">⚡ 빠른 약속/거래</span>
+      </div>
+    </div>
+
+    <div class="startdeal-right" aria-hidden="true">
+      <div class="startdeal-art">
+        <img th:src="@{/images/image 153.png}" alt="" />
+      </div>
+
+      <div class="startdeal-mini">
+        <div class="startdeal-mini-card">
+          <div class="startdeal-mini-top">
+            <span class="startdeal-mini-tag">방금 등록</span>
+            <span class="startdeal-mini-time">2분 전</span>
+          </div>
+          <div class="startdeal-mini-title">에어팟 프로 2</div>
+          <div class="startdeal-mini-row">
+            <span class="startdeal-mini-loc">서울 · 중랑</span>
+            <strong class="startdeal-mini-price">₩ 165,000</strong>
+          </div>
+        </div>
+
+        <div class="startdeal-mini-card">
+          <div class="startdeal-mini-top">
+            <span class="startdeal-mini-tag startdeal-mini-tag--line">인기</span>
+            <span class="startdeal-mini-time">10분 전</span>
+          </div>
+          <div class="startdeal-mini-title">닌텐도 스위치</div>
+          <div class="startdeal-mini-row">
+            <span class="startdeal-mini-loc">경기 · 수원</span>
+            <strong class="startdeal-mini-price">₩ 220,000</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
 </body>
 </html>
