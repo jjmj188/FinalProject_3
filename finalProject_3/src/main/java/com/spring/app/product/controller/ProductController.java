@@ -16,6 +16,17 @@ public class ProductController {
 	    public String sellPage() {
 	        return "product/sell"; // templates/product/sell.html
 	    }
+	 
+	 @GetMapping("/share")
+	    public String share() {
+	        return "product/share";     // templates/product/share.html
+	    }
+
+	    @GetMapping("/auction")
+	    public String auction() {
+	        return "product/auction";   // templates/product/auction.html
+	    }
+	 
 	}
 
 

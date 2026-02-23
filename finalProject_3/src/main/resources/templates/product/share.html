@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+<link rel="stylesheet" th:href="@{/css/product_form.css}">
+<script defer th:src="@{/js/product_form.js}"></script>
+</head>
+
+<body>
+<!-- main 필수 -->
+  <main class="pf-wrap" data-active="share">
+  <nav class="pf-tabs" aria-label="등록 유형">
+  <a class="pf-tab" th:href="@{/product/sell}" data-tab="sell">판매하기</a>
+  <a class="pf-tab" th:href="@{/product/share}" data-tab="share">나눔하기</a>
+  <a class="pf-tab" th:href="@{/product/auction}" data-tab="auction">경매하기</a>
+  <span class="pf-tab-underline" aria-hidden="true"></span>
+</nav>
+
+      <!-- 섹션 타이틀 -->
+  <section class="pf-section">
+    <h2 class="pf-title">상품 정보</h2>
+    <div class="pf-title-line" aria-hidden="true"></div>
+
+    <div class="pf-form">
+
+       <!-- 상품 이미지 -->
+      <div class="pf-row">
+        <div class="pf-label">상품 이미지</div>
+
+        <div class="pf-field pf-field-upload">
+          <label class="pf-upload" for="pfImageInput">
+            <span class="pf-upload-icon" aria-hidden="true">📷</span>
+            <span class="pf-upload-text">이미지 등록</span>
+            <input id="pfImageInput" class="pf-upload-input" type="file" accept="image/*" multiple />
+          </label>
+
+          <div class="pf-preview" id="pfPreviewWrap" aria-label="미리보기"></div>
+          <!-- 대표 이미지 인덱스(0,1,2) -->
+      <input type="hidden" id="pfMainIndex" name="mainIndex" value="0">
+        </div>
+      </div>
+
+      <!-- 상품명 -->
+      <div class="pf-row">
+        <div class="pf-label">
+          상품명
+          <div class="pf-help">
+            <a class="pf-ship-setting" id="pfShipSettingLink" href="#">거래 제한 품목 안내 &gt;</a>
+          </div>
+          
+          <!-- 팝업 모달 -->
+          <div id="pfShipModal" class="pf-modal">
+            <div class="pf-modal-content">
+              <button type="button" class="pf-modal-close" id="pfShipModalClose">×</button>
+              <img th:src="@{/images/transactionRestrictions.png}" alt="거래제한품목">
+              
+              
+            </div>
+          </div>
+
+        </div>
+        <div class="pf-field">
+          <input class="pf-input" type="text" placeholder="상품명을 입력해 주세요." />
+        </div>
+      </div>
+
+      <!-- 카테고리 -->
+      <div class="pf-row">
+        <div class="pf-label">카테고리</div>
+        <div class="pf-field pf-field-narrow">
+          <select class="pf-select" aria-label="카테고리">
+            <option>패션(수입명품 / 패션의류 / 패션잡화 / 뷰티)</option>
+            <option>육아(출산 / 유아동)</option>
+            <option>가전(가전제품)</option>
+            <option>홈·인테리어(가구 / 인테리어 / 리빙 / 생활)</option>
+            <option>취미(게임, 반려동물, 독서)</option>
+            <option>여행(등산, 캠핑 등등)</option>
+            <option>공구/산업용품</option>
+          </select>
+        </div>
+      </div>
+
+
+      <!-- 상품 설명 -->
+      <div class="pf-row">
+        <div class="pf-label">상품 설명</div>
+        <div class="pf-field">
+          <div class="pf-textarea-wrap">
+            <textarea class="pf-textarea" maxlength="5000" placeholder="- 상품명(브랜드)
+- 구매 시기 (년, 월, 일)
+- 사용 기간
+- 하자 여부
+* 실제 촬영한 사진과 함께 상세 정보를 입력해주세요.
+* 카카오톡 아이디 첨부 시 게시글 삭제 및 이용제재 처리 될 수 있어요.
+
+안전하고 건전한 거래환경을 위해 과학기술정보통신부, 한국인터넷진흥원, 중고나라가 함께합니다.">
+</textarea>
+            <div class="pf-count"><span class="pf-count-now">0</span> / 5000</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 상품 상태 -->
+      <div class="pf-row">
+        <div class="pf-label">상품 상태</div>
+        <div class="pf-field">
+          <div class="pf-radio-row" role="radiogroup" aria-label="상품 상태">
+            <label class="pf-radio">
+              <input type="radio" name="pfCond" checked />
+              <span class="pf-dot" aria-hidden="true"></span>
+              <span>상</span>
+            </label>
+            <label class="pf-radio">
+              <input type="radio" name="pfCond" />
+              <span class="pf-dot" aria-hidden="true"></span>
+              <span>중</span>
+            </label>
+            <label class="pf-radio">
+              <input type="radio" name="pfCond" />
+              <span class="pf-dot" aria-hidden="true"></span>
+              <span>하</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 거래 방법 -->
+      <div class="pf-trade">
+        <div class="pf-trade-head">
+          <div class="pf-trade-title">거래 방법</div>
+          <div class="pf-trade-sub">구매자가 결제한 이후에는 거래 방법을 변경할 수 없어요</div>
+        </div>
+        <div class="pf-trade-wrap">
+
+          <!-- ===== 택배거래 ===== -->
+          <section class="pf-section">
+            <div class="pf-section-title">택배거래</div>
+
+            <div class="pf-trade-row">
+              <div class="pf-trade-left">
+                <label class="pf-check">
+                  <input type="radio" name="pfTradeMethod" id="pfShipToggle" checked />
+                  <span class="pf-check-ui" aria-hidden="true"></span>
+                  <span class="pf-check-text">택배거래</span>
+                </label>
+              </div>
+
+              
+            </div>
+
+            <!-- 배송비 포함 여부 카드 -->
+            <div class="pf-ship-card" id="pfShipCard">
+              <div class="pf-ship-card-head">
+                <p class="pf-ship-card-title">배송비 포함 여부 선택</p>
+                <p class="pf-ship-card-desc">상품에 표시될 배송비 정보를 선택해 주세요.</p>
+              </div>
+
+              <div class="pf-ship-divider"></div>
+
+              <div class="pf-ship-pill">
+                <span class="pf-ship-pill-dot" aria-hidden="true"></span>
+                거래 성사 확률이 높아요
+              </div>
+
+              <div class="pf-ship-option">
+                <label class="pf-radio">
+                  <input type="radio" name="pfShipFeeType" value="included" id="pfFeeIncluded" />
+                  <span class="pf-radio-ui" aria-hidden="true"></span>
+
+                  <span class="pf-radio-body">
+                    <span class="pf-radio-title">배송비 포함</span>
+                    <span class="pf-radio-desc">선택 시 상품에 ‘무료배송’으로 표시됩니다.</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="pf-ship-option">
+                <label class="pf-radio">
+                  <input type="radio" name="pfShipFeeType" value="separate" id="pfFeeSeparate" checked />
+                  <span class="pf-radio-ui" aria-hidden="true"></span>
+
+                  <span class="pf-radio-body">
+                    <span class="pf-radio-title">배송비 별도</span>
+                    <span class="pf-radio-desc">상품가격과 별도로 배송비를 설정합니다.</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 배송비 입력(배송비 별도 선택 시 노출) -->
+<div class="pf-ship-fee-detail" id="pfShipFeeDetail" aria-hidden="true">
+  <div class="pf-ship-fee-head">
+    <h3 class="pf-ship-fee-title">배송비 입력</h3>
+  </div>
+
+  <p class="pf-ship-fee-sub">가능한 배송 방법만 입력해 주세요.</p>
+
+  <!-- 일반택배 -->
+  <div class="pf-ship-fee-block">
+    <div class="pf-ship-fee-label">일반택배</div>
+    <div class="pf-ship-fee-desc">택배사나 편의점에서 접수해 문 앞까지 배송돼요.</div>
+    <input class="pf-input pf-ship-fee-input" type="text" inputmode="numeric" placeholder="2,700원~17,000원 이내" />
+  </div>
+
+  <!-- CU/GS 반값택배 -->
+  <div class="pf-ship-fee-block">
+    <div class="pf-ship-fee-label">CU 반값택배 / GS 반값택배</div>
+    <div class="pf-ship-fee-desc">편의점에서 보내고, 지정한 편의점에서 찾아가요.</div>
+
+    <div class="pf-ship-fee-mini">
+      <div class="pf-ship-fee-brand "><img th:src="@{/images/cu.png}" ></div>
+      <input class="pf-input pf-ship-fee-input" type="text" inputmode="numeric" placeholder="1,800원~2,700원 이내" />
+    </div>
+
+    <div class="pf-ship-fee-mini">
+      <div class="pf-ship-fee-brand"><img th:src="@{/images/GS25.svg}"></div>
+      <input class="pf-input pf-ship-fee-input" type="text" inputmode="numeric" placeholder="1,900원~4,400원 이내" />
+    </div>
+  </div>
+</div>
+          </section>
+
+          <!-- ===== 직거래 ===== -->
+          <section class="pf-section">
+            <div class="pf-section-title">직거래</div>
+
+            <div class="pf-trade-row">
+              <div class="pf-trade-left">
+                <label class="pf-check">
+                  <input type="radio" name="pfTradeMethod" id="pfMeetToggle" />
+                  <span class="pf-check-ui" aria-hidden="true"></span>
+                  <span class="pf-check-text">만나서 직거래</span>
+                </label>
+              </div>
+
+              <div class="pf-trade-right">
+                <button type="button" class="pf-loc-btn" id="pfLocationBtn">+ 위치 설정</button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- 하단 안내 + 버튼 -->
+      <div class="pf-footnote">판매 정보가 실제 상품과 다른 경우, 책임은 판매자에게 있음을 동의합니다.</div>
+      <button class="pf-submit" type="button">판매하기</button>
+
+    </div>
+  </section>
+  </main>
+  	<script>
+  const openLink = document.getElementById('pfShipSettingLink');
+  const modal = document.getElementById('pfShipModal');
+  const closeBtn = document.getElementById('pfShipModalClose');
+
+  openLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    modal.classList.add('is-open');
+  });
+
+  closeBtn.addEventListener('click', function() {
+    modal.classList.remove('is-open');
+  });
+
+  // 배경 클릭 시 닫기
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.classList.remove('is-open');
+    }
+  });
+</script>
+</body>
+</html>
