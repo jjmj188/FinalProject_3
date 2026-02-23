@@ -1,54 +1,71 @@
-<div th:fragment="footer" xmlns:th="http://www.thymeleaf.org">
-  <!-- Site footer -->
-  <footer class="site-footer">
+  <footer class="site-footer" aria-label="사이트 푸터">
     <div class="container">
       <div class="row">
+
+        <!-- 소개 -->
         <div class="col-sm-12 col-md-6">
-          <h6>About</h6>
-          <p class="text-justify">
-            Scanfcode.com <i>CODE WANTS TO BE SIMPLE</i> is an initiative to help the upcoming programmers with the code.
-            Scanfcode focuses on providing the most efficient code or snippets as the code wants to be simple.
-            We will help programmers build up concepts in different programming languages that include C, C++, Java, HTML,
-            CSS, Bootstrap, JavaScript, PHP, Android, SQL and Algorithm.
+          <h6>사이트 이름</h6>
+          <p class="footer-desc">
+            사이트 설명
           </p>
+
+       
+          <div class="footer-badges" aria-label="서비스 안내">
+            <span class="footer-badge">안전결제 안내</span>
+            <span class="footer-badge">경매 이용가이드</span>
+            <span class="footer-badge">신고/분쟁 정책</span>
+            <span class="footer-badge">거래 주의사항</span>
+          </div>
         </div>
 
+        <!-- 회사 정보 -->
         <div class="col-xs-6 col-md-3">
-          <h6>Categories</h6>
+          <h6>회사 정보</h6>
+
+          <div class="footer-meta">
+            <span class="line">상호: (주)등대마켓</span>
+            <span class="line">대표: 홍길동</span>
+            <span class="line">개인정보관리책임자: 홍길동</span>
+            <span class="line">사업자등록번호: 123-45-67890</span>
+            <span class="line">주소: 서울특별시 ○○구 ○○로 00, 0층</span>
+            <span class="line">전화: 02-1234-5678</span>
+            <span class="line">이메일: help@lighthouse-market.com</span>
+          </div>
+        </div>
+
+        <!-- 링크 -->
+        <div class="col-xs-6 col-md-3">
+          <h6>이용 안내</h6>
           <ul class="footer-links">
-            <li><a href="http://scanfcode.com/category/c-language/">C</a></li>
-            <li><a href="http://scanfcode.com/category/front-end-development/">UI Design</a></li>
-            <li><a href="http://scanfcode.com/category/back-end-development/">PHP</a></li>
-            <li><a href="http://scanfcode.com/category/java-programming-language/">Java</a></li>
-            <li><a href="http://scanfcode.com/category/android/">Android</a></li>
-            <li><a href="http://scanfcode.com/category/templates/">Templates</a></li>
+            <li><a href="/terms">이용약관</a></li>
+            <li><a href="/privacy">개인정보처리방침</a></li>
+            <li><a href="/safe-payment">안전결제 안내</a></li>
+            <li><a href="/auction-guide">경매 이용가이드</a></li>
+            <li><a href="/report-policy">신고/분쟁 처리 정책</a></li>
+            <li><a href="/notice">공지사항</a></li>
+            <li><a href="/ads">광고문의하기</a></li>
+            <li><a href="/admin/login">관리자 로그인</a></li>
           </ul>
         </div>
 
-        <div class="col-xs-6 col-md-3">
-          <h6>Quick Links</h6>
-          <ul class="footer-links">
-            <li><a href="http://scanfcode.com/about/">About Us</a></li>
-            <li><a href="http://scanfcode.com/contact/">Contact Us</a></li>
-            <li><a href="http://scanfcode.com/contribute-at-scanfcode/">Contribute</a></li>
-            <li><a href="http://scanfcode.com/privacy-policy/">Privacy Policy</a></li>
-            <li><a href="http://scanfcode.com/sitemap/">Sitemap</a></li>
-          </ul>
-        </div>
       </div>
 
-      <hr class="small">
+      <hr class="small" />
     </div>
 
     <div class="container">
-      <div class="row">
-        <div class="col-md-8 col-sm-6 col-xs-12">
-          <p class="copyright-text">
-            Copyright &copy; 2017 All Rights Reserved by
-            <a href="#">Scanfcode</a>.
-          </p>
+      <div class="footer-bottom">
+        <p class="copyright-text">
+          Copyright &copy;
+          <span id="footerYear">2026</span>
+          등대마켓. All Rights Reserved.
+        </p>
+
+        <div class="footer-bottom-links" aria-label="하단 링크">
+          <a href="/customer">고객센터</a>
+          <a href="/faq">자주묻는질문</a>
+          <a href="/location-terms">위치기반 이용약관</a>
         </div>
       </div>
     </div>
   </footer>
-</div>
