@@ -1,4 +1,4 @@
-package com.spring.app.index.service;
+package com.spring.app.product.service;
 
 import java.util.List;
 import java.util.Map;

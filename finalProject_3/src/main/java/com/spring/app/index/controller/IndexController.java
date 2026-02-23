@@ -3,7 +3,7 @@ package com.spring.app.index.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.spring.app.index.service.IndexService;
+import com.spring.app.index.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IndexController {
 
-    private final IndexService service;
+    private final ProductService service;
 
     @GetMapping("/")
     public String main() {

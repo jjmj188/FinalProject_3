@@ -56,7 +56,7 @@ textarea{ resize:none; }
 /* =============== section title =============== */
 .pf-section{ margin-top: 18px; }
 .pf-title{
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   margin: 18px 0 10px;
 }
@@ -77,7 +77,7 @@ textarea{ resize:none; }
 .pf-row + .pf-row{ border-top: 1px solid transparent; }
 
 .pf-label{
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color:#111;
   padding-top: 10px;
@@ -90,6 +90,11 @@ textarea{ resize:none; }
 }
 .pf-field{ min-height: 42px; display:flex; align-items:center; }
 .pf-field-narrow{ max-width: 280px; }
+
+.pf-select{
+  padding: 4px 8px;
+  font-size: 12pt;
+}
 
 .pf-input{
   width: 100%;
@@ -142,17 +147,33 @@ textarea{ resize:none; }
 .pf-upload-input{ display:none; }
 
 .pf-preview{
-  display:none;
-  position: relative;
-  width: 220px;
-  height: 110px;
-  margin-left: 16px;
-  border-radius: 10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;              /* 각 이미지 사이 좌우 간격 */
+  padding:0 6px;         /* 전체 프리뷰 영역 좌우 여백 */
+}
+
+/* is-on 상태에서도 flex 유지 */
+.pf-preview.is-on{
+  display:flex;
+}
+.pf-preview-item{
+  position:relative;
+  width:110px;
+  height:110px;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
   overflow:hidden;
-  border: 1px solid var(--pf-line);
   background:#fff;
 }
-.pf-preview.is-on{ display:block; }
+
+.pf-field-upload{
+  display:flex;
+  align-items:flex-start;
+  gap:20px;              /* 업로드박스와 미리보기 사이 여백 */
+}
+
+
 .pf-preview-img{
   width:100%;
   height:100%;
@@ -161,15 +182,17 @@ textarea{ resize:none; }
 }
 .pf-preview-remove{
   position:absolute;
-  right:10px;
-  bottom:10px;
+  top:6px;
+  right:6px;
+  width:26px;
+  height:26px;
   border:0;
-  background: rgba(17,17,17,.78);
+  border-radius:999px;
+  background:rgba(0,0,0,.55);
   color:#fff;
-  font-size: 12px;
-  padding: 8px 10px;
-  border-radius: 999px;
   cursor:pointer;
+  font-size:18px;
+  line-height:26px;
 }
 
 /* =============== textarea =============== */
@@ -248,90 +271,281 @@ textarea{ resize:none; }
   color: var(--pf-mute);
   font-weight: 600;
 }
-
-.pf-trade-box{
-  border-top: 1px solid var(--pf-line);
-  border-bottom: 1px solid var(--pf-line);
+.pf-trade-wrap{
+  max-width: 980px;
+  margin: 24px auto;
+  padding: 0 18px;
+  font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+  color:#111827;
 }
+
+.pf-section{
+  padding: 6px 0 24px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.pf-section:last-child{
+  border-bottom: 0;
+}
+
+.pf-section-title{
+  font-size: 16px;
+  font-weight: 800;
+  margin: 10px 0 14px;
+}
+
+/* ============ 상단 선택 라인(체크 + 텍스트 + 오른쪽 링크) ============ */
 .pf-trade-row{
-  display:grid;
-  grid-template-columns: 160px 1fr;
-  gap: 20px;
-  padding: 16px 0;
-}
-.pf-trade-row + .pf-trade-row{
-  border-top: 1px solid var(--pf-line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+  padding: 6px 0 16px;
 }
 
+.pf-trade-left{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+
+.pf-trade-right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+/* 링크: 배송비 설정 */
+.pf-ship-setting{
+  font-size: 12px;
+  color:#9ca3af;
+  text-decoration:none;
+}
+
+.pf-ship-setting:hover{
+  text-decoration: underline;
+}
+
+/* ============ 체크 UI(초록 체크 원) ============ */
 .pf-check{
   display:inline-flex;
   align-items:center;
   gap: 10px;
-  font-weight: 800;
-  color:#333;
   cursor:pointer;
-}
-.pf-check input{ display:none; }
-.pf-check-ui{
-  width: 16px;
-  height: 16px;
-  border: 2px solid #cfcfcf;
-  border-radius: 50%;
+  user-select:none;
   position:relative;
-  background:#fff;
 }
+
+.pf-check input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+/* 원형 */
+.pf-check-ui{
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid #d1d5db;
+  display:inline-block;
+  position:relative;
+  box-sizing:border-box;
+}
+
+/* 체크 표시(기본 숨김) */
+.pf-check-ui::after{
+  content:"";
+  position:absolute;
+  left: 6px;
+  top: 3px;
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  transform: rotate(45deg);
+}
+
+/* 선택됨 */
 .pf-check input:checked + .pf-check-ui{
-  border-color:#bdbdbd;
+  border-color:#22c55e;
+  background:#22c55e;
 }
 .pf-check input:checked + .pf-check-ui::after{
+  border-right-color:#ffffff;
+  border-bottom-color:#ffffff;
+}
+
+/* 텍스트 */
+.pf-check-text{
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+/* ============ 배송비 카드 ============ */
+.pf-ship-card{
+  /* 기존 레이아웃은 유지하되, 접힐 수 있게 */
+  overflow: hidden;
+
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+
+  transition:
+    max-height 280ms ease,
+    opacity 220ms ease,
+    transform 220ms ease;
+  will-change: max-height, opacity, transform;
+
+  /* 카드가 접힌 상태에서 위아래 여백 때문에 공간 남는 거 방지 */
+  margin-top: 0;
+}
+
+/* 열림 상태 */
+.pf-ship-card.is-open{
+  max-height: 800px; /* 카드 내용 길면 숫자만 늘려 */
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 12px; /* 원래 카드 위 간격이 필요하면 여기서만 주기 */
+}
+
+.pf-ship-card-head{
+  margin-bottom: 12px;
+}
+
+.pf-ship-card-title{
+  font-size: 14px;
+  font-weight: 900;
+  margin: 0 0 6px;
+}
+
+.pf-ship-card-desc{
+  margin: 0;
+  font-size: 13px;
+  color:#6b7280;
+  font-weight: 600;
+}
+
+.pf-ship-divider{
+  height: 1px;
+  background:#eef2f7;
+  margin: 14px 0;
+}
+
+/* 초록 pill */
+.pf-ship-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eafaf0;
+  color:#15803d;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.pf-ship-pill-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background:#22c55e;
+}
+
+/* 배송비 옵션(라디오) */
+.pf-ship-option{
+  display:flex;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.pf-ship-option + .pf-ship-option{
+  border-top: 1px solid #eef2f7;
+}
+
+/* 동그라미 라디오 UI */
+.pf-radio{
+  display:inline-flex;
+  align-items:flex-start;
+  gap: 12px;
+  cursor:pointer;
+  user-select:none;
+  position:relative;
+  width: 100%;
+}
+
+.pf-radio input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+.pf-radio-ui{
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid #cbd5e1;
+  box-sizing:border-box;
+  margin-top: 2px;
+  position:relative;
+}
+
+.pf-radio-ui::after{
   content:"";
   position:absolute;
   left:50%;
   top:50%;
-  width: 8px;
-  height: 8px;
-  border-radius:50%;
-  background:#bbb;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
   transform: translate(-50%,-50%);
 }
 
-.pf-ship-list{
-  width: 100%;
-  max-width: 420px;
-  margin-left:auto;
-  border-left: 1px solid var(--pf-line);
-  padding-left: 18px;
+.pf-radio input:checked + .pf-radio-ui{
+  border-color:#22c55e;
 }
-.pf-ship-item{
+.pf-radio input:checked + .pf-radio-ui::after{
+  background:#22c55e;
+}
+
+.pf-radio-body{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding: 8px 0;
+  flex-direction:column;
+  gap: 6px;
+}
+
+.pf-radio-title{
   font-size: 14px;
-  color:#333;
+  font-weight: 900;
+  color:#111827;
 }
-.pf-ship-item strong{ font-weight: 900; }
 
-.pf-meet{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 18px;
+.pf-radio-desc{
+  font-size: 13px;
+  color:#6b7280;
+  font-weight: 600;
 }
-.pf-check-inline{ font-weight: 700; }
-.pf-meet-field{
-  display:flex;
+
+/* ============ 위치 설정 버튼 ============ */
+.pf-loc-btn{
+  display:inline-flex;
   align-items:center;
-  gap: 10px;
-  flex: 1;
-}
-.pf-meet-label{
-  font-size: 12px;
-  color:#888;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #dbe2ea;
+  background:#ffffff;
+  font-size: 13px;
   font-weight: 800;
-  white-space: nowrap;
+  color:#374151;
+  cursor:pointer;
 }
 
+.pf-loc-btn:hover{
+  background:#f9fafb;
+}
 /* =============== bottom =============== */
 .pf-footnote{
   margin-top: 22px;
@@ -353,16 +567,193 @@ textarea{ resize:none; }
 }
 .pf-submit:hover{ opacity:.92; }
 
-/* =============== responsive =============== */
-@media (max-width: 860px){
-  .pf-wrap{ width: min(var(--pf-max), calc(100% - 32px)); }
-  .pf-row, .pf-trade-row{ grid-template-columns: 130px 1fr; }
+
+/*===============팝업모달=================*/
+.pf-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
 }
-@media (max-width: 640px){
-  .pf-tabs{ gap: 22px; }
-  .pf-row, .pf-trade-row{ grid-template-columns: 1fr; }
-  .pf-label{ padding-top: 0; }
-  .pf-field-narrow{ max-width: 100%; }
-  .pf-meet{ flex-direction: column; align-items:flex-start; }
-  .pf-ship-list{ margin-left:0; border-left:0; padding-left:0; }
+
+.pf-modal.is-open {
+  display: block;
+}
+
+.pf-modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.pf-modal-content img{
+  width: 100%;
+}
+
+.pf-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.pf-modal-list {
+  margin-top: 12px;
+  padding-left: 18px;
+  line-height: 1.6;
+}
+
+/*===============배송비 입력==================*/
+/* ===== 배송비 입력 펼침 영역 ===== */
+.pf-ship-fee-detail{
+  margin-top: 14px;
+  padding-top: 16px;
+  border-top: 1px solid #e9e9e9;
+
+  /* 애니메이션을 위해 display 대신 max-height 사용 */
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+
+  transition:
+    max-height 280ms ease,
+    opacity 220ms ease,
+    transform 220ms ease;
+  will-change: max-height, opacity, transform;
+}
+
+.pf-ship-fee-detail.is-open{
+  max-height: 900px;  /* 내용이 더 길어지면 값만 늘려 */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pf-ship-fee-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom: 10px;
+}
+
+.pf-ship-fee-back{
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  cursor:pointer;
+  line-height: 1;
+}
+.pf-ship-fee-title{
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pf-ship-fee-sub{
+  margin: 0 0 14px;
+  color:#666;
+  font-size: 13px;
+}
+
+.pf-ship-fee-block{
+  padding: 14px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.pf-ship-fee-block:first-of-type{
+  border-top: 0;
+  padding-top: 0;
+}
+
+.pf-ship-fee-label{
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.pf-ship-fee-desc{
+  color:#777;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.pf-ship-fee-input{
+  height: 44px;
+}
+
+.pf-ship-fee-mini{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top: 10px;
+}
+
+.pf-ship-fee-brand{
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 13px;
+  border: 1px solid #e9e9e9;
+  background:#fff;
+}
+
+.pf-ship-fee-brand img{
+  width: 100%;
+}
+
+/* =============== 대표 이미지 선택 =============== */
+.pf-preview-item{
+  position: relative; /* 이미 있으니 유지 */
+}
+
+/* 대표 선택 pill */
+.pf-main-badge{
+  position:absolute;
+  left:8px;
+  bottom:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(17,17,17,.82);
+  color:#fff;
+  cursor:pointer;
+  user-select:none;
+}
+
+.pf-main-badge input{
+  width:14px;
+  height:14px;
+  margin:0;
+  accent-color:#fff;
+}
+
+.pf-main-text{
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+}
+
+/* 대표로 선택된 이미지 강조 */
+.pf-preview-item.is-main{
+  outline:2px solid #111;
+  outline-offset:2px;
 }
