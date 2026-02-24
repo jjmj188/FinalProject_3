@@ -2,7 +2,6 @@ package com.spring.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 
@@ -14,11 +13,9 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 //@Component 어노테이션이 붙어있는 클래스들은 bean 으로 만들어 주는데 이러한 bean 들을 모두 스캔해서 읽어오는 기능을 해주는 것이다.
 
 /*
-	Spring Security 라이브러리를 추가한 경우 Spring Security 기능이 추가되어 사이트에 접속하면 기본적으로 login 화면이 실행한다.
-	스프링 부트의 Spring Security 기능을 제거하기 위해서는 아래처럼 @SpringBootApplication 애노테이션에
-	exclude = SecurityAutoConfiguration.class 를 추가하면 된다.
+	Spring Security 사용: SecurityConfig 에서 로그인/회원가입 URL 허용 및 폼 로그인을 설정함.
 */
-@SpringBootApplication(exclude = SecurityAutoConfiguration.class)
+@SpringBootApplication
 @EnableAspectJAutoProxy  // Application 클래스에 @EnableAspectJAutoProxy 를 추가하여 AOP(Aspect Oriented Programming)클래스를 찾을 수 있게 해준다. 우리는 com.spring.app.aop.MyAop 이 AOP 클래스 이다.
 //@EnableScheduling        // === #208. @EnableScheduling 어노테이션을 사용하여 스프링스케줄러를 구현하도록 한다. Scheduler는 기본적으로 Spring Boot에 포함되어 있기 때문에 추가적으로 build.gradle 파일에 dependency 를 추가할 필요는 없고, Application 클래스에 @EnableScheduling 를 추가만 해주면 Scheduler 를 기능을 사용할 수 있게 된다.
 public class FinalProject3Application {

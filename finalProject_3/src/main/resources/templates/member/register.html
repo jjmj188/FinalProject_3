@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::title}, ~{::head}, ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+    <title>회원가입</title>
+    
+    <link rel="stylesheet" th:href="@{/css/security/member-style.css}">
+    
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script defer th:src="@{/js/member/register.js}"></script>
+</head>
+
+<body>
+    <main>
+        <div class="container member-container">
+            <h2 class="member-title">회원가입</h2>
+            
+            <form name="registerFrm" th:action="@{/member/registerEnd}" method="post" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <label>이메일 <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="email" name="email" id="email" class="form-control" placeholder="example@email.com">
+                        <div class="input-group-append ml-2">
+                            <button type="button" id="btnEmailCheck" class="btn btn-outline-secondary">중복확인</button>
+                        </div>
+                    </div>
+                    <small id="emailError"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>비밀번호 <span class="text-danger">*</span></label>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="영문, 숫자, 특수문자 포함 8~16자">
+                    <small id="pwdError" class="text-danger"></small>
+                </div>
+                
+                <div class="form-group mt-4">
+                    <label>비밀번호 확인 <span class="text-danger">*</span></label>
+                    <input type="password" id="pwdConfirm" class="form-control" placeholder="비밀번호 재입력">
+                    <small id="pwdConfirmError" class="text-danger"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>이름 <span class="text-danger">*</span></label>
+                    <input type="text" name="userName" id="userName" class="form-control" placeholder="이름 입력">
+                    <small id="nameError" class="text-danger"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>닉네임 <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="text" name="nickname" id="nickname" class="form-control" placeholder="닉네임 입력 (2~10자)">
+                        <div class="input-group-append ml-2">
+                            <button type="button" id="btnNicknameCheck" class="btn btn-outline-secondary">중복확인</button>
+                        </div>
+                    </div>
+                    <small id="nicknameError"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>연락처</label>
+                    <input type="text" name="phone" id="phone" class="form-control" placeholder="하이픈(-) 없이 숫자만 입력">
+                    <small id="phoneError" class="text-danger"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>생년월일</label>
+                    <input type="date" name="birthDate" id="birthDate" class="form-control">
+                    <small id="birthDateError" class="text-danger"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>성별</label>
+                    <div class="d-flex align-items-center ml-1">
+                        <div class="custom-control custom-radio mr-4">
+                            <input type="radio" id="genderM" name="gender" value="M" class="custom-control-input">
+                            <label class="custom-control-label" for="genderM">남성</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input type="radio" id="genderF" name="gender" value="F" class="custom-control-input">
+                            <label class="custom-control-label" for="genderF">여성</label>
+                        </div>
+                    </div>
+                    <small id="genderError" class="text-danger"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>주소 <span class="text-danger">*</span></label>
+                    <div class="input-group mb-2">
+                        <input type="text" name="postcode" id="postcode" class="form-control" placeholder="우편번호" readonly style="max-width: 120px;">
+                        <div class="input-group-append ml-2">
+                            <button type="button" id="btnZipcode" class="btn btn-outline-secondary">우편번호 찾기</button>
+                        </div>
+                    </div>
+                    <input type="text" name="address" id="address" class="form-control mb-2" placeholder="기본주소" readonly>
+                    <div class="row">
+                        <div class="col-md-6 pr-1">
+                            <input type="text" name="detailaddress" id="detailaddress" class="form-control" placeholder="상세주소">
+                        </div>
+                        <div class="col-md-6 pl-1">
+                            <input type="text" name="extraaddress" id="extraaddress" class="form-control" placeholder="참고항목" readonly>
+                        </div>
+                    </div>
+                    <small id="addressError" class="text-danger"></small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>프로필 이미지 (선택)</label>
+                    <div class="custom-file">
+                        <input type="file" name="attach" id="attach" class="custom-file-input" accept="image/*">
+                        <label class="custom-file-label" for="attach" data-browse="파일 선택">프로필 사진을 선택하세요</label>
+                    </div>
+                </div>
+
+                <button type="button" id="btnRegister" class="btn btn-dark btn-block mt-5">가입하기</button>
+            </form>
+        </div>
+    </main>
+    
+    <script>
+        $('.custom-file-input').on('change', function() {
+           let fileName = $(this).val().split('\\').pop();
+           $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        });
+    </script>
+</body>
+</html>
