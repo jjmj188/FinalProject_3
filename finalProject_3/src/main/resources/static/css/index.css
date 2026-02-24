@@ -949,3 +949,149 @@
   font-size:12px;
   color:#777;
 }
+/*=============무료나눔=============/*
+ /* ===== section ===== */
+    .trade-sec{
+      width:100%;
+      background:#fff;
+      padding:34px 0 40px;
+    }
+
+    /* 콘텐츠 1100px */
+    .trade-inner{
+      width:1100px;
+      margin:0 auto;
+    }
+
+    /* 상단 좌측 타이틀 */
+    .trade-head{
+      margin-left:8px;
+      margin-bottom:14px;
+    }
+    .trade-head h2{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.15;
+      margin-bottom:3px;
+    }
+    .trade-head p{
+      font-size:14px;
+      color:#6f7782;
+      line-height:1.2;
+    }
+
+    /* 본문 2컬럼 */
+    .trade-grid{
+      display:grid;
+      grid-template-columns: 520px 1fr;
+      column-gap:70px;
+      align-items:start;
+    }
+
+    /* 왼쪽 이미지(스크린샷처럼 살짝 오른쪽으로) */
+    .trade-img{
+      width:460px;
+      height:347px;
+      margin-left:40px;
+      overflow:hidden;
+      background:#ddd;
+    }
+    .trade-img img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    /* 오른쪽 안내 영역(가운데 정렬) */
+    .trade-right{
+      padding-top:22px;
+      text-align:center;
+    }
+    .trade-right h3{
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:10px;
+      letter-spacing:-0.2px;
+    }
+    .trade-right .desc{
+      width:320px;
+      margin:0 auto 18px;
+      font-size:14px;
+      line-height:1.55;
+      color:#6f7782;
+    }
+
+    /* 원형 버튼 */
+    .trade-circle{
+      width:90px;
+      height:90px;
+      border-radius:999px;
+      border:1px solid #bfc5cd;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:3px;
+      margin:0 auto 18px;
+    }
+    .trade-circle .label{
+        padding-top: 20px;
+      font-size:12px;
+      font-weight:700;
+      color:#111;
+      line-height:1;
+    }
+    .trade-circle .arrow{
+      font-size:14px;
+      line-height:1;
+      transform:translateY(-1px);
+    }
+
+    /* 최신상품 헤더(좌:텍스트, 우:링크) */
+    .latest-head{
+      width:340px;
+      margin:0 auto 8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .latest-head .title{
+      font-size:14px;
+      font-weight:800;
+      color:#111;
+    }
+    .latest-head .more{
+      font-size:12px;
+      color:#6f7782;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .latest-head .more::after{
+      content:"›";
+      font-size:12px;
+      transform:translateY(-1px);
+    }
+
+    /* 최신상품 카드 3개 */
+    .latest-row{
+      width:340px;
+      margin:0 auto;
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+    }
+ .latest-card{
+  flex:0 0 96px;
+  height:96px;
+  background:#f2f3f4;
+  border:1px solid #8e939a;
+  overflow:hidden;
+}
+.latest-card img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
