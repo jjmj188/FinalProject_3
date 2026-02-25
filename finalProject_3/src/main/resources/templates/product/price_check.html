@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+
+<link rel="stylesheet" th:href="@{/css/price_check.css}">
+<link rel="stylesheet" th:href="@{/css/check.css}">
+<script th:src="@{/js/check.js}"></script>
+</head>
+
+<body>
+
+ <main>
+   <!-- 검색 -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">
+      시세조회
+    </h1>
+
+    <div class="search-wrap">
+      <div class="search-pill">
+        
+
+        <input class="search-input" type="text" placeholder="검색어를 입력해주세요" />
+
+        <button class="search-btn" type="button">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+  </div>
+</section>
+
+
+<!-- 시세조회-->
+  <section class="mk-wrap">
+    <section class="mk-card" aria-label="시세 확인">
+      <div class="mk-head">
+        <div>
+          <div class="mk-title">시세금액</div>
+          <div class="mk-price" id="mkPrice">28,000<small>원</small></div>
+        </div>
+
+        <div class="mk-tabs" role="tablist" aria-label="가격 종류 탭">
+          <button class="mk-tab is-active" data-mode="all" role="tab" aria-selected="true">전체</button>
+          <button class="mk-tab" data-mode="list" role="tab" aria-selected="false">등록가</button>
+          <button class="mk-tab" data-mode="sale" role="tab" aria-selected="false">판매가</button>
+        </div>
+      </div>
+
+      <div class="mk-chartBox">
+        <div class="mk-canvasWrap">
+          <canvas id="mkChart" aria-label="시세 추이 차트"></canvas>
+          <div class="mk-tip" id="mkTip"></div>
+        </div>
+
+        <div class="mk-legend" aria-label="차트 범례">
+          <div class="mk-legItem"><span class="mk-dot green"></span>등록가</div>
+          <div class="mk-legItem"><span class="mk-dot blue"></span>판매가</div>
+        </div>
+      </div>
+    </section>
+  </section>
+  
+  <!--  상단 요약 -->
+<section class="top-summary">
+        <div class="summary-title">
+          <i class="fa-solid fa-chart-simple"></i>
+          최근 등록 상품의 가격을 비교해봤어요
+        </div>
+        <div class="stats">
+          <div class="stat"><span>평균 가격</span><strong>430,575원</strong></div>
+          <div class="stat"><span>가장 높은 가격</span><strong>2,400,000원</strong></div>
+          <div class="stat"><span>가장 낮은 가격</span><strong>2,000원</strong></div>
+        </div>
+</section>
+
+   <!-- 판매상품 패널 -->
+    <section class="sps-panel is-show" id="sps-panel-sell" role="tabpanel">
+
+
+      <div class="sps-sellTop" aria-label="상품 정렬">
+        <div class="sps-sort" role="tablist" aria-label="정렬 옵션">
+          <button class="sps-sortBtn is-active" type="button" role="tab" aria-selected="true"
+            data-sort="latest">최신순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-sortBtn" type="button" role="tab" aria-selected="false" data-sort="low">가격낮은순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-sortBtn" type="button" role="tab" aria-selected="false" data-sort="high">높은가격순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-sortBtn" type="button" role="tab" aria-selected="false" data-sort="pop">인기순</button>
+        </div>
+      </div>
+
+      <div class="sps-grid" id="sps-grid">
+        <article class="sps-card" >
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge selling">판매중</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src=""
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치</a>
+            <div class="sps-price">320,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 10분 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="sps-card" >
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge trading">거래중</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src=""
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치</a>
+            <div class="sps-price">320,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 10분 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+              
+            </div>
+          </div>
+        </article>
+
+        <article class="sps-card" >
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge selling">판매중</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src=""
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치</a>
+            <div class="sps-price">320,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 10분 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="sps-card" >
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge soldout">판매완료</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src=""
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치</a>
+            <div class="sps-price">320,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 10분 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+            </div>
+          </div>
+        </article>
+      
+      </div>
+
+       <!--  더보기 버튼 -->
+      <div class="load-more-wrap">
+        <button class="btn-load-more">
+          더보기 <i class="fa-solid fa-angle-down"></i>
+        </button>
+      </div>
+    </section>
+ </main>
+ 
+ <script>
+
+
+
+//하트 토글
+document.addEventListener('click', (e) => {
+  const likeBtn = e.target.closest('.sps-like');
+  if (!likeBtn) return;
+
+  const icon = likeBtn.querySelector('i');
+  const isOn = likeBtn.classList.contains('is-on');
+
+  likeBtn.classList.toggle('is-on', !isOn);
+  likeBtn.setAttribute('aria-pressed', String(!isOn));
+  icon.classList.toggle('fa-solid', !isOn);
+  icon.classList.toggle('fa-regular', isOn);
+});
+</script>
+</body>
+</html>

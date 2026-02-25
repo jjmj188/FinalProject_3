@@ -78,6 +78,21 @@
           </div>
         </div>
 
+		<!-- 경매 기간 -->
+<div class="pf-row">
+  <div class="pf-label">경매 시작시간</div>
+  <div class="pf-field">
+    <input class="pf-input" type="datetime-local" id="aucStartAt" name="aucStartAt" required />
+  </div>
+</div>
+
+<div class="pf-row">
+  <div class="pf-label">경매 종료시간</div>
+  <div class="pf-field">
+    <input class="pf-input" type="datetime-local" id="aucEndAt" name="aucEndAt" required />
+  </div>
+</div>
+
          <!-- 입찰단위 -->
             <div class="pf-row">
           <div class="pf-label">입찰단위</div>
@@ -86,17 +101,10 @@
           </div>
         </div>
 
-        <!-- 즉시 구매가 -->
-        <div class="pf-row">
-          <div class="pf-label">즉시 구매가</div>
-          <div class="pf-field">
-            <input class="pf-input" type="text" inputmode="numeric" placeholder="₩ 즉시구매가" />
-          </div>
-        </div>
-
+       
         <!-- 판매 가격 + 시세 조회 -->
         <div class="pf-row pf-row-split">
-          <div class="pf-label">판매 가격</div>
+          <div class="pf-label">판매 시작가</div>
           <div class="pf-field pf-field-split">
             <input class="pf-input" type="text" inputmode="numeric" placeholder="₩ 판매가격" />
            

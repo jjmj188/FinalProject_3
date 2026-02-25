@@ -757,3 +757,9 @@ textarea{ resize:none; }
   outline:2px solid #111;
   outline-offset:2px;
 }
+
+.pf-field-split{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}

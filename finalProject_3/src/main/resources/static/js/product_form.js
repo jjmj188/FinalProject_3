@@ -321,3 +321,84 @@ if(fileInput && previewWrap){
   }
 
 })();
+
+(function(){
+  const startEl = document.getElementById('aucStartAt');
+  const endDateEl = document.getElementById('aucEndDate');
+  const endTimeEl = document.getElementById('aucEndTime');
+  const endAtHidden = document.getElementById('aucEndAt');
+  if(!startEl || !endDateEl || !endTimeEl || !endAtHidden) return;
+
+  function pad(n){ return String(n).padStart(2, '0'); }
+
+  function toDateValue(d){
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+
+  function toTimeValue(d){
+    return pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function toDatetimeLocalValue(d){
+    return toDateValue(d) + 'T' + toTimeValue(d);
+  }
+
+  function buildEndAt(){
+    const d = endDateEl.value;
+    const t = endTimeEl.value;
+    endAtHidden.value = (d && t) ? (d + 'T' + t) : '';
+  }
+
+  function enforceRule(){
+    // 종료값 합치기
+    buildEndAt();
+
+    // 시작/종료 검증(종료 > 시작)
+    if(!startEl.value || !endAtHidden.value) return;
+
+    const s = new Date(startEl.value);
+    const e = new Date(endAtHidden.value);
+
+    if(e.getTime() <= s.getTime()){
+      // 자동으로 최소 1시간 뒤로 보정
+      const minEnd = new Date(s.getTime() + 60*60*1000);
+      endDateEl.value = toDateValue(minEnd);
+      endTimeEl.value = toTimeValue(minEnd);
+      buildEndAt();
+    }
+  }
+
+  // 기본값: 시작=5분 뒤, 종료=+24시간(마감시간은 시작기준)
+  const now = new Date();
+  const defaultStart = new Date(now.getTime() + 5*60*1000);
+  const defaultEnd = new Date(defaultStart.getTime() + 24*60*60*1000);
+
+  startEl.value = toDatetimeLocalValue(defaultStart);
+  endDateEl.value = toDateValue(defaultEnd);
+  endTimeEl.value = toTimeValue(defaultEnd);
+  buildEndAt();
+
+  // 이벤트
+  startEl.addEventListener('change', enforceRule);
+  endDateEl.addEventListener('change', enforceRule);
+  endTimeEl.addEventListener('change', enforceRule);
+
+  // 폼 제출 직전 hidden 확정(폼이 있을 때만)
+  const form = startEl.closest('form');
+  if(form){
+    form.addEventListener('submit', function(e){
+      buildEndAt();
+      if(!startEl.value || !endAtHidden.value){
+        e.preventDefault();
+        alert('경매 시작시간과 종료일/시간을 입력해 주세요.');
+        return;
+      }
+      const s = new Date(startEl.value);
+      const e2 = new Date(endAtHidden.value);
+      if(e2.getTime() <= s.getTime()){
+        e.preventDefault();
+        alert('경매 종료일/시간은 시작시간 이후여야 합니다.');
+      }
+    });
+  }
+})();

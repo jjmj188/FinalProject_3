@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+
+<link rel="stylesheet" th:href="@{/css/product/product_detail.css}">
+
+
+</head>
+
+<body>
+<!-- 상품 상세페이지 -->
+<main>
+    <!--상품정보-->
+<section class="pd-page">
+    <section class="pd-grid">
+        <!-- LEFT: 이미지 영역 -->
+        <div class="pd-gallery">
+            <div class="pd-main-img">
+                <!-- 실제 이미지로 교체 -->
+                <img id="pdMainImage"
+                    src=""
+                    alt="상품 이미지">
+            </div>
+
+            <div class="pd-thumbs" aria-label="썸네일">
+                <div class="pd-thumb">
+                    <img src=""
+                        alt="썸네일 1">
+                </div>
+
+                <div class="pd-thumb">
+                    <img src=""
+                        alt="썸네일 3">
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: 정보 영역 -->
+        <div class="pd-info">
+            <div class="pd-topline">
+                <div>
+                    <div class="pd-breadcrumb">
+                        가구/인테리어 <span class="pd-dot">|</span> <span>4</span>분전 <span class="pd-dot">|</span> 조회 <span>7</span> <span
+                            class="pd-dot">|</span> 찜 <span>2</span>
+                    </div>
+                </div>
+
+                <div class="pd-actions-top">
+                    <div class="pd-user-icon" aria-hidden="true"><img th:src="@{/images/siren.png}"></div>
+                    <a class="pd-report" href="#">신고하기</a>
+                </div>
+            </div>
+
+            <h1 class="pd-title">상품이름</h1>
+            <div class="pd-price">60,000원</div>
+
+            <div class="pd-subline">
+                <a href="/price_check.html" aria-label="시세조회">시세조회</a>
+            </div>
+
+            <div class="pd-card" aria-label="상품 정보">
+                <div class="pd-row pd-row-fee">
+                    <div class="pd-label">배송비</div>
+                    <div class="pd-value pd-value-fee">
+                        <ul class="pd-fee-simple">
+                            <!-- 배송비 포함인경우
+                            <li>
+                                <span class="pd-fee-name">배송비 포함</span>
+                                <span class="pd-fee-amount">0원</span>
+                            </li> -->
+                            
+                            <!-- 배송비 별도입력인 경우 -->
+                            <li>
+                                <span class="pd-fee-name">일반택배</span>
+                                <span class="pd-fee-amount">4,000원</span>
+                            </li> 
+                            <li>
+                                <span class="pd-fee-name">CU 반값택배</span>
+                                <span class="pd-fee-amount">2,200원</span>
+                            </li>
+                            <li>
+                                <span class="pd-fee-name">GS 반값택배</span>
+                                <span class="pd-fee-amount">2,200원</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+               <!-- 상품상태 -->
+                <div class="pd-row">
+                <div class="pd-label">상품상태</div>
+                <div class="pd-value">
+                    <span class="pd-chip chip-grade-top">상</span>
+                     <span class="pd-chip chip-grade-mid">중</span>
+                     <span class="pd-chip chip-grade-low">하</span>
+                </div>
+                </div>
+
+                <!-- 거래상태 -->
+                <div class="pd-row">
+                <div class="pd-label">거래상태</div>
+                <div class="pd-value">
+                    <span class="pd-chip chip-sale-ing">판매중</span>
+                     <span class="pd-chip chip-sale-deal">거래중</span>
+                     <span class="pd-chip chip-sale-done">판매완료</span>
+                </div>
+                </div>
+
+                <!-- 거래방법 -->
+                <div class="pd-row">
+                <div class="pd-label">거래방법</div>
+                <div class="pd-value">
+                    <span class="pd-chip chip-method-meet">직거래</span>
+                     <span class="pd-chip chip-method-ship">택배거래</span> 
+                </div>
+                </div>
+
+                <div class="pd-row">
+                    <div class="pd-label">거래 희망장소</div>
+                    <div class="pd-value">
+                        <span class="pd-location">잠실역 3번출구</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pd-cta">
+                <button class="pd-like" type="button" aria-label="찜하기">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+
+                <div class="pd-btns">
+                    <button class="pd-btn pd-btn-chat" type="button">채팅하기</button>
+                    <button class="pd-btn pd-btn-pay" type="button">안전결제</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</section>
+<!--상품글/판매자 정보-->
+<section class="pdinfo-wrap">
+    <section class="pdinfo-grid">
+
+        <!-- LEFT -->
+        <section>
+            <div class="pdinfo-head">
+                <h2 class="pdinfo-title">상품정보</h2>
+            </div>
+
+            <div class="pdinfo-textbox">
+                이 제품은 사용감이 거의 없는 상태 좋은 중고 상품입니다.
+                생활 스크래치만 약간 있으며 기능 이상 없이 정상 작동합니다.
+
+                직거래 우선이며, 빠른 거래 원합니다.
+                상세 사진은 썸네일 참고 부탁드립니다.
+
+                구매 후 단순 변심으로 인한 환불은 어려우니
+                신중한 구매 부탁드립니다.
+            </div>
+
+            <button class="pdinfo-morebtn" type="button">더보기</button>
+        </section>
+
+        <!-- RIGHT -->
+        <section>
+            <div class="pdinfo-head">
+                <h2 class="pdinfo-title">판매자정보</h2>
+                <a href="./product_user_profile.html"> <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+
+            <div class="pdinfo-card">
+                <div class="pdinfo-cardbody">
+                    <div class="pdinfo-seller-top">
+                        <div class="pdinfo-avatar"></div>
+                        <div class="pdinfo-seller-name">판매자 이름</div>
+                    </div>
+
+                    <div class="pdinfo-temp-row">
+                        <div class="pdinfo-temp-label">매너온도</div>
+                        <div class="pdinfo-temp-value">36.8°C</div>
+                    </div>
+                    <div class="pdinfo-temp-sub">최근 3개월 기준 · 별점으로 거래후기 반영</div>
+
+                    <div class="pdinfo-bar"><span></span></div>
+
+                    <div class="pdinfo-stats">
+                        <div class="pdinfo-stat">
+                            <div class="k">안심결제</div>
+                            <div class="v">9</div>
+                        </div>
+                        <div class="pdinfo-stat">
+                            <div class="k">거래후기</div>
+                            <div class="v">10</div>
+                        </div>
+                        <div class="pdinfo-stat">
+                            <div class="k">거래횟수</div>
+                            <div class="v">10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pdinfo-reviews-head">
+                    <div class="pdinfo-reviews-title">최근후기</div>
+                    <a class="pdinfo-reviews-link" href="./product_user_profile.html">전체보기 <i
+                            class="fa-solid fa-chevron-right"></i></a>
+                </div>
+
+                <div class="pdinfo-reviews">
+                    <div class="pdinfo-review">
+                        <div>
+                            <div class="pdinfo-user">사용자 아이디</div>
+                            <div class="pdinfo-desc">설명 그대로 상태 좋아요. 응답도 빠릅니다.</div>
+                        </div>
+                        <div class="pdinfo-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+
+                    <div class="pdinfo-review">
+                        <div>
+                            <div class="pdinfo-user">사용자 아이디</div>
+                            <div class="pdinfo-desc">친절하고 거래 매너가 좋아요.</div>
+                        </div>
+                        <div class="pdinfo-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+
+                    <div class="pdinfo-review">
+                        <div>
+                            <div class="pdinfo-user">사용자 아이디</div>
+                            <div class="pdinfo-desc">포장 꼼꼼하고 제품 상태 만족합니다.</div>
+                        </div>
+                        <div class="pdinfo-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </section>
+</section>
+<!--지도/다른 판매 물품-->
+<section class="loc-wrap">
+    <div class="loc-map-head">
+        <h2 class="loc-map-title">거래 희망 위치</h2>
+        <div class="loc-map-place">잠실역 3번출구</div>
+    </div>
+
+    <section class="loc-map" aria-label="지도">
+        <div id="locMapKakao" aria-label="카카오 지도"></div>
+    </section>
+
+    <div class="loc-sell-head">
+        <h3 class="loc-sell-title">판매자의 다른 판매 물품</h3>
+        <a class="loc-sell-more" href="./product_user_profile.html">더보기 <i class="fa-solid fa-chevron-right"></i></a>
+    </div>
+
+    <section class="loc-carousel" aria-label="판매자 다른 물품">
+        <button class="loc-arrow" id="locPrevBtn" type="button" aria-label="이전">
+            <i class="fa-solid fa-angle-left"></i>
+        </button>
+
+        <div class="loc-viewport" id="locViewport">
+            <div class="loc-track" id="locTrack">
+
+
+                <div class="loc-page">
+                    <article class="loc-card">
+                        <div class="loc-thumb"></div>
+                        <div class="loc-card-body">
+                            <div class="loc-name">상품이름</div>
+                            <div class="loc-price">60,000원</div>
+                            <div class="loc-meta"><span>잠실역</span> | <span> 10분전</span> </div>
+                        </div>
+                    </article>
+                    <article class="loc-card">
+                        <div class="loc-thumb"></div>
+                        <div class="loc-card-body">
+                            <div class="loc-name">상품이름</div>
+                            <div class="loc-price">60,000원</div>
+                            <div class="loc-meta"><span>잠실역</span> | <span> 10분전</span> </div>
+                        </div>
+                    </article>
+                    <article class="loc-card">
+                        <div class="loc-thumb"></div>
+                        <div class="loc-card-body">
+                            <div class="loc-name">상품이름</div>
+                            <div class="loc-price">60,000원</div>
+                            <div class="loc-meta"><span>잠실역</span> | <span> 10분전</span> </div>
+                        </div>
+                    </article>
+
+                </div>
+
+                <div class="loc-page">
+                    <article class="loc-card">
+                        <div class="loc-thumb"></div>
+                        <div class="loc-card-body">
+                            <div class="loc-name">상품이름</div>
+                            <div class="loc-price">60,000원</div>
+                            <div class="loc-meta"><span>잠실역</span> | <span> 10분전</span> </div>
+                        </div>
+                    </article>
+                    <article class="loc-card">
+                        <div class="loc-thumb"></div>
+                        <div class="loc-card-body">
+                            <div class="loc-name">상품이름</div>
+                            <div class="loc-price">60,000원</div>
+                            <div class="loc-meta"><span>잠실역</span> | <span> 10분전</span> </div>
+                        </div>
+                    </article>
+                    <article class="loc-card">
+                        <div class="loc-thumb"></div>
+                        <div class="loc-card-body">
+                            <div class="loc-name">상품이름</div>
+                            <div class="loc-price">60,000원</div>
+                            <div class="loc-meta"><span>잠실역</span> | <span> 10분전</span> </div>
+                        </div>
+                    </article>
+
+                </div>
+
+
+            </div>
+        </div>
+
+        <button class="loc-arrow" id="locNextBtn" type="button" aria-label="다음">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </section>
+</section>
+</main>
+<script th:src="@{/js/product/product_detail.js}"></script>
+</body>
+</html>
