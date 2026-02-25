@@ -1,17 +1,31 @@
 @charset "UTF-8";
 
-/* 로그인/회원가입 메인 영역 배경 */
-#mycontent main {
-    min-height: 60vh;
-    background-color: #f8f9fa;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+main {
+    min-height: calc(50vh - 200px) !important; 
+    background-color: #f8f9fa !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 50px 0 !important;
 }
 
-/* 회원가입/로그인 폼을 감싸는 카드 컨테이너 */
+/* 2. 로그인 폼 컨테이너 */
 .member-container.container {
-    max-width: 520px;
+    max-width: 450px !important; 
+    width: 100% !important;
+    margin: 0 auto !important; 
+    padding: 40px !important;
+    background-color: #fff !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 2. 로그인 폼을 감싸는 하얀색 카드 컨테이너 */
+.member-container.container {
+    max-width: 450px; 
     width: 100%;
-    margin: 60px auto;
+    margin: 80 auto;
     padding: 40px;
     background-color: #fff;
     border-radius: 15px;
@@ -19,7 +33,7 @@
     box-sizing: border-box;
 }
 
-/* 페이지 제목 스타일 */
+/* 3. 페이지 제목 ("로그인") */
 .member-title {
     font-weight: 700;
     color: #222;
@@ -29,15 +43,14 @@
     font-size: 1.75rem;
 }
 
-/* 폼 그룹 (레이블 + 입력 한 덩어리) */
+/* 4. 폼 그룹 (레이블 + 입력창 묶음) */
 .member-container .form-group {
     display: block;
     margin-bottom: 0;
 }
 .member-container .form-group.mt-4 { margin-top: 1.25rem; }
-.member-container .form-group.mt-5 { margin-top: 1.5rem; }
 
-/* 레이블 스타일 */
+/* 5. 레이블 스타일 ("이메일", "비밀번호") */
 .member-container .form-group > label {
     display: block;
     font-weight: 600;
@@ -46,7 +59,7 @@
     font-size: 14px;
 }
 
-/* 입력 필드 공통 */
+/* 6. 입력창(Input) 공통 스타일 */
 .member-container .form-control {
     display: block;
     width: 100%;
@@ -63,43 +76,15 @@
     padding-top: 14px;
     padding-bottom: 14px;
 }
+
+/* 입력창 클릭(포커스) 시 진해지는 효과 */
 .member-container .form-control:focus {
     outline: none;
     border-color: #343a40;
     box-shadow: 0 0 0 3px rgba(52, 58, 64, 0.15);
 }
 
-/* 입력 옆 버튼이 있는 행 (이메일, 닉네임, 우편번호) */
-.member-container .input-group {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 10px;
-}
-.member-container .input-group .form-control {
-    flex: 1;
-    min-width: 0;
-}
-.member-container .input-group-append {
-    flex-shrink: 0;
-}
-.member-container .input-group-append.ml-2 { margin-left: 0; }
-.member-container .input-group .form-control[readonly][style*="max-width"] {
-    max-width: 120px;
-}
-
-/* 에러/안내 문구 */
-.member-container .form-group small {
-    display: block;
-    margin-top: 6px;
-    font-size: 13px;
-}
-.member-container .text-danger {
-    color: #e74c3c !important;
-    font-weight: bold;
-}
-
-/* 버튼 공통 */
+/* 7. 버튼 공통 스타일 */
 .member-container .btn {
     display: inline-block;
     padding: 12px 20px;
@@ -117,6 +102,8 @@
     display: block;
     width: 100%;
 }
+
+/* "로그인" 메인 버튼 (블랙) */
 .member-container .btn-dark {
     background-color: #222;
     border-color: #222;
@@ -130,138 +117,9 @@
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
-.member-container .btn-outline-secondary {
-    background-color: transparent;
-    border: 1px solid #ced4da;
-    color: #6c757d;
-}
-.member-container .btn-outline-secondary:hover {
-    background-color: #f8f9fa;
-    color: #222;
-    border-color: #222;
-}
 .member-container .mt-5 { margin-top: 2rem; }
 
-/* 성별 라디오 */
-.member-container .d-flex {
-    display: flex;
-}
-.member-container .align-items-center {
-    align-items: center;
-}
-.member-container .ml-1 { margin-left: 4px; }
-.member-container .mr-4 { margin-right: 1.25rem; }
-.member-container .custom-control {
-    position: relative;
-    display: inline-block;
-    padding-left: 1.5rem;
-    cursor: pointer;
-}
-.member-container .custom-control-input {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1rem;
-    height: 1rem;
-    margin: 0;
-    opacity: 0;
-    z-index: 1;
-    cursor: pointer;
-}
-.member-container .custom-control-label {
-    position: relative;
-    margin-bottom: 0;
-    font-weight: 500;
-    color: #555;
-    cursor: pointer;
-}
-.member-container .custom-control-label::before {
-    content: "";
-    position: absolute;
-    left: -1.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid #adb5bd;
-    border-radius: 50%;
-    background: #fff;
-    transition: border-color 0.2s, background 0.2s;
-}
-.member-container .custom-control-input:checked + .custom-control-label::before {
-    border-color: #222;
-    background: #222;
-    box-shadow: inset 0 0 0 2px #fff;
-}
-
-/* 파일 업로드 */
-.member-container .custom-file {
-    position: relative;
-    display: block;
-}
-.member-container .custom-file-input {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
-}
-.member-container .custom-file-label {
-    position: relative;
-    display: block;
-    width: 100%;
-    padding: 12px 100px 12px 15px;
-    border: 1px solid #e2e5e8;
-    border-radius: 8px;
-    background: #fff;
-    color: #6c757d;
-    font-size: 15px;
-    box-sizing: border-box;
-}
-.member-container .custom-file-label::after {
-    content: "찾아보기";
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    padding: 12px 15px;
-    line-height: 1.5;
-    color: #495057;
-    background: #f1f3f5;
-    border-left: 1px solid #e2e5e8;
-    border-radius: 0 8px 8px 0;
-}
-
-/* 주소 행 (상세/참고항목 2열) */
-.member-container .row {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0 -6px;
-}
-.member-container .row .col-md-6 {
-    flex: 0 0 50%;
-    max-width: 50%;
-    padding: 0 6px;
-    box-sizing: border-box;
-}
-@media (max-width: 540px) {
-    .member-container.container { margin: 30px 15px; padding: 24px; }
-    .member-container .row .col-md-6 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-    .member-container .input-group { flex-wrap: wrap; }
-    .member-container .input-group .form-control[readonly][style*="max-width"] { max-width: none; }
-}
-.member-container .mb-2 { margin-bottom: 0.5rem; }
-.member-container .pr-1 { padding-right: 4px; }
-.member-container .pl-1 { padding-left: 4px; }
-
-/* 로그인 하단 회원가입 박스 */
+/* 8. 로그인 하단 "아직 회원이 아니신가요?" 회원가입 박스 */
 .register-box {
     margin-top: 30px;
     padding-top: 25px;
@@ -273,6 +131,20 @@
     margin-bottom: 15px;
     font-size: 14px;
 }
-.register-box .btn {
-    margin-top: 5px;
+
+/* "회원가입 하기" 서브 버튼 (아웃라인) */
+.register-box .btn-outline-secondary {
+    background-color: transparent;
+    border: 1px solid #ced4da;
+    color: #6c757d;
+}
+.register-box .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    color: #222;
+    border-color: #222;
+}
+
+/* 9. 모바일 화면 대응 (폰에서 볼 때 꽉 차지 않게 여백 조절) */
+@media (max-width: 540px) {
+    .member-container.container { margin: 30px 15px; padding: 24px; }
 }

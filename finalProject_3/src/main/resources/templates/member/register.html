@@ -1,128 +1,256 @@
 <!DOCTYPE html>
-<html th:replace="~{layout/layout_main :: layout(~{::title}, ~{::head}, ~{::main})}"
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
       xmlns:th="http://www.thymeleaf.org"
       lang="ko">
 <head>
     <title>회원가입</title>
-    
-    <link rel="stylesheet" th:href="@{/css/security/member-style.css}">
-    
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <script defer th:src="@{/js/member/register.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/security/memberRegisterForm.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
 <body>
     <main>
-        <div class="container member-container">
-            <h2 class="member-title">회원가입</h2>
+        <div id="divRegisterFrm">
+            <h2 class="page-title">회원가입</h2>
             
-            <form name="registerFrm" th:action="@{/member/registerEnd}" method="post" enctype="multipart/form-data">
-                
-                <div class="form-group">
-                    <label>이메일 <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <input type="email" name="email" id="email" class="form-control" placeholder="example@email.com">
-                        <div class="input-group-append ml-2">
-                            <button type="button" id="btnEmailCheck" class="btn btn-outline-secondary">중복확인</button>
-                        </div>
-                    </div>
-                    <small id="emailError"></small>
+            <form name="registerFrm" enctype="multipart/form-data">
+                <div class="required-notice"><span class="star">*</span> 필수입력사항</div>
+
+                <table id="tblMemberRegister">
+                    <tbody>
+                        <tr>
+                            <th>프로필 사진</th>
+                            <td>
+                                <div style="text-align: left;">
+                                    <div class="profile-upload-container" onclick="openProfileModal()" style="cursor: pointer;">
+                                        <img id="profilePreview" src="/images/default_profile.png" alt="프로필 사진" class="profile-img" 
+                                             onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=1';"/>
+                                        <div class="camera-btn"><i class="fas fa-camera"></i></div>
+                                    </div>
+                                    <div class="address-guide" style="margin-top: 10px;">사진을 클릭하여 프로필을 설정해보세요.</div>
+                                </div>
+                                <input type="file" name="attach" id="attach" accept="image/*" class="file-input-hidden" onchange="previewProfileImage(this)"/>
+                                <input type="hidden" name="defaultProfile" id="defaultProfile" value="" />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>이메일<span class="star">*</span></th>
+                            <td>
+                                <div class="input-wrapper">
+                                    <input type="text" name="email" id="email" class="requiredInfo kurly-input" placeholder="예: abc@def.com" autocomplete="off" /> 
+                                    <button type="button" class="btn-kurly-outline" onclick="isExistEmailCheck();">중복확인</button>
+                                </div>
+                                <span id="emailCheckResult" class="check-result"></span>
+                                <span class="error">올바른 이메일 형식이 아닙니다.</span>
+                            </td>
+                        </tr>
+        
+                        <tr>
+                            <th>비밀번호<span class="star">*</span></th>
+                            <td>
+                                <input type="password" name="password" id="password" class="requiredInfo kurly-input" placeholder="비밀번호를 입력해주세요" />
+                                <span class="error">암호는 영문자, 숫자, 특수기호가 혼합된 8~15 글자로 입력하세요.</span>
+                            </td>
+                        </tr>
+        
+                        <tr>
+                            <th>비밀번호확인<span class="star">*</span></th>
+                            <td>
+                                <input type="password" id="pwdcheck" class="requiredInfo kurly-input" placeholder="비밀번호를 한번 더 입력해주세요" /> 
+                                <span class="error">암호가 일치하지 않습니다.</span>
+                            </td>
+                        </tr>
+        
+                        <tr>
+                            <th>이름<span class="star">*</span></th>
+                            <td>
+                                <input type="text" name="userName" id="userName" class="requiredInfo kurly-input" placeholder="이름을 입력해주세요" autocomplete="off" /> 
+                                <span class="error">성명은 필수입력 사항입니다.</span>
+                            </td>
+                        </tr>
+        
+                        <tr>
+                            <th>닉네임<span class="star">*</span></th>
+                            <td>
+                                <div class="input-wrapper">
+                                    <input type="text" name="nickname" id="nickname" class="requiredInfo kurly-input" placeholder="사용할 닉네임" autocomplete="off" /> 
+                                    <button type="button" class="btn-kurly-outline" onclick="isExistNicknameCheck();">중복확인</button>
+                                </div>
+                                <span id="nicknameCheckResult" class="check-result"></span>
+                                <span class="error">닉네임은 필수입력 사항입니다.</span>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th>휴대폰<span class="star">*</span></th>
+                            <td>
+                                <div class="input-wrapper">
+                                    <input type="text" id="phone" name="phone" maxlength="11" class="requiredInfo kurly-input" placeholder="숫자만 입력해주세요" />
+                                    <button type="button" class="btn-kurly-outline" onclick="sendSms();">인증번호 받기</button>
+                                </div>
+                                <div id="smsAuthDiv" style="display: none; margin-top: 10px;" class="input-wrapper">
+                                    <input type="text" id="smsCode" class="kurly-input" placeholder="인증번호 입력" />
+                                    <button type="button" class="btn-kurly-solid" onclick="verifySms();">확인</button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>주소<span class="star">*</span></th>
+                            <td>
+                                <button type="button" id="zipcodeSearch" class="btn-kurly-outline btn-full">🔍 주소 검색</button>
+                                <div id="addressInputArea" class="address-inputs" style="display: none; margin-top: 15px;">
+                                    <input type="text" id="postcode" name="postcode" class="kurly-input postcode-input" placeholder="우편번호" readonly />
+                                    <input type="text" id="address" name="address" class="kurly-input" placeholder="기본 주소" readonly style="margin-bottom: 8px;" />
+                                    <div class="input-wrapper">
+                                        <input type="text" id="detailaddress" name="detailaddress" class="kurly-input" placeholder="상세주소" />
+                                        <input type="text" id="extraaddress" name="extraaddress" class="kurly-input" placeholder="참고항목" readonly />
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th>성별<span class="star">*</span></th>
+                            <td>
+                                <div class="gender-box">
+                                    <label class="gender-label"><input type="radio" name="gender" id="gender_m" value="M" checked /><span>남자</span></label>
+                                    <label class="gender-label"><input type="radio" name="gender" id="gender_f" value="F" /><span>여자</span></label>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>생년월일<span class="star">*</span></th>
+                            <td>
+                                <input type="text" id="birthDate" name="birthDate" class="requiredInfo kurly-input date-input" placeholder="YYYY / MM / DD" readonly />
+                                <span class="error">생년월일은 필수입력 사항입니다.</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="agree-box">
+                    <label class="agree-label"><input type="checkbox" id="agree" /><span>이용약관 및 개인정보수집 동의 <span class="star">*</span></span></label>
                 </div>
 
-                <div class="form-group mt-4">
-                    <label>비밀번호 <span class="text-danger">*</span></label>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="영문, 숫자, 특수문자 포함 8~16자">
-                    <small id="pwdError" class="text-danger"></small>
+                <div class="btn-group-bottom">
+                    <button type="button" class="btn-submit" onclick="goRegister()">가입하기</button>
                 </div>
-                
-                <div class="form-group mt-4">
-                    <label>비밀번호 확인 <span class="text-danger">*</span></label>
-                    <input type="password" id="pwdConfirm" class="form-control" placeholder="비밀번호 재입력">
-                    <small id="pwdConfirmError" class="text-danger"></small>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label>이름 <span class="text-danger">*</span></label>
-                    <input type="text" name="userName" id="userName" class="form-control" placeholder="이름 입력">
-                    <small id="nameError" class="text-danger"></small>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label>닉네임 <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <input type="text" name="nickname" id="nickname" class="form-control" placeholder="닉네임 입력 (2~10자)">
-                        <div class="input-group-append ml-2">
-                            <button type="button" id="btnNicknameCheck" class="btn btn-outline-secondary">중복확인</button>
-                        </div>
-                    </div>
-                    <small id="nicknameError"></small>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label>연락처</label>
-                    <input type="text" name="phone" id="phone" class="form-control" placeholder="하이픈(-) 없이 숫자만 입력">
-                    <small id="phoneError" class="text-danger"></small>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label>생년월일</label>
-                    <input type="date" name="birthDate" id="birthDate" class="form-control">
-                    <small id="birthDateError" class="text-danger"></small>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label>성별</label>
-                    <div class="d-flex align-items-center ml-1">
-                        <div class="custom-control custom-radio mr-4">
-                            <input type="radio" id="genderM" name="gender" value="M" class="custom-control-input">
-                            <label class="custom-control-label" for="genderM">남성</label>
-                        </div>
-                        <div class="custom-control custom-radio">
-                            <input type="radio" id="genderF" name="gender" value="F" class="custom-control-input">
-                            <label class="custom-control-label" for="genderF">여성</label>
-                        </div>
-                    </div>
-                    <small id="genderError" class="text-danger"></small>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label>주소 <span class="text-danger">*</span></label>
-                    <div class="input-group mb-2">
-                        <input type="text" name="postcode" id="postcode" class="form-control" placeholder="우편번호" readonly style="max-width: 120px;">
-                        <div class="input-group-append ml-2">
-                            <button type="button" id="btnZipcode" class="btn btn-outline-secondary">우편번호 찾기</button>
-                        </div>
-                    </div>
-                    <input type="text" name="address" id="address" class="form-control mb-2" placeholder="기본주소" readonly>
-                    <div class="row">
-                        <div class="col-md-6 pr-1">
-                            <input type="text" name="detailaddress" id="detailaddress" class="form-control" placeholder="상세주소">
-                        </div>
-                        <div class="col-md-6 pl-1">
-                            <input type="text" name="extraaddress" id="extraaddress" class="form-control" placeholder="참고항목" readonly>
-                        </div>
-                    </div>
-                    <small id="addressError" class="text-danger"></small>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label>프로필 이미지 (선택)</label>
-                    <div class="custom-file">
-                        <input type="file" name="attach" id="attach" class="custom-file-input" accept="image/*">
-                        <label class="custom-file-label" for="attach" data-browse="파일 선택">프로필 사진을 선택하세요</label>
-                    </div>
-                </div>
-
-                <button type="button" id="btnRegister" class="btn btn-dark btn-block mt-5">가입하기</button>
             </form>
         </div>
+
+        <div id="profileModal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>프로필 선택</h3>
+                    <button type="button" class="close-btn" onclick="closeProfileModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="avatar-grid" id="avatarList"></div>
+                    <div style="text-align: center; margin: 15px 0; color: #aaa; font-size: 12px;">OR</div>
+                    <button type="button" class="btn-kurly-outline btn-full" onclick="document.getElementById('attach').click();">
+                        <i class="fas fa-upload"></i> 내 PC에서 사진 올리기
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
-    
-    <script>
-        $('.custom-file-input').on('change', function() {
-           let fileName = $(this).val().split('\\').pop();
-           $(this).next('.custom-file-label').addClass("selected").html(fileName);
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let b_flag_zipcodeSearch_click = false; 
+        let b_flag_emailDuplicate_click = false; 
+        let b_flag_nicknameDuplicate_click = false; 
+        let b_flag_smsAuth_click = false; 
+
+        $(document).ready(function() {
+            const avatarContainer = $("#avatarList");
+            const style = "bottts";
+            for (let i = 1; i <= 150; i++) {
+                const avatarUrl = `https://api.dicebear.com/7.x/${style}/svg?seed=${i}`;
+                avatarContainer.append(`<img src="${avatarUrl}" class="avatar-option" onclick="selectAvatar(this)" />`);
+            }
+
+            $("span.error").hide();
+
+            // 생년월일 달력
+            $("#birthDate").datepicker({
+                dateFormat: 'yymmdd',
+                changeYear: true,
+                changeMonth: true,
+                yearRange: "1950:2026"
+            });
+
+            // 주소 검색 버튼
+            $("button#zipcodeSearch").click(function() {
+                new daum.Postcode({
+                    oncomplete: function(data) {
+                        $("#postcode").val(data.zonecode);
+                        $("#address").val(data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress);
+                        $("#addressInputArea").slideDown("fast");
+                        b_flag_zipcodeSearch_click = true;
+                        $("#detailaddress").focus();
+                    }
+                }).open();  
+            });
         });
+
+        // 프로필 관련 함수들
+        function openProfileModal() { $("#profileModal").fadeIn(200); }
+        function closeProfileModal() { $("#profileModal").fadeOut(200); }
+        function selectAvatar(imgElement) {
+            $(".avatar-option").removeClass("selected");
+            $(imgElement).addClass("selected");
+            const selectedUrl = $(imgElement).attr("src");
+            $("#profilePreview").attr("src", selectedUrl);
+            $("#defaultProfile").val(selectedUrl);
+            $("#attach").val(""); 
+            setTimeout(closeProfileModal, 200);
+        }
+        function previewProfileImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#profilePreview').attr('src', e.target.result);
+                    $("#defaultProfile").val("");
+                }
+                reader.readAsDataURL(input.files[0]);
+                closeProfileModal();
+            }
+        }
+
+        // 중복확인 및 SMS 인증 함수
+        function isExistEmailCheck() { 
+        	b_flag_emailDuplicate_click = true; 
+        	alert("중복 확인 완료"); 
+        }
+        function isExistNicknameCheck() { 
+        	b_flag_nicknameDuplicate_click = true; 
+        	alert("중복 확인 완료"); 
+        }
+        function sendSms() { 
+        	$("#smsAuthDiv").css("display", "flex"); 
+        }
+        function verifySms() {
+        	b_flag_smsAuth_click = true; 
+        	alert("인증 완료"); 
+        }
+
+        // 최종 가입 함수
+        function goRegister() {
+            if(!b_flag_zipcodeSearch_click || !b_flag_emailDuplicate_click || !b_flag_nicknameDuplicate_click) {
+                alert("중복확인 및 주소검색을 완료해주세요."); return;
+            }
+            if(!$("#agree").is(":checked")) { alert("약관에 동의해주세요."); return; }
+            const frm = document.registerFrm;
+            frm.action = /*[[@{/member/registerEnd}]]*/ '';
+            frm.method = "post";
+            frm.submit();
+        }
+        /*]]>*/
     </script>
 </body>
 </html>
