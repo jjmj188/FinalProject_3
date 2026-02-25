@@ -46,6 +46,13 @@ public class ProductController {
 	    }
     
 	 
+  //판매자정보
+    @GetMapping("/product_user_profile")
+	    public String product_user_profile() {
+	        return "product/product_user_profile";   
+	    }
+    
+    
 	}
 
 

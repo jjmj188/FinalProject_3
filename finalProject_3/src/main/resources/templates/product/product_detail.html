@@ -57,7 +57,7 @@
             <div class="pd-price">60,000원</div>
 
             <div class="pd-subline">
-                <a href="/price_check.html" aria-label="시세조회">시세조회</a>
+                <a th:href="@{/product/price_check}" aria-label="시세조회">시세조회</a>
             </div>
 
             <div class="pd-card" aria-label="상품 정보">
@@ -166,7 +166,7 @@
         <section>
             <div class="pdinfo-head">
                 <h2 class="pdinfo-title">판매자정보</h2>
-                <a href="./product_user_profile.html"> <i class="fa-solid fa-chevron-right"></i></a>
+                <a th:href="@{/product/product_user_profile}"> <i class="fa-solid fa-chevron-right"></i></a>
             </div>
 
             <div class="pdinfo-card">
@@ -202,7 +202,7 @@
 
                 <div class="pdinfo-reviews-head">
                     <div class="pdinfo-reviews-title">최근후기</div>
-                    <a class="pdinfo-reviews-link" href="./product_user_profile.html">전체보기 <i
+                    <a class="pdinfo-reviews-link" th:href="@{/product/product_user_profile}">전체보기 <i
                             class="fa-solid fa-chevron-right"></i></a>
                 </div>
 
@@ -268,7 +268,7 @@
 
     <div class="loc-sell-head">
         <h3 class="loc-sell-title">판매자의 다른 판매 물품</h3>
-        <a class="loc-sell-more" href="./product_user_profile.html">더보기 <i class="fa-solid fa-chevron-right"></i></a>
+        <a class="loc-sell-more" th:href="@{/product/product_user_profile}">더보기 <i class="fa-solid fa-chevron-right"></i></a>
     </div>
 
     <section class="loc-carousel" aria-label="판매자 다른 물품">
