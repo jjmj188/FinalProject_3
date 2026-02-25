@@ -66,17 +66,95 @@
   }
 })();
 
-document.addEventListener("click", (e) => {
-  const heartBtn = e.target.closest(".heart");
-  if (!heartBtn) return;
-  e.preventDefault();
-  e.stopPropagation();
+(function(){
+  const openBtn = document.querySelector(".btn-area");
+  const modal = document.getElementById("areaModal");
+  const searchInput = document.getElementById("areaSearchInput");
+  const list = document.getElementById("areaList");
+  const useGeoBtn = document.getElementById("areaUseGeoBtn");
 
+  if(!openBtn || !modal || !searchInput || !list) return;
 
-  heartBtn.classList.toggle("on");
-  const icon = heartBtn.querySelector("i");
-  if (icon) {
-    icon.classList.toggle("fa-regular");
-    icon.classList.toggle("fa-solid");
+  let lastFocusedEl = null;
+
+  function openModal(){
+    lastFocusedEl = document.activeElement;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => searchInput.focus(), 0);
   }
-});
+
+  function closeModal(){
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    if(lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  // 열기
+  openBtn.addEventListener("click", openModal);
+
+  // 닫기(배경/닫기버튼)
+  modal.addEventListener("click", (e) => {
+    const closeTarget = e.target.closest("[data-area-close='true']");
+    if(closeTarget) closeModal();
+  });
+
+  // ESC 닫기
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+  });
+
+  // 추천 리스트 클릭 -> 버튼 텍스트에 반영
+  list.addEventListener("click", (e) => {
+    const btn = e.target.closest(".area-item");
+    if(!btn) return;
+
+    const val = btn.getAttribute("data-area-value") || btn.textContent.trim();
+    const labelSpan = openBtn.querySelector("span");
+
+    if(labelSpan){
+      labelSpan.innerHTML = `<span class="area-selected">${val}</span>`;
+    }
+    closeModal();
+  });
+
+  // 검색 필터 (추천 리스트 텍스트 기준)
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.trim().toLowerCase();
+    const items = Array.from(list.querySelectorAll(".area-item"));
+
+    items.forEach((btn) => {
+      const text = (btn.textContent || "").toLowerCase();
+      const li = btn.closest("li");
+      const show = !q || text.includes(q);
+      if(li) li.style.display = show ? "" : "none";
+    });
+  });
+
+  // 현재 위치 사용하기 (브라우저 geolocation)
+  useGeoBtn?.addEventListener("click", () => {
+    if(!navigator.geolocation){
+      alert("이 브라우저에서는 위치 기능을 사용할 수 없어요.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        // 여기서 좌표 -> 주소 변환(역지오코딩)은 서버/지도 API가 필요함.
+        // 지금은 “좌표 확인됨” 정도로만 표시.
+        const { latitude, longitude } = pos.coords;
+        const labelSpan = openBtn.querySelector("span");
+        if(labelSpan){
+          labelSpan.innerHTML = `<span class="area-selected">현재 위치(${latitude.toFixed(4)}, ${longitude.toFixed(4)})</span>`;
+        }
+        closeModal();
+      },
+      () => {
+        alert("위치 권한이 거부되었거나 위치를 가져오지 못했어요.");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  });
+})();

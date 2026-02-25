@@ -1,2 +1,16 @@
 show user;
---USERì´(ê°€) "FINAL_ORAUSER3"ìž…ë‹ˆë‹¤.
+--USER?´(ê°?) "FINAL_ORAUSER3"?ž…?‹ˆ?‹¤.
+
+select *
+from member;
+
+CREATE SEQUENCE SEQ_MEMBER_NO
+START WITH 1
+INCREMENT BY 1
+NOMAXVALUE
+NOMINVALUE
+NOCYCLE
+NOCACHE;
+
+desc member
+commit;

@@ -3,7 +3,7 @@
 
     .hero{
       width:100%;
-      padding:75px 18px 0px;
+      padding:150px 18px 20px;
     }
     .hero-inner{
       width:60%;
@@ -312,18 +312,24 @@
       transform: scale(1.04);
     }
 
-    .sps-badge {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      font-size: 11px;
-      color: #fff;
-      background: #27ae60;
-      padding: 5px 8px;
-      border-radius: 999px;
-      line-height: 1;
-      z-index: 2;
-    }
+ .sps-badge{
+  position:absolute;
+  top:10px;
+  left:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  letter-spacing:-.2px;
+  color:#fff;
+  line-height:1;
+  z-index:2;
+}
+
+/* 상태별 색상만 분리 (기존 구조 유지하면서 확장 가능) */
+.sps-badge.selling{ background:#16a34a; }   /* 판매중 */
+.sps-badge.trading{ background:#f59e0b; }   /* 거래중 */
+.sps-badge.soldout{ background:#6b7280; }   /* 판매완료 */
+
 
     .sps-like {
       position: absolute;
@@ -400,29 +406,183 @@
     }
 
 
-    .sps-more {
-      display: flex;
-      justify-content: center;
-      margin-top: 18px;
+   /* ===== 더보기 버튼 ===== */
+    .load-more-wrap{
+      display:flex;
+      justify-content:center;
+      margin-top:24px;
+    }
+    .btn-load-more{
+      min-width:200px;
+      height:44px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+ 
+      cursor:pointer;
+      transition:.15s;
+    }
+    .btn-load-more:hover{
+      background:#111;
+      color:#fff;
+      border-color:#111;
     }
 
-    .sps-moreBtn {
-      height: 46px;
-      padding: 0 28px;
-      border-radius: 10px;
-      border: 1px solid #d7d7d7;
-      background: #111;
-      color: #fff;
-      font-weight: 800;
-      font-size: 14px;
-      letter-spacing: -0.1px;
-      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
-    }
+     /* =========================
+   지역 변경 모달 
+========================= */
 
-    .sps-moreBtn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 22px rgba(0, 0, 0, .10);
-      opacity: .98;
-    }
+.area-modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+.area-modal.is-open{ display:block; }
+
+/* 반투명 배경 */
+.area-modal__backdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.35);
+}
+
+/* 모달 패널 */
+.area-modal__panel{
+  position: relative;
+  width: min(720px, calc(100% - 48px));
+  max-height: min(720px, calc(100vh - 80px));
+  margin: 40px auto;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #111;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  border: 1px solid rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+/* 헤더 */
+.area-modal__header{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 18px 18px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.area-modal__title{
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+.area-modal__close{
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #444;
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 1;
+}
+.area-modal__close:hover{
+  background: rgba(0,0,0,.05);
+}
+
+.area-modal__body{
+  padding: 14px 18px 18px;
+}
+
+/* 검색 input */
+.area-search{
+  position: relative;
+  background: #f6f7f9;
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 12px;
+  padding: 12px 44px 12px 44px;
+}
+.area-search__icon{
+  position:absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .6;
+  color: #333;
+}
+.area-search__input{
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #111;
+}
+.area-search__input::placeholder{
+  color: rgba(0,0,0,.45);
+}
+
+/* 현재 위치 버튼 */
+.area-geo{
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff3ea;
+  color: #ff6a00;
+  font-weight: 700;
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+  border: 1px solid rgba(255,106,0,.25);
+}
+.area-geo:hover{
+  filter: brightness(1.02);
+}
+
+/* 리스트 */
+.area-list{
+  margin-top: 16px;
+}
+.area-list__title{
+  font-size: 14px;
+  color: rgba(0,0,0,.55);
+  margin-bottom: 10px;
+}
+.area-list__items{
+  list-style:none;
+  padding:0;
+  margin:0;
+  max-height: 360px;
+  overflow:auto;
+  border-radius: 12px;
+
+  background: #fff;
+}
+
+/* 스크롤바 */
+.area-list__items::-webkit-scrollbar{ width: 10px; }
+.area-list__items::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.18);
+  border-radius: 999px;
+}
+.area-list__items::-webkit-scrollbar-track{
+  background: rgba(0,0,0,.06);
+  border-radius: 999px;
+}
+
+.area-item{
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: #111;
+  padding: 14px 10px;
+  cursor:pointer;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.area-item:hover{
+  background: rgba(0,0,0,.04);
+}
 
 

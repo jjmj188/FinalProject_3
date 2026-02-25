@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+<link rel="stylesheet" th:href="@{/css/product/product_user_profile.css}">
+
+</head>
+
+<body>
+<main>
+ <section class="spx-wrap">
+    <div class="spx-grid">
+
+      <!-- LEFT -->
+      <div class="spx-sellerCard">
+        <div class="spx-sellerTop">
+          <img src="" class="spx-avatar" aria-hidden="true"></img>
+          <div>
+            <div class="spx-sellerName">판매자 이름</div>
+            <div class="spx-sellerSub">최근 접속 시간 전 | 응답률 92%</div>
+          </div>
+        </div>
+
+        <div class="spx-tempBlock">
+          <div class="spx-tempLabel">매너온도</div>
+          <div class="spx-tempValue">
+            <strong>36.8°C</strong>
+          </div>
+          <div class="spx-bar" aria-label="매너온도 바">
+            <i></i>
+          </div>
+          <div class="spx-tempNote">최근 3개월 기준 · 변경은 거래후기 반영</div>
+        </div>
+
+        <div class="spx-stats" role="group" aria-label="거래 지표">
+          <div class="spx-statsRow">
+            <div class="spx-stat">
+              <div class="k">안심결제</div>
+              <div class="v">9</div>
+            </div>
+            <div class="spx-statsDiv" aria-hidden="true"></div>
+            <div class="spx-stat">
+              <div class="k">거래후기</div>
+              <div class="v">10</div>
+            </div>
+            <div class="spx-statsDiv" aria-hidden="true"></div>
+            <div class="spx-stat">
+              <div class="k">거래횟수</div>
+              <div class="v">10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="spx-revHead">
+          <div class="spx-revTitle">최근후기</div>
+        </div>
+
+        <div class="spx-chips" aria-label="후기 키워드">
+          <p class="spx-chip">친절해요 <span>18</span></p>
+          <p class="spx-chip">시간 약속 잘 지켜요 <span>14</span></p>
+          <p class="spx-chip">설명대로예요 <span>22</span></p>
+          <p class="spx-chip">꼼꼼해요 <span>9</span></p>
+        </div>
+
+        <div class="spx-revList">
+          <article class="spx-review">
+            <div class="spx-reviewLeft">
+              <div class="spx-reviewWho">사용자 아이디</div>
+              <div class="spx-reviewTxt">설명 그대로 상태 좋아요. 응답도 빠릅니다!</div>
+            </div>
+            <div class="spx-stars" aria-label="별점 5점">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </div>
+          </article>
+
+          <article class="spx-review">
+            <div class="spx-reviewLeft">
+              <div class="spx-reviewWho">사용자 아이디</div>
+              <div class="spx-reviewTxt">친절하고 거래 매너가 좋아요.</div>
+            </div>
+            <div class="spx-stars" aria-label="별점 5점">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </div>
+          </article>
+
+          <article class="spx-review">
+            <div class="spx-reviewLeft">
+              <div class="spx-reviewWho">사용자 아이디</div>
+              <div class="spx-reviewTxt">포장 꼼꼼하고 제품 상태 만족합니다.</div>
+            </div>
+            <div class="spx-stars" aria-label="별점 5점">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </div>
+          </article>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="sps-wrap">
+    <div class="sps-head">
+      <div class="sps-tabs" role="tablist" aria-label="판매자 탭">
+        <button class="sps-tab is-active" type="button" role="tab" aria-selected="true" data-tab="sell">판매상품</button>
+        <button class="sps-tab" type="button" role="tab" aria-selected="false" data-tab="review">거래후기</button>
+        <span class="sps-underline" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <!-- 판매상품 패널 -->
+    <div class="sps-panel is-show" id="sps-panel-sell" role="tabpanel">
+
+
+      <div class="sps-sellTop" aria-label="상품 정렬">
+        <div class="sps-sort" role="tablist" aria-label="정렬 옵션">
+          <button class="sps-sortBtn is-active" type="button" role="tab" aria-selected="true"
+            data-sort="latest">최신순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-sortBtn" type="button" role="tab" aria-selected="false" data-sort="low">가격낮은순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-sortBtn" type="button" role="tab" aria-selected="false" data-sort="high">높은가격순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-sortBtn" type="button" role="tab" aria-selected="false" data-sort="pop">인기순</button>
+        </div>
+      </div>
+
+      <div class="sps-grid" id="sps-grid">
+        <article class="sps-card" data-price="320000" data-time="1700000400" data-pop="21">
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge">판매중</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src="https://images.unsplash.com/photo-1527430253228-e93688616381?q=80&w=1200&auto=format&fit=crop"
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치 (M1) 상태좋음</a>
+            <div class="sps-price">320,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 10분 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="sps-card" data-price="450000" data-time="1699990000" data-pop="8">
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge">판매중</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop"
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치 (M1) 상태좋음</a>
+            <div class="sps-price">450,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 1시간 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="sps-card" data-price="120000" data-time="1700000200" data-pop="55">
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge">판매중</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop"
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치 (M1) 상태좋음</a>
+            <div class="sps-price">120,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 3시간 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="sps-card" data-price="870000" data-time="1699980000" data-pop="13">
+          <a class="sps-thumb" href="#">
+            <span class="sps-badge">판매중</span>
+            <button class="sps-like" type="button" aria-label="찜" aria-pressed="false">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <img src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=1200&auto=format&fit=crop"
+              alt="">
+          </a>
+          <div class="sps-body">
+            <a class="sps-title" href="#">맥북 프로 13인치 (M1) 상태좋음</a>
+            <div class="sps-price">870,000원</div>
+            <div class="sps-meta">
+              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
+              <span><i class="fa-regular fa-clock"></i> 3시간 전</span>
+              <span><i class="fa-solid fa-eye"></i> 10</span>
+              <span><i class="fa-solid fa-heart"></i> 10</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+     <!--  더보기 버튼 -->
+      <div class="load-more-wrap">
+        <button class="btn-load-more">
+          더보기 <i class="fa-solid fa-angle-down"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 거래후기 패널 -->
+    <div class="sps-panel" id="sps-panel-review" role="tabpanel" hidden>
+
+      <div class="sps-rvSummary">
+        <div class="sps-rvScore">
+          <div class="sps-rvScoreBig">
+            <strong>4.9</strong>
+            <span>/ 5</span>
+          </div>
+          <div class="sps-rvStars" aria-label="평균 별점 4.9점">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <em class="sps-rvCount">후기 32</em>
+          </div>
+          <div class="sps-rvHint">최근 3개월 후기 기준</div>
+        </div>
+
+        <div class="sps-rvBadges" aria-label="후기 키워드 요약">
+          <button class="sps-rvChip is-active" type="button">전체 <span>32</span></button>
+          <button class="sps-rvChip" type="button">친절해요 <span>18</span></button>
+          <button class="sps-rvChip" type="button">시간 약속 <span>14</span></button>
+          <button class="sps-rvChip" type="button">설명대로예요 <span>22</span></button>
+          <button class="sps-rvChip" type="button">꼼꼼해요 <span>9</span></button>
+        </div>
+      </div>
+
+
+      <div class="sps-rvSortBar" aria-label="후기 정렬">
+        <div class="sps-rvSort" role="tablist" aria-label="후기 정렬 옵션">
+          <button class="sps-rvSortBtn is-active" type="button" role="tab" aria-selected="true">최신순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-rvSortBtn" type="button" role="tab" aria-selected="false">높은 별점순</button>
+          <span class="sps-sep" aria-hidden="true"></span>
+          <button class="sps-rvSortBtn" type="button" role="tab" aria-selected="false">낮은 별점순</button>
+        </div>
+      </div>
+
+      <div class="sps-rvList">
+        <article class="sps-rvCard">
+          <div class="sps-rvTop">
+            <div class="sps-rvWho">
+              <span class="sps-rvUser">
+                <span class="sps-rvAvatar" aria-hidden="true"></span>
+                <strong>닉네임</strong>
+              </span>
+              <span class="sps-rvMeta">
+                <span class="sps-rvStarsSm" aria-label="별점 5점">
+                  <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </span>
+                <span class="sps-rvDate"><i class="fa-regular fa-clock"></i> 2026.02.10</span>
+              </span>
+            </div>
+            <div class="sps-rvTag">친절해요</div>
+          </div>
+
+          <div class="sps-rvProduct">
+            <i class="fa-solid fa-box"></i>
+           거래상품: <span class="rv-product-name"> 맥북 프로 13인치 (M1)</span>
+          </div>
+
+          <p class="sps-rvText">
+            설명 그대로 상태 좋아요. 응답 빠르고 약속 시간도 잘 지켜주셔서 편하게 거래했습니다!
+          </p>
+
+          <div class="sps-rvPhotos" aria-label="후기 사진">
+            <a class="sps-rvPhoto" href="#" aria-label="후기 사진 1"><img
+                src="https://images.unsplash.com/photo-1527430253228-e93688616381?q=80&w=600&auto=format&fit=crop"
+                alt=""></a>
+            <a class="sps-rvPhoto" href="#" aria-label="후기 사진 2"><img
+                src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=600&auto=format&fit=crop"
+                alt=""></a>
+          </div>
+        </article>
+
+        <article class="sps-rvCard">
+          <div class="sps-rvTop">
+            <div class="sps-rvWho">
+              <span class="sps-rvUser">
+                <span class="sps-rvAvatar" aria-hidden="true"></span>
+                <strong>닉네임</strong>
+              </span>
+              <span class="sps-rvMeta">
+                <span class="sps-rvStarsSm" aria-label="별점 4점">
+                  <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                    class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
+                </span>
+                <span class="sps-rvDate"><i class="fa-regular fa-clock"></i> 2026.01.28</span>
+              </span>
+            </div>
+            <div class="sps-rvTag is-gray">설명대로예요</div>
+          </div>
+
+          <div class="sps-rvProduct">
+            <i class="fa-solid fa-box"></i>
+           거래상품:  <span>기계식 키보드</span>
+          </div>
+
+          <p class="sps-rvText">
+            제품 상태는 설명대로였고 포장도 괜찮았어요. 다만 약속 시간이 조금 늦어졌습니다.
+          </p>
+        </article>
+      </div>
+
+       <!--  더보기 버튼 -->
+      <div class="load-more-wrap">
+        <button class="btn-load-more">
+          더보기 <i class="fa-solid fa-angle-down"></i>
+        </button>
+      </div>
+    </div>
+
+  </section>
+</main>
+<script th:src="@{/js/product/product_user_profile.js}"></script>
+
+</body>
+</html>

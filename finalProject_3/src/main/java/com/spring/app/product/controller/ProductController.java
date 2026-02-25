@@ -32,7 +32,27 @@ public class ProductController {
 	    public String product_list() {
 	        return "product/product_list";   
 	    }
+    
+  //시세조회
+    @GetMapping("/price_check")
+	    public String price_check() {
+	        return "product/price_check";   
+	    }
+    
+    //상품상세
+    @GetMapping("/product_detail")
+	    public String product_detail() {
+	        return "product/product_detail";   
+	    }
+    
 	 
+  //판매자정보
+    @GetMapping("/product_user_profile")
+	    public String product_user_profile() {
+	        return "product/product_user_profile";   
+	    }
+    
+    
 	}
 
 

@@ -1,342 +1,291 @@
 <!DOCTYPE html>
-<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
-      xmlns:th="http://www.thymeleaf.org"
-      lang="ko">
+<html
+	th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+	xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
 
-<link rel="stylesheet" th:href="@{/css/product/proudct_list.css}"> 
-<script defer th:src="@{/js/product/product_list.js}"></script>  
+<link rel="stylesheet" th:href="@{/css/product/product_list.css}">
+<script defer th:src="@{/js/product/product_list.js}"></script>
 </head>
 <body>
-<main>
-  <!-- 검색 -->
-<section class="hero">
-  <div class="hero-inner">
-    <h1 class="hero-title">
-      <i class="fa-solid fa-location-dot"></i>
-      무엇을 찾고 계신가요?
-    </h1>
+	<main>
+		<!-- 검색 -->
+		<section class="hero">
+			<div class="hero-inner">
+				<h1 class="hero-title">
+					<i class="fa-solid fa-location-dot"></i> 무엇을 찾고 계신가요?
+				</h1>
 
-    <div class="search-wrap">
-      <div class="search-pill">
-        <div class="select-box">
-          <button type="button" class="btn-area">
-            <i class="fa-solid fa-location-dot"></i><span>지역설정</span>
-          </button>
-        </div>
+				<div class="search-wrap">
+					<div class="search-pill">
+						<div class="select-box">
+							<button type="button" class="btn-area">
+								<i class="fa-solid fa-location-dot"></i><span>지역설정</span>
+							</button>
+						</div>
 
-        <input class="search-input" type="text" placeholder="검색어를 입력해주세요" />
+						<input class="search-input" type="text" placeholder="검색어를 입력해주세요" />
 
-        <button class="search-btn" type="button">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-      </div>
+						<button class="search-btn" type="button">
+							<i class="fa-solid fa-magnifying-glass"></i>
+						</button>
+					</div>
 
-      <div class="popular">
-        <div class="popular-title">인기 검색어</div>
-        <ul class="popular-list">
-          <li class="popular-item">에어컨</li>
-          <li class="popular-item">에어컨청소</li>
-          <li class="popular-item">노트북</li>
-          <li class="popular-item">원룸</li>
-          <li class="popular-item">현대 중고차</li>
-          <li class="popular-item">이사짐 알바</li>
-          <li class="popular-item">근처 맛집</li>
-          <li class="popular-item">투표</li>
-          <li class="popular-item">동네친구</li>
-          <li class="popular-item">배드민턴 모임</li>
-          <li class="popular-item">자전거</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+					<div class="popular">
+						<div class="popular-title">인기 검색어</div>
+						<ul class="popular-list">
+							<li class="popular-item">에어컨</li>
+							<li class="popular-item">에어컨청소</li>
+							<li class="popular-item">노트북</li>
+							<li class="popular-item">원룸</li>
+							<li class="popular-item">현대 중고차</li>
+							<li class="popular-item">이사짐 알바</li>
+							<li class="popular-item">근처 맛집</li>
+							<li class="popular-item">투표</li>
+							<li class="popular-item">동네친구</li>
+							<li class="popular-item">배드민턴 모임</li>
+							<li class="popular-item">자전거</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</section>
 
-<!-- 지역 변경 모달-->
-<section class="area-modal" id="areaModal" aria-hidden="true">
-  <div class="area-modal__backdrop" data-area-close="true"></div>
+		<!-- 지역 변경 모달-->
+		<section class="area-modal" id="areaModal" aria-hidden="true">
+			<div class="area-modal__backdrop" data-area-close="true"></div>
 
-  <div class="area-modal__panel" role="dialog" aria-modal="true" aria-labelledby="areaModalTitle">
-    <div class="area-modal__header">
-      <h2 class="area-modal__title" id="areaModalTitle">지역 변경</h2>
-      <button type="button" class="area-modal__close" aria-label="닫기" data-area-close="true">×</button>
-    </div>
+			<div class="area-modal__panel" role="dialog" aria-modal="true"
+				aria-labelledby="areaModalTitle">
+				<div class="area-modal__header">
+					<h2 class="area-modal__title" id="areaModalTitle">지역 변경</h2>
+					<button type="button" class="area-modal__close" aria-label="닫기"
+						data-area-close="true">×</button>
+				</div>
 
-    <div class="area-modal__body">
-      <div class="area-search">
-        <i class="fa-solid fa-magnifying-glass area-search__icon" aria-hidden="true"></i>
-        <input
-          type="text"
-          class="area-search__input"
-          id="areaSearchInput"
-          placeholder="지역이나 동네로 검색하기"
-          autocomplete="off"
-        />
-      </div>
+				<div class="area-modal__body">
+					<div class="area-search">
+						<i class="fa-solid fa-magnifying-glass area-search__icon"
+							aria-hidden="true"></i> <input type="text"
+							class="area-search__input" id="areaSearchInput"
+							placeholder="지역이나 동네로 검색하기" autocomplete="off" />
+					</div>
 
-      <button type="button" class="area-geo" id="areaUseGeoBtn">
-        <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
-        현재 내 위치 사용하기
-      </button>
+					<button type="button" class="area-geo" id="areaUseGeoBtn">
+						<i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+						현재 내 위치 사용하기
+					</button>
 
-      <div class="area-list">
-        <div class="area-list__title">최근 검색한 동네</div>
-        <!-- 최신순 5개까지만 -->
-        <ul class="area-list__items" id="areaList">
-          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치1동">서울특별시, 강남구, 대치1동</button></li>
-          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치동">서울특별시, 강남구, 대치동</button></li>
-          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치2동">서울특별시, 강남구, 대치2동</button></li>
-          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치4동">서울특별시, 강남구, 대치4동</button></li>
-          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 개포3동">서울특별시, 강남구, 개포3동</button></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+					<div class="area-list">
+						<div class="area-list__title">최근 검색한 동네</div>
+						<!-- 최신순 5개까지만 -->
+						<ul class="area-list__items" id="areaList">
+							<li><button type="button" class="area-item"
+									data-area-value="서울특별시, 강남구, 대치1동">서울특별시, 강남구, 대치1동</button></li>
+							<li><button type="button" class="area-item"
+									data-area-value="서울특별시, 강남구, 대치동">서울특별시, 강남구, 대치동</button></li>
+							<li><button type="button" class="area-item"
+									data-area-value="서울특별시, 강남구, 대치2동">서울특별시, 강남구, 대치2동</button></li>
+							<li><button type="button" class="area-item"
+									data-area-value="서울특별시, 강남구, 대치4동">서울특별시, 강남구, 대치4동</button></li>
+							<li><button type="button" class="area-item"
+									data-area-value="서울특별시, 강남구, 개포3동">서울특별시, 강남구, 개포3동</button></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</section>
 
-<!-- 상품 리스트 -->
-  <section class="market-page">
-    <!-- ===== LEFT: FILTER ===== -->
-    <aside class="filter-wrap" aria-label="필터">
-      <div class="filter-card">
-        <div class="filter-head">
-          <div>
-            <div class="filter-title">필터</div>
-            <div class="filter-sub">조건을 선택하세요</div>
-          </div>
-          <div style="font-size:12px; color:#9ca3af; font-weight:800;">옵션</div>
-        </div>
+		<!-- 상품 리스트 -->
+		<section class="market-page">
+			<!-- ===== LEFT: FILTER ===== -->
+			<aside class="filter-wrap" aria-label="필터">
+				<div class="filter-card">
+					<div class="filter-head">
+						<div>
+							<div class="filter-title">필터</div>
+							<div class="filter-sub">조건을 선택하세요</div>
+						</div>
+						<div style="font-size: 12px; color: #9ca3af; font-weight: 800;">옵션</div>
+					</div>
 
-        <div class="filter-body">
-          <!-- 조건 -->
-          <div class="filter-group">
-            <div class="fg-title">조건</div>
-            <div class="check-row">
-              <label class="check"><input type="checkbox"> 거래 가능만 보기</label>
-              <label class="check"><input type="checkbox"> 택배 가능</label>
-            </div>
-          </div>
+					<div class="filter-body">
+						<!-- 조건 -->
+						<div class="filter-group">
+							<div class="fg-title">조건</div>
+							<div class="check-row">
+								<label class="check"><input type="checkbox"> 거래
+									가능만 보기</label> <label class="check"><input type="checkbox">
+									택배 가능</label>
+							</div>
+						</div>
 
-          <!-- 정렬 -->
-          <div class="filter-group">
-            <div class="fg-title">정렬</div>
-            <select class="select" aria-label="정렬">
-              <option>최신순</option>
-              <option>인기순</option>
-              <option>가격 낮은순</option>
-              <option>가격 높은순</option>
-            </select>
-          </div>
+						<!-- 정렬 -->
+						<div class="filter-group">
+							<div class="fg-title">정렬</div>
+							<select class="select" aria-label="정렬">
+								<option>최신순</option>
+								<option>인기순</option>
+								<option>가격 낮은순</option>
+								<option>가격 높은순</option>
+							</select>
+						</div>
 
-         <!-- 가격 -->
-<div class="filter-group">
-  <div class="fg-title">가격</div>
+						<!-- 가격 -->
+						<div class="filter-group">
+							<div class="fg-title">가격</div>
 
-  <div class="price-pills" id="pricePills" aria-label="가격 빠른선택">
-    <button class="pill" type="button" data-max="5000"><span>5,000원 이하</span><span class="chev">›</span></button>
-    <button class="pill" type="button" data-max="10000"><span>10,000원 이하</span><span class="chev">›</span></button>
-    <button class="pill" type="button" data-max="20000"><span>20,000원 이하</span><span class="chev">›</span></button>
-  </div>
+							<div class="price-pills" id="pricePills" aria-label="가격 빠른선택">
+								<button class="pill" type="button" data-max="5000">
+									<span>5,000원 이하</span><span class="chev">›</span>
+								</button>
+								<button class="pill" type="button" data-max="10000">
+									<span>10,000원 이하</span><span class="chev">›</span>
+								</button>
+								<button class="pill" type="button" data-max="20000">
+									<span>20,000원 이하</span><span class="chev">›</span>
+								</button>
+							</div>
 
-  <div class="range-row" aria-label="가격 범위">
-    <div class="price-input">
-      <span class="won">₩</span>
-      <input id="priceMin" type="number" placeholder="최소" />
-    </div>
+							<div class="range-row" aria-label="가격 범위">
+								<div class="price-input">
+									<span class="won">₩</span> <input id="priceMin" type="number"
+										placeholder="최소" />
+								</div>
 
-    <span class="range-dash">-</span>
+								<span class="range-dash">-</span>
 
-    <div class="price-input">
-      <span class="won">₩</span>
-      <input id="priceMax" type="number" placeholder="최대" />
-    </div>
-  </div>
+								<div class="price-input">
+									<span class="won">₩</span> <input id="priceMax" type="number"
+										placeholder="최대" />
+								</div>
+							</div>
 
-  <div class="filter-actions">
-    <button class="btn btn-primary" type="button">필터적용</button>
-    <button class="btn btn-ghost" type="button">초기화</button>
-  </div>
-</div>
-        </div>
-      </div>
-    </aside>
+							<div class="filter-actions">
+								<button class="btn btn-primary" type="button">필터적용</button>
+								<button class="btn btn-ghost" type="button">초기화</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</aside>
 
-    <!-- ===== RIGHT: CONTENT ===== -->
-    <section class="content" aria-label="상품 목록">
-      <!--  상단 요약 -->
-      <div class="top-summary">
-        <div class="summary-title">
-          <i class="fa-solid fa-chart-simple"></i>
-          최근 등록 상품의 가격을 비교해봤어요
-        </div>
-        <div class="stats">
-          <div class="stat"><span>평균 가격</span><strong>430,575원</strong></div>
-          <div class="stat"><span>가장 높은 가격</span><strong>2,400,000원</strong></div>
-          <div class="stat"><span>가장 낮은 가격</span><strong>2,000원</strong></div>
-        </div>
-      </div>
+			<!-- ===== RIGHT: CONTENT ===== -->
+			<section class="content" aria-label="상품 목록">
+				<!--  상단 요약 -->
+				<div class="top-summary">
+					<div class="summary-title">
+						<i class="fa-solid fa-chart-simple"></i> 최근 등록 상품의 가격을 비교해봤어요
+					</div>
+					<div class="stats">
+						<div class="stat">
+							<span>평균 가격</span><strong>430,575원</strong>
+						</div>
+						<div class="stat">
+							<span>가장 높은 가격</span><strong>2,400,000원</strong>
+						</div>
+						<div class="stat">
+							<span>가장 낮은 가격</span><strong>2,000원</strong>
+						</div>
+					</div>
+				</div>
 
-      <!-- 카드 그리드 -->
-      <div class="grid">
-        <!-- card 1 -->
-        <a class="card" href="./product_detail.html">
-          <div class="thumb">
-            <span class="thumb-badge selling">판매중</span>
-            <button class="heart" type="button" aria-label="찜"><i class="fa-regular fa-heart"></i></button>
-            <img src="" alt="">
-          </div>
-          <div class="card-body">
-            <div class="item-title">맥북 프로 13인치</div>
-            <div class="price">320,000원</div>
-            <div class="meta">
-              <span><i class="fa-solid fa-location-dot"></i> 강남구</span>
-              <span><i class="fa-regular fa-clock"></i> 10분 전</span>
-              <span><i class="fa-solid fa-handshake"></i> 직거래</span>
-            </div>
-          </div>
-        </a>
+				<!-- 카드 그리드 -->
+				<div class="grid">
+					<!-- card 1 -->
+					<a class="card" th:href="@{/product/product_detail}">
+						<div class="thumb">
+							<span class="thumb-badge selling">판매중</span>
+							<button class="heart" type="button" aria-label="찜">
+								<i class="fa-regular fa-heart"></i>
+							</button>
+							<img src="" alt="">
+						</div>
+						<div class="card-body">
+							<div class="item-title">맥북 프로 13인치</div>
+							<div class="price">320,000원</div>
+							<div class="meta">
+								<span><i class="fa-solid fa-location-dot"></i> 강남구</span> <span><i
+									class="fa-regular fa-clock"></i> 10분 전</span> <span><i
+									class="fa-solid fa-eye"></i> 10</span> <span><i
+									class="fa-solid fa-heart"></i> 10</span>
+							</div>
+						</div>
+					</a>
 
-        <!-- card 2 -->
-        <a class="card" href="#">
-          <div class="thumb">
-            <span class="thumb-badge trading">거래중</span>
-            <button class="heart" type="button" aria-label="찜"><i class="fa-regular fa-heart"></i></button>
-            <img src="" alt="">
-          </div>
-          <div class="card-body">
-            <div class="item-title">원목 의자 2개 세트</div>
-            <div class="price">45,000원</div>
-            <div class="meta">
-              <span><i class="fa-solid fa-location-dot"></i> 송파구</span>
-              <span><i class="fa-regular fa-clock"></i> 1시간 전</span>
-                 <span><i class="fa-solid fa-handshake"></i> 택배</span>
-            </div>
-          </div>
-        </a>
+					<!-- card 2 -->
+					<a class="card" href="#">
+						<div class="thumb">
+							<span class="thumb-badge trading">거래중</span>
+							<button class="heart" type="button" aria-label="찜">
+								<i class="fa-regular fa-heart"></i>
+							</button>
+							<img src="" alt="">
+						</div>
+						<div class="card-body">
+							<div class="item-title">원목 의자 2개 세트</div>
+							<div class="price">45,000원</div>
+							<div class="meta">
+								<span><i class="fa-solid fa-location-dot"></i> 송파구</span> <span><i
+									class="fa-regular fa-clock"></i> 1시간 전</span> <span><i
+									class="fa-solid fa-eye"></i> 10</span> <span><i
+									class="fa-solid fa-heart"></i> 10</span>
+							</div>
+						</div>
+					</a>
 
-        <!-- card 3 -->
-        <a class="card" href="#">
-          <div class="thumb">
-            <span class="thumb-badge soldout">판매완료</span>
-            <button class="heart" type="button" aria-label="찜"><i class="fa-regular fa-heart"></i></button>
-            <img src="" alt="">
-          </div>
-          <div class="card-body">
-            <div class="item-title">정품 가죽 자켓</div>
-            <div class="price">90,000원</div>
-            <div class="meta">
-              <span><i class="fa-solid fa-location-dot"></i> 성남시</span>
-              <span><i class="fa-regular fa-clock"></i> 어제</span>
-                 <span><i class="fa-solid fa-handshake"></i> 직거래</span>
-            </div>
-          </div>
-        </a>
+					<!-- card 3 -->
+					<a class="card" href="#">
+						<div class="thumb">
+							<span class="thumb-badge soldout">판매완료</span>
+							<button class="heart" type="button" aria-label="찜">
+								<i class="fa-regular fa-heart"></i>
+							</button>
+							<img src="" alt="">
+						</div>
+						<div class="card-body">
+							<div class="item-title">정품 가죽 자켓</div>
+							<div class="price">90,000원</div>
+							<div class="meta">
+								<span><i class="fa-solid fa-location-dot"></i> 성남시</span> <span><i
+									class="fa-regular fa-clock"></i> 어제</span> <span><i
+									class="fa-solid fa-eye"></i> 10</span> <span><i
+									class="fa-solid fa-heart"></i> 10</span>
+							</div>
+						</div>
+					</a>
 
-      </div>
+				</div>
 
-       <!--  더보기 버튼 -->
-      <div class="load-more-wrap">
-        <button class="btn-load-more">
-          더보기 <i class="fa-solid fa-angle-down"></i>
-        </button>
-      </div>
-    </section>
-  </section>
-</main>
-
+				<!--  더보기 버튼 -->
+				<div class="load-more-wrap">
+					<button class="btn-load-more">
+						더보기 <i class="fa-solid fa-angle-down"></i>
+					</button>
+				</div>
+			</section>
+		</section>
+	</main>
 <script>
-(function(){
-  const openBtn = document.querySelector(".btn-area");
-  const modal = document.getElementById("areaModal");
-  const searchInput = document.getElementById("areaSearchInput");
-  const list = document.getElementById("areaList");
-  const useGeoBtn = document.getElementById("areaUseGeoBtn");
+  document.addEventListener("click", (e) => {
+    const heartBtn = e.target.closest(".heart");
+    if (!heartBtn) return;
 
-  if(!openBtn || !modal || !searchInput || !list) return;
+    // a.card 이동 방지
+    e.preventDefault();
+    e.stopPropagation();
 
-  let lastFocusedEl = null;
+    heartBtn.classList.toggle("on");
 
-  function openModal(){
-    lastFocusedEl = document.activeElement;
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-    setTimeout(() => searchInput.focus(), 0);
-  }
-
-  function closeModal(){
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-    if(lastFocusedEl) lastFocusedEl.focus();
-  }
-
-  // 열기
-  openBtn.addEventListener("click", openModal);
-
-  // 닫기(배경/닫기버튼)
-  modal.addEventListener("click", (e) => {
-    const closeTarget = e.target.closest("[data-area-close='true']");
-    if(closeTarget) closeModal();
-  });
-
-  // ESC 닫기
-  window.addEventListener("keydown", (e) => {
-    if(e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
-  });
-
-  // 추천 리스트 클릭 -> 버튼 텍스트에 반영
-  list.addEventListener("click", (e) => {
-    const btn = e.target.closest(".area-item");
-    if(!btn) return;
-
-    const val = btn.getAttribute("data-area-value") || btn.textContent.trim();
-    const labelSpan = openBtn.querySelector("span");
-
-    if(labelSpan){
-      labelSpan.innerHTML = `<span class="area-selected">${val}</span>`;
+    const icon = heartBtn.querySelector("i");
+    if (icon) {
+      icon.classList.toggle("fa-regular");
+      icon.classList.toggle("fa-solid");
     }
-    closeModal();
   });
+</script>
+	<script>
 
-  // 검색 필터 (추천 리스트 텍스트 기준)
-  searchInput.addEventListener("input", () => {
-    const q = searchInput.value.trim().toLowerCase();
-    const items = Array.from(list.querySelectorAll(".area-item"));
-
-    items.forEach((btn) => {
-      const text = (btn.textContent || "").toLowerCase();
-      const li = btn.closest("li");
-      const show = !q || text.includes(q);
-      if(li) li.style.display = show ? "" : "none";
-    });
-  });
-
-  // 현재 위치 사용하기 (브라우저 geolocation)
-  useGeoBtn?.addEventListener("click", () => {
-    if(!navigator.geolocation){
-      alert("이 브라우저에서는 위치 기능을 사용할 수 없어요.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        // 여기서 좌표 -> 주소 변환(역지오코딩)은 서버/지도 API가 필요함.
-        // 지금은 “좌표 확인됨” 정도로만 표시.
-        const { latitude, longitude } = pos.coords;
-        const labelSpan = openBtn.querySelector("span");
-        if(labelSpan){
-          labelSpan.innerHTML = `<span class="area-selected">현재 위치(${latitude.toFixed(4)}, ${longitude.toFixed(4)})</span>`;
-        }
-        closeModal();
-      },
-      () => {
-        alert("위치 권한이 거부되었거나 위치를 가져오지 못했어요.");
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  });
-})();
 </script>
 </body>
 </html>

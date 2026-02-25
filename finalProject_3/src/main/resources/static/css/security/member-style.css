@@ -1,0 +1,150 @@
+@charset "UTF-8";
+
+
+main {
+    min-height: calc(50vh - 200px) !important; 
+    background-color: #f8f9fa !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 50px 0 !important;
+}
+
+/* 2. 로그인 폼 컨테이너 */
+.member-container.container {
+    max-width: 450px !important; 
+    width: 100% !important;
+    margin: 0 auto !important; 
+    padding: 40px !important;
+    background-color: #fff !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 2. 로그인 폼을 감싸는 하얀색 카드 컨테이너 */
+.member-container.container {
+    max-width: 450px; 
+    width: 100%;
+    margin: 80 auto;
+    padding: 40px;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+
+/* 3. 페이지 제목 ("로그인") */
+.member-title {
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 35px;
+    text-align: center;
+    letter-spacing: -0.5px;
+    font-size: 1.75rem;
+}
+
+/* 4. 폼 그룹 (레이블 + 입력창 묶음) */
+.member-container .form-group {
+    display: block;
+    margin-bottom: 0;
+}
+.member-container .form-group.mt-4 { margin-top: 1.25rem; }
+
+/* 5. 레이블 스타일 ("이메일", "비밀번호") */
+.member-container .form-group > label {
+    display: block;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* 6. 입력창(Input) 공통 스타일 */
+.member-container .form-control {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+    border: 1px solid #e2e5e8;
+    padding: 12px 15px;
+    height: auto;
+    font-size: 15px;
+    color: #495057;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.member-container .form-control.py-3 {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+/* 입력창 클릭(포커스) 시 진해지는 효과 */
+.member-container .form-control:focus {
+    outline: none;
+    border-color: #343a40;
+    box-shadow: 0 0 0 3px rgba(52, 58, 64, 0.15);
+}
+
+/* 7. 버튼 공통 스타일 */
+.member-container .btn {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+.member-container .btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* "로그인" 메인 버튼 (블랙) */
+.member-container .btn-dark {
+    background-color: #222;
+    border-color: #222;
+    color: #fff;
+    font-weight: 600;
+    padding: 14px;
+}
+.member-container .btn-dark:hover {
+    background-color: #444;
+    border-color: #444;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.member-container .mt-5 { margin-top: 2rem; }
+
+/* 8. 로그인 하단 "아직 회원이 아니신가요?" 회원가입 박스 */
+.register-box {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+.register-box p {
+    color: #888;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+/* "회원가입 하기" 서브 버튼 (아웃라인) */
+.register-box .btn-outline-secondary {
+    background-color: transparent;
+    border: 1px solid #ced4da;
+    color: #6c757d;
+}
+.register-box .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    color: #222;
+    border-color: #222;
+}
+
+/* 9. 모바일 화면 대응 (폰에서 볼 때 꽉 차지 않게 여백 조절) */
+@media (max-width: 540px) {
+    .member-container.container { margin: 30px 15px; padding: 24px; }
+}

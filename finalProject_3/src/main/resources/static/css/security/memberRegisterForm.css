@@ -1,62 +1,303 @@
 @charset "UTF-8";
 
-div#divRegisterFrm {
-	text-align: center;
+/* =========================================
+   1. 전체 레이아웃 및 공통 스타일
+========================================= */
+#divRegisterFrm {
+    max-width: 640px;
+    margin: 60px auto 100px;
+    font-family: 'Noto Sans KR', sans-serif;
 }
 
+.page-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 40px;
+    letter-spacing: -1px;
+}
+
+.required-notice {
+    text-align: right;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.star {
+    color: #ee6a7b;
+    margin-right: 2px;
+}
+
+/* =========================================
+   2. 테이블 디자인 (회원가입 폼)
+========================================= */
 table#tblMemberRegister {
- /* border: solid 1px red; */  
-	width: 55%;
-	margin: 1% auto;
+    width: 100%;
+    border-top: 2px solid #333;
+    border-collapse: collapse;
+}
+
+table#tblMemberRegister th, 
+table#tblMemberRegister td {
+    padding: 20px 0;
+    border-bottom: 1px solid #f4f4f4;
+    vertical-align: middle; /* 입력창들과 높이 맞춤 */
 }
 
 table#tblMemberRegister th {
-	border: solid 1px gray;
-	height: 60px;
-	background-color: silver;
-	font-size: 16pt;
-	text-align: center;
+    width: 140px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    padding-left: 20px;
 }
 
-table#tblMemberRegister td {
-	line-height: 200%;
-	padding: 1.2% 0;
+/* =========================================
+   3. 프로필 업로드 (왼쪽 정렬)
+========================================= */
+.profile-upload-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-left: 0; /* 왼쪽 정렬 강제 */
+    margin-right: auto;
+    display: inline-block;
 }
 
-span.star {
-	color: red;
-	font-weight: bold;
-	font-size: 13pt;
+.profile-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    display: block;
 }
 
-
-table#tblMemberRegister > tbody > tr > td:first-child {
-	width: 20%;
-	font-weight: bold;
-	text-align: left;
+.camera-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 34px;
+    height: 34px;
+    background: #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-table#tblMemberRegister > tbody > tr > td:nth-child(2) {
-	width: 80%;
-	text-align: left;
+.file-input-hidden {
+    display: none;
 }
 
-img#idcheck, img#zipcodeSearch {
-	cursor: pointer;
+/* =========================================
+   4. 입력창(Input) 및 버튼(Button)
+========================================= */
+.kurly-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    box-sizing: border-box;
 }
 
-span#emailcheck {
-	border: solid 1px gray;
-	border-radius: 5px;
-	font-size: 8pt;
-	display: inline-block;
-	width: 80px;
-	height: 30px;
-	text-align: center;
-	margin-left: 10px;
-	cursor: pointer;
+.kurly-input:focus {
+    border-color: #333;
 }
 
-span.error {
-	color: red;
+.kurly-input[readonly] {
+    background-color: #f8f9fa;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-kurly-outline {
+    flex-shrink: 0;
+    height: 46px;
+    padding: 0 20px;
+    border: 1px solid #222;
+    background: #fff;
+    color: #222;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-full {
+    width: 100%;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.btn-kurly-solid {
+    flex-shrink: 0;
+    height: 46px;
+    padding: 0 30px;
+    background-color: #222;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-submit {
+    width: 100%;
+    height: 56px;
+    background-color: #222;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 40px;
+}
+
+/* =========================================
+   5. 프로필 모달(팝업) 및 아바타 리스트
+========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 400px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modal-desc {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-height: 300px;    /* 20개 리스트를 위한 높이 제한 */
+    overflow-y: auto;     /* 내부 스크롤바 생성 */
+    padding: 10px;
+    border: 1px solid #f1f1f1;
+    border-radius: 8px;
+}
+
+.avatar-option {
+    width: 100%;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s;
+}
+
+.avatar-option:hover {
+    transform: scale(1.1);
+}
+
+.avatar-option.selected {
+    border-color: #222;
+}
+
+/* 스크롤바 디자인 */
+.avatar-grid::-webkit-scrollbar {
+    width: 6px;
+}
+.avatar-grid::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 10px;
+}
+
+/* =========================================
+   6. 기타 (에러, 성별, 주소 등)
+========================================= */
+.error {
+    display: block;
+    color: #ee6a7b;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.gender-box {
+    display: flex;
+    gap: 30px;
+}
+
+.gender-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.gender-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    accent-color: #222;
+}
+
+.address-guide {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.postcode-input {
+    width: 150px;
+    margin-bottom: 8px;
+}
+
+.agree-box {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #333;
+    text-align: center;
+}
+
+.agree-label {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.agree-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    accent-color: #222;
+    vertical-align: middle;
 }
