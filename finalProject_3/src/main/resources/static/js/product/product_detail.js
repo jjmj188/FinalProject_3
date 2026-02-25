@@ -58,3 +58,27 @@
         } catch (e) {
             console.warn('Kakao map load failed:', e);
         }
+
+        /*====하트토글====*/
+        (function () {
+  const likeBtn = document.querySelector(".pd-like");
+  if (!likeBtn) return;
+
+  let liked = false; // 초기 상태 (서버에서 내려주면 그 값으로 세팅)
+
+  likeBtn.addEventListener("click", function () {
+    liked = !liked;
+
+    const icon = likeBtn.querySelector("i");
+
+    if (liked) {
+      likeBtn.classList.add("is-active");
+      icon.classList.remove("fa-regular");
+      icon.classList.add("fa-solid");
+    } else {
+      likeBtn.classList.remove("is-active");
+      icon.classList.remove("fa-solid");
+      icon.classList.add("fa-regular");
+    }
+  });
+})();
