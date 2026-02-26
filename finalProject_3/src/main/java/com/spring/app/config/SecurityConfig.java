@@ -1,4 +1,4 @@
-package com.spring.app.config; // 패키지명은 현재 프로젝트에 맞게 유지
+package com.spring.app.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,14 +17,12 @@ import jakarta.servlet.DispatcherType;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // 컨트롤러에서 @PreAuthorize 사용을 위해 추가
+@EnableMethodSecurity // 컨트롤러에서 @PreAuthorize 사용을 위해 필수
 public class SecurityConfig {
 
-    // 우리가 만든 커스텀 로그인 성공 핸들러 의존성 주입
     @Autowired
     private MyAuthenticationSuccessHandler successHandler;
 
-    // 비밀번호 암호화 객체
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -33,52 +31,51 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. CSRF 공격 방어 비활성화 (AJAX POST 요청을 위해 필수)
             .csrf(csrf -> csrf.disable()) 
-            
-            // 2. iframe 허용 (스마트에디터나 약관 동의 iframe 사용 시 필수)
             .headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions.sameOrigin())
             )
-            
-            // 3. 권한 설정
             .authorizeHttpRequests(auth -> auth
-                // View 포워딩 및 에러 페이지 발생 시 시큐리티가 막지 않도록 허용
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                 
+                // ★ 누구나 볼 수 있는 주소 허용
                 .requestMatchers(
                     "/", 
-                    "/index.up", 
-                    "/member/**"     
+                    "/member/**",
+                    "/index.up",
+                    "/security/**",       // 회원가입, 로그인 관련 모두 허용
+                    "/product/product_list",      // 장터
+                    "/product/price_check", // 시세조회
+                    "/product/auction",   // 경매장
+                    "/product/share",
+                    "/product/product_detail", // 상품 상세
+                    "/product/product_user_profile"
                 ).permitAll() 
                 
+                // 위에서 허용한 URL 외의 요청(예: /product/sell)은 자동 로그인 요구
                 .anyRequest().authenticated() 
             )
-            
-            // 4. 폼 로그인 설정
             .formLogin(form -> form
-                .loginPage("/member/login")              // 커스텀 로그인 페이지 URL
-                .loginProcessingUrl("/login/process")    // HTML 폼의 action 경로
-                .usernameParameter("email")              // 이메일 파라미터
-                .passwordParameter("password")           // 비밀번호 파라미터명
-                .successHandler(successHandler)          // 커스텀 성공 핸들러 장착
+                // ★ 불일치 수정: MemberController의 @RequestMapping("/security/")에 맞춤
+                .loginPage("/member/login")            
+                .loginProcessingUrl("/login/process") // HTML form의 action 경로와 일치시킬 것
+                .usernameParameter("email")              
+                .passwordParameter("password")           
+                .successHandler(successHandler)          
                 .failureUrl("/member/login?error=true")
                 .permitAll()
             )
-            
-            // 5. 로그아웃 설정
             .logout(logout -> logout
-                .logoutUrl("/logout")                    // 로그아웃 처리 URL
-                .logoutSuccessUrl("/")                   // 로그아웃 성공 시 메인으로 이동
-                .invalidateHttpSession(true)             // 세션 날리기
-                .deleteCookies("JSESSIONID")             // 쿠키 날리기
+                .logoutUrl("/member/logout") 
+                .logoutSuccessUrl("/") 
+                .invalidateHttpSession(true) 
+                .deleteCookies("JSESSIONID") 
                 .permitAll()
             );
 
         return http.build();
     }
 
-    // 정적 리소스(CSS, JS, 이미지 등) 시큐리티 필터 무시
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()

@@ -1,5 +1,6 @@
 package com.spring.app.product.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/product")
 public class ProductController {
 	//판매하기
+	 @PreAuthorize("isAuthenticated()")
 	 @GetMapping("/sell")
 	    public String sellPage() {
 	        return "product/sell"; 
