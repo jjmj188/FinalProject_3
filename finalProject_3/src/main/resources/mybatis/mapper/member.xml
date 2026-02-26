@@ -55,6 +55,6 @@
             ADDRESS AS address, 
             PROFILE_IMG AS profileImg
         FROM MEMBER
-        WHERE EMAIL = #{email} AND IS_WITHDRAWN = 'N'
+        WHERE EMAIL = #{email} AND STATUS = 0
     </select>
 </mapper>

@@ -46,8 +46,6 @@ public class SecurityConfig {
                 // View 포워딩 및 에러 페이지 발생 시 시큐리티가 막지 않도록 허용
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                 
-                // ★ 핵심 수정 부분: 시세조회, 장터, 경매장 등 누구나 볼 수 있어야 하는 메뉴의 경로를 추가했습니다!
-                // (주의: 실제 Controller에 연결하신 URL 매핑 주소와 똑같이 맞춰주셔야 합니다.)
                 .requestMatchers(
                     "/", 
                     "/index.up", 
@@ -64,6 +62,7 @@ public class SecurityConfig {
                 .usernameParameter("email")              // 이메일 파라미터
                 .passwordParameter("password")           // 비밀번호 파라미터명
                 .successHandler(successHandler)          // 커스텀 성공 핸들러 장착
+                .failureUrl("/member/login?error=true")
                 .permitAll()
             )
             

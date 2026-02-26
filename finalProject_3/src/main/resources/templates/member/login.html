@@ -12,20 +12,24 @@
         <div class="container member-container">
             <h2 class="member-title">로그인</h2>
             
-            <form name="loginFrm" th:action="@{/member/loginEnd}" method="post">
-                
-                <div class="form-group">
-                    <label for="email">이메일</label>
-                    <input type="email" name="email" id="email" class="form-control py-3" placeholder="이메일을 입력해주세요" required autofocus>
-                </div>
-
-                <div class="form-group mt-4">
-                    <label for="password">비밀번호</label>
-                    <input type="password" name="password" id="password" class="form-control py-3" placeholder="비밀번호를 입력해주세요" required>
-                </div>
-
-                <button type="submit" class="btn btn-dark btn-block mt-5">로그인</button>
-            </form>
+            <form name="loginFrm" th:action="@{/login/process}" method="post">
+    
+			    <div th:if="${param.error}" class="alert alert-danger" style="color: #ee6a7b; font-size: 14px; margin-bottom: 15px;">
+			        이메일 또는 비밀번호가 일치하지 않습니다.
+			    </div>
+			
+			    <div class="form-group">
+			        <label for="email">이메일</label>
+			        <input type="email" name="email" id="email" class="form-control py-3" placeholder="이메일을 입력해주세요" required autofocus>
+			    </div>
+			
+			    <div class="form-group mt-4">
+			        <label for="password">비밀번호</label>
+			        <input type="password" name="password" id="password" class="form-control py-3" placeholder="비밀번호를 입력해주세요" required>
+			    </div>
+			
+			    <button type="submit" class="btn btn-dark btn-block mt-5">로그인</button>
+			</form>
 
             <div class="register-box">
                 <p>아직 회원이 아니신가요?</p>

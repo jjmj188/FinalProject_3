@@ -7,53 +7,46 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import lombok.Getter;
-
-@Getter
 public class CustomUserDetails implements UserDetails {
 
-    private static final long serialVersionUID = 1L;
-    private MemberDTO memberDto;
+    private MemberDTO member;
 
-    public CustomUserDetails(MemberDTO memberDto) {
-        this.memberDto = memberDto;
+    public CustomUserDetails(MemberDTO member) {
+        this.member = member;
     }
 
-    // 권한 부여 (임시로 모두 일반 유저 권한 부여, 관리자일 경우 분기 가능)
+    // MemberDTO의 원본 데이터에 접근하기 위한 getter들
+    public MemberDTO getMember() { return member; }
+    public String getMemberName() { return member.getUserName(); }
+    public String getNickname() { return member.getNickname(); }
+
+    // 시큐리티 필수 구현 메서드들
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        // status 나 권한 컬럼에 따라 분기 (임시로 ROLE_USER 부여)
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER")); 
         return authorities;
     }
 
     @Override
     public String getPassword() {
-        return memberDto.getPassword();
+        return member.getPassword(); // DB에 암호화되어 저장된 비밀번호 리턴
     }
 
     @Override
     public String getUsername() {
-        return memberDto.getEmail(); // 아이디 대신 이메일을 시큐리티 Username으로 사용!
+        return member.getEmail(); // 아이디로 이메일을 사용하므로 이메일 리턴
     }
 
-    // 계정 만료 여부
     @Override
     public boolean isAccountNonExpired() { return true; }
-
-    // 계정 잠김(휴면) 여부 (필요시 DB의 IS_DORMANT 컬럼 활용)
     @Override
     public boolean isAccountNonLocked() { return true; }
-
-    // 비밀번호 만료 여부
     @Override
     public boolean isCredentialsNonExpired() { return true; }
-
-    // 계정 활성화(탈퇴) 여부 (필요시 DB의 IS_WITHDRAWN 컬럼 활용)
     @Override
-    public boolean isEnabled() { return true; }
-
-    // *** 추가 정보 접근용 getter ***
-    public String getMemberName() { return memberDto.getUserName(); }
-    public String getNickname() { return memberDto.getNickname(); }
+    public boolean isEnabled() { 
+        return member.getStatus() == 0; // 예: 0이면 정상, 1이면 탈퇴 등
+    }
 }
