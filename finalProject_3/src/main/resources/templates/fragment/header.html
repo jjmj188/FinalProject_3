@@ -23,61 +23,67 @@
 
         <!-- 우측 유틸 -->
         <nav class="util" aria-label="유틸 메뉴">
-          <!-- 로그인/회원가입 -->
-          <!-- (나중에 Spring Security 붙이면 sec:authorize로 분기 가능) -->
-          <a class="util-link" th:href="@{/member/login}">
-            로그인/회원가입
-          </a>
 
-          <span class="util-sep" aria-hidden="true">|</span>
+          <th:block sec:authorize="isAnonymous()">
+            <a class="util-link" th:href="@{/member/login}">
+              로그인/회원가입
+            </a>
+          </th:block>
 
-          <!-- 채팅 -->
-          <a th:href="@{/chat}">
-            <div class="notification">
+          <th:block sec:authorize="isAuthenticated()">
+
+            <span class="util-sep" aria-hidden="true">|</span>
+
+            <a class="util-link" th:href="@{/logout}">
+              로그아웃
+            </a>
+
+            <span class="util-sep" aria-hidden="true">|</span>
+
+            <a th:href="@{/chat}">
+              <div class="notification">
+                <button type="button" class="not-btn">
+                  <i class="fa-solid fa-comment-dots"></i>
+                  <span class="number">2</span>
+                </button>
+              </div>
+            </a>
+
+            <span class="util-sep" aria-hidden="true">|</span>
+
+            <a class="util-link" th:href="@{/mypage}">
               <button type="button" class="not-btn">
-                <i class="fa-solid fa-comment-dots"></i>
-                <span class="number">2</span>
+                <i class="fa-solid fa-circle-user"></i>
               </button>
-            </div>
-          </a>
+            </a>
 
-          <span class="util-sep" aria-hidden="true">|</span>
+            <span class="util-sep" aria-hidden="true">|</span>
 
-          <!-- 마이페이지 -->
-          <a class="util-link" th:href="@{/mypage}">
-            <button type="button" class="not-btn">
-              <i class="fa-solid fa-circle-user"></i>
-            </button>
-          </a>
+            <a th:href="@{/notification}">
+              <div class="notification">
+                <button type="button" class="not-btn">
+                  <i class="fas fa-bell"></i>
+                  <span class="number">2</span>
+                </button>
 
-          <span class="util-sep" aria-hidden="true">|</span>
-
-          <!-- 알림 -->
-          <a th:href="@{/notification}">
-            <div class="notification">
-              <button type="button" class="not-btn">
-                <i class="fas fa-bell"></i>
-                <span class="number">2</span>
-              </button>
-
-              <!-- 드롭다운 알림 박스 -->
-              <div class="not-box">
-                <div class="not-list">
-                  <div class="not-item">
-                    <img class="profile"
-                         src=""
-                         alt="profile">
-                    <div class="not-text">
-                      <p>Madison liked your post</p>
-                      <span>11/6 - 4:04 pm</span>
+                <div class="not-box">
+                  <div class="not-list">
+                    <div class="not-item">
+                      <img class="profile"
+                           src=""
+                           alt="profile">
+                      <div class="not-text">
+                        <p>Madison liked your post</p>
+                        <span>11/6 - 4:04 pm</span>
+                      </div>
                     </div>
                   </div>
-
-                 
                 </div>
               </div>
-            </div>
-          </a>
+            </a>
+            
+          </th:block>
+
         </nav>
       </div>
 
