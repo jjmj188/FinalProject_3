@@ -24,7 +24,7 @@
                             <td>
                                 <div style="text-align: left;">
                                     <div class="profile-upload-container" onclick="openProfileModal()" style="cursor: pointer;">
-                                        <img id="profilePreview" src="/images/default_profile.png" alt="프로필 사진" class="profile-img" 
+                                        <img id="profilePreview" src="https://api.dicebear.com/7.x/bottts/svg?seed=1" alt="프로필 사진" class="profile-img" 
                                              onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=1';"/>
                                         <div class="camera-btn"><i class="fas fa-camera"></i></div>
                                     </div>
@@ -43,7 +43,7 @@
                                     <button type="button" class="btn-kurly-outline" onclick="isExistEmailCheck();">중복확인</button>
                                 </div>
                                 <span id="emailCheckResult" class="check-result"></span>
-                                <span class="error">올바른 이메일 형식이 아닙니다.</span>
+                                <span class="error">이메일을 입력해주세요.</span>
                             </td>
                         </tr>
         
@@ -51,7 +51,7 @@
                             <th>비밀번호<span class="star">*</span></th>
                             <td>
                                 <input type="password" name="password" id="password" class="requiredInfo kurly-input" placeholder="비밀번호를 입력해주세요" />
-                                <span class="error">암호는 영문자, 숫자, 특수기호가 혼합된 8~15 글자로 입력하세요.</span>
+                                <span class="error">비밀번호를 입력해주세요.</span>
                             </td>
                         </tr>
         
@@ -59,7 +59,7 @@
                             <th>비밀번호확인<span class="star">*</span></th>
                             <td>
                                 <input type="password" id="pwdcheck" class="requiredInfo kurly-input" placeholder="비밀번호를 한번 더 입력해주세요" /> 
-                                <span class="error">암호가 일치하지 않습니다.</span>
+                                <span class="error">비밀번호가 일치하지 않습니다.</span>
                             </td>
                         </tr>
         
@@ -94,6 +94,7 @@
                                     <input type="text" id="smsCode" class="kurly-input" placeholder="인증번호 입력" />
                                     <button type="button" class="btn-kurly-solid" onclick="verifySms();">확인</button>
                                 </div>
+                                <span class="error">휴대폰 번호를 입력해주세요.</span>
                             </td>
                         </tr>
 
@@ -161,31 +162,55 @@
 
     <script th:inline="javascript">
         /*<![CDATA[*/
+        
+        // --- 중복 확인 체크용 플래그 ---
         let b_flag_zipcodeSearch_click = false; 
         let b_flag_emailDuplicate_click = false; 
         let b_flag_nicknameDuplicate_click = false; 
         let b_flag_smsAuth_click = false; 
 
         $(document).ready(function() {
+            // 초기 에러 메시지 모두 숨김
+            $("span.error").hide();
+
+            // 실시간 빨간 글씨 유효성 검사 (포커스 잃을 때)
+            $(".requiredInfo").not("#birthDate").blur(function() {
+                if($(this).val().trim() === "") {
+                    $(this).closest('td').find(".error").show();
+                } else {
+                    $(this).closest('td').find(".error").hide();
+                }
+            });
+
+            // 비밀번호 확인 실시간 검사
+            $("#pwdcheck").blur(function() {
+                if($("#password").val() !== $(this).val()) {
+                    $(this).closest('td').find(".error").text("비밀번호가 일치하지 않습니다.").show();
+                } else {
+                    $(this).closest('td').find(".error").hide();
+                }
+            });
+
+            // 봇츠(bottts) 일러스트 50개 자동 생성
             const avatarContainer = $("#avatarList");
-            const style = "bottts";
-            for (let i = 1; i <= 150; i++) {
-                const avatarUrl = `https://api.dicebear.com/7.x/${style}/svg?seed=${i}`;
+            for (let i = 1; i <= 50; i++) {
+                const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${i}`;
                 avatarContainer.append(`<img src="${avatarUrl}" class="avatar-option" onclick="selectAvatar(this)" />`);
             }
 
-            $("span.error").hide();
+            // 4. 생년월일 달력 세팅
+            $("#birthDate").datepicker({ 
+			    dateFormat: 'yymmdd', 
+			    changeYear: true, 
+			    changeMonth: true, 
+			    yearRange: "1950:2026",
+			    onSelect: function(dateText) { // 날짜를 선택하는 순간 실행
+			        $(this).closest('td').find(".error").hide(); // 빨간 글씨 즉시 숨김
+			    }
+			});
 
-            // 생년월일 달력
-            $("#birthDate").datepicker({
-                dateFormat: 'yymmdd',
-                changeYear: true,
-                changeMonth: true,
-                yearRange: "1950:2026"
-            });
-
-            // 주소 검색 버튼
-            $("button#zipcodeSearch").click(function() {
+            // 주소 검색 창 열기
+            $("#zipcodeSearch").click(function() {
                 new daum.Postcode({
                     oncomplete: function(data) {
                         $("#postcode").val(data.zonecode);
@@ -198,7 +223,7 @@
             });
         });
 
-        // 프로필 관련 함수들
+        // ================= 프로필 관련 함수 =================
         function openProfileModal() { $("#profileModal").fadeIn(200); }
         function closeProfileModal() { $("#profileModal").fadeOut(200); }
         function selectAvatar(imgElement) {
@@ -222,34 +247,137 @@
             }
         }
 
-        // 중복확인 및 SMS 인증 함수
-        function isExistEmailCheck() { 
-        	b_flag_emailDuplicate_click = true; 
-        	alert("중복 확인 완료"); 
-        }
-        function isExistNicknameCheck() { 
-        	b_flag_nicknameDuplicate_click = true; 
-        	alert("중복 확인 완료"); 
-        }
-        function sendSms() { 
-        	$("#smsAuthDiv").css("display", "flex"); 
-        }
-        function verifySms() {
-        	b_flag_smsAuth_click = true; 
-        	alert("인증 완료"); 
+        // ================= AJAX 중복 확인 함수 =================
+        function isExistEmailCheck() {
+            const email = $("#email").val().trim();
+            if(email === "") { alert("이메일을 입력하세요."); return; }
+
+            const reqUrl = /*[[@{/member/emailDuplicateCheck}]]*/ '/member/emailDuplicateCheck';
+
+            $.ajax({
+                url: reqUrl, 
+                type: "post",
+                data: {"email": email},
+                dataType: "json",
+                success: function(json) {
+                    if(json.isExist) {
+                        $("#emailCheckResult").text("이미 사용 중인 이메일입니다.").css("color", "red");
+                        b_flag_emailDuplicate_click = false;
+                    } else {
+                        $("#emailCheckResult").text("사용 가능한 이메일입니다.").css("color", "green");
+                        b_flag_emailDuplicate_click = true;
+                    }
+                },
+                error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+            });
         }
 
-        // 최종 가입 함수
+        function isExistNicknameCheck() {
+            const nickname = $("#nickname").val().trim();
+            if(nickname === "") { alert("닉네임을 입력하세요."); return; }
+
+            const reqUrl = /*[[@{/member/nicknameDuplicateCheck}]]*/ '/member/nicknameDuplicateCheck';
+
+            $.ajax({
+                url: reqUrl, 
+                type: "post",
+                data: {"nickname": nickname},
+                dataType: "json",
+                success: function(json) {
+                    if(json.isExist) {
+                        $("#nicknameCheckResult").text("이미 사용 중인 닉네임입니다.").css("color", "red");
+                        b_flag_nicknameDuplicate_click = false;
+                    } else {
+                        $("#nicknameCheckResult").text("사용 가능한 닉네임입니다.").css("color", "green");
+                        b_flag_nicknameDuplicate_click = true;
+                    }
+                },
+                error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+            });
+        }
+
+        function sendSms() { 
+            const phone = $("#phone").val().trim();
+            if(phone === "") { alert("휴대폰 번호를 입력해주세요."); return; }
+
+            const reqUrl = /*[[@{/member/sendSms}]]*/ '/member/sendSms';
+
+            $.ajax({
+                url: reqUrl,
+                type: "post",
+                data: {"phone": phone},
+                dataType: "json",
+                success: function(json) {
+                    if(json.success) {
+                        alert(json.msg); // "인증번호가 발송되었습니다."
+                        $("#smsAuthDiv").css("display", "flex"); 
+                        $("#phone").closest('td').find(".error").hide(); // 빨간 글씨 숨김
+                    } else {
+                        // 중복된 번호일 경우 막기
+                        alert(json.msg); 
+                        $("#phone").val("");
+                        $("#phone").focus();
+                    }
+                },
+                error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+            });
+        }
+
+        function verifySms() {
+            const code = $("#smsCode").val().trim();
+            if(code === "") { alert("인증번호를 입력해주세요."); return; }
+
+            const reqUrl = /*[[@{/member/verifySms}]]*/ '/member/verifySms';
+
+            $.ajax({
+                url: reqUrl,
+                type: "post",
+                data: {"code": code},
+                dataType: "json",
+                success: function(json) {
+                    if(json.isMatch) {
+                        alert("인증이 완료되었습니다."); 
+                        b_flag_smsAuth_click = true; 
+                        
+                        $("#smsCode").attr("readonly", true).css("background-color", "#eee");
+                        $("#phone").attr("readonly", true).css("background-color", "#eee");
+                    } else {
+                        alert("인증번호가 일치하지 않습니다. 다시 확인해주세요.");
+                        b_flag_smsAuth_click = false; 
+                    }
+                },
+                error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+            });
+        }
+
+        // ================= 최종 가입하기 =================
         function goRegister() {
-            if(!b_flag_zipcodeSearch_click || !b_flag_emailDuplicate_click || !b_flag_nicknameDuplicate_click) {
-                alert("중복확인 및 주소검색을 완료해주세요."); return;
-            }
+            // 1. 필수 입력창 빈칸 재검사
+            let isAllFilled = true;
+            $(".requiredInfo").each(function() {
+                if($(this).val().trim() === "") {
+                    $(this).closest('td').find(".error").show();
+                    isAllFilled = false;
+                }
+            });
+
+            if(!isAllFilled) { alert("필수 입력사항을 확인해주세요."); return; }
+            if(!b_flag_emailDuplicate_click) { alert("이메일 중복확인을 완료해주세요."); return; }
+            if(!b_flag_nicknameDuplicate_click) { alert("닉네임 중복확인을 완료해주세요."); return; }
+            if(!b_flag_zipcodeSearch_click) { alert("주소검색을 완료해주세요."); return; }
             if(!$("#agree").is(":checked")) { alert("약관에 동의해주세요."); return; }
+
+            if($("#detailaddress").val().trim() === "") {
+                $("#detailaddress").val(" "); 
+            }
+
+            // 서버로 폼 전송
             const frm = document.registerFrm;
-            frm.action = /*[[@{/member/registerEnd}]]*/ '';
+            frm.action = /*[[@{/member/registerEnd}]]*/ '/member/registerEnd'; 
             frm.method = "post";
             frm.submit();
         }
+        
         /*]]>*/
     </script>
 </body>

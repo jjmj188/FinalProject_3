@@ -63,19 +63,21 @@ public class MemberController {
     public Map<String, Object> sendSms(@RequestParam("phone") String phone, HttpSession session) {
         Map<String, Object> map = new HashMap<>();
         
-        // 이미 가입된 번호인지 확인
+        // 휴대폰 번호 중복 검사
         if(memberService.isPhoneExist(phone)) {
             map.put("success", false);
             map.put("msg", "이미 가입된 휴대폰 번호입니다.");
             return map;
         }
 
+        // 인증번호 생성 및 콘솔 출력
         String authCode = memberService.sendSms(phone);
         
+        // 세션에 인증번호 저장
         session.setAttribute("smsAuthCode", authCode);
         
         map.put("success", true);
-        map.put("msg", "인증번호가 발송되었습니다.");
+        map.put("msg", "인증번호가 발송되었습니다. 콘솔창을 확인하세요!");
         return map;
     }
 
@@ -88,7 +90,7 @@ public class MemberController {
         
         boolean isMatch = (sessionCode != null && sessionCode.equals(code));
         if(isMatch) {
-            session.removeAttribute("smsAuthCode");
+            session.removeAttribute("smsAuthCode"); 
         }
         
         map.put("isMatch", isMatch);
@@ -125,7 +127,7 @@ public class MemberController {
         // DB 저장
         memberService.registerMember(memberDTO);
         
-        return "redirect:/index.up";
+        return "redirect:/";
     }
     
     
