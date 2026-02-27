@@ -161,8 +161,8 @@
     </main>
 
     <script th:inline="javascript">
-    /*<![CDATA[*/
-    
+	    /*<![CDATA[*/
+	    
 	    // --- 중복 확인 체크용 플래그 ---
 	    let b_flag_zipcodeSearch_click = false; 
 	    let b_flag_emailDuplicate_click = false; 
@@ -252,7 +252,7 @@
 	        const email = $("#email").val().trim();
 	        if(email === "") { alert("이메일을 입력하세요."); return; }
 	
-	        // 이메일 유효성 검사
+	        // [정규식 추가] 이메일 유효성 검사
 	        const regExpEmail = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
 	        if(!regExpEmail.test(email)) {
 	            alert("올바른 이메일 형식이 아닙니다.");
@@ -284,7 +284,7 @@
 	        const nickname = $("#nickname").val().trim();
 	        if(nickname === "") { alert("닉네임을 입력하세요."); return; }
 	
-	        // 닉네임 유효성 검사 (특수문자 제외, 10자리 이하)
+	        // [정규식 추가] 닉네임 유효성 검사 (특수문자 제외, 10자리 이하)
 	        const regExpNickname = /^[a-zA-Z0-9가-힣]{1,10}$/;
 	        if(!regExpNickname.test(nickname)) {
 	            alert("닉네임은 특수문자 없이 10자리 이하로 입력해주세요.");
@@ -374,7 +374,7 @@
 	
 	    // ================= 최종 가입하기 =================
 	    function goRegister() {
-	        // 필수 입력창 빈칸 재검사
+	        // 1. 필수 입력창 빈칸 재검사
 	        let isAllFilled = true;
 	        $(".requiredInfo").each(function() {
 	            if($(this).val().trim() === "") {
@@ -385,6 +385,7 @@
 	
 	        if(!isAllFilled) { alert("필수 입력사항을 확인해주세요."); return; }
 	
+	        // [정규식 추가] 2. 전체 입력값 정규식 최종 체크
 	        const email = $("#email").val().trim();
 	        const regExpEmail = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
 	        if(!regExpEmail.test(email)) {
@@ -394,6 +395,7 @@
 	        }
 	
 	        const password = $("#password").val();
+	        // 💡 팁: 올려주신 정규식 끝의 'g' 플래그는 여러 번 클릭 시 검사가 꼬이는 버그를 유발하여 제거했습니다.
 	        const regExpPw = new RegExp(/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).*$/);
 	        if(!regExpPw.test(password)) {
 	            alert("비밀번호는 영문, 숫자, 특수문자를 포함하여 8~15자리로 입력해주세요.");
@@ -428,7 +430,7 @@
 	        // 3. 중복확인, 인증, 약관 동의 플래그 검사
 	        if(!b_flag_emailDuplicate_click) { alert("이메일 중복확인을 완료해주세요."); return; }
 	        if(!b_flag_nicknameDuplicate_click) { alert("닉네임 중복확인을 완료해주세요."); return; }
-	        if(!b_flag_smsAuth_click) { alert("휴대폰 인증을 완료해주세요."); return; }
+	        if(!b_flag_smsAuth_click) { alert("휴대폰 인증을 완료해주세요."); return; } // [추가됨] 휴대폰 인증 검사
 	        if(!b_flag_zipcodeSearch_click) { alert("주소검색을 완료해주세요."); return; }
 	        if(!$("#agree").is(":checked")) { alert("약관에 동의해주세요."); return; }
 	
