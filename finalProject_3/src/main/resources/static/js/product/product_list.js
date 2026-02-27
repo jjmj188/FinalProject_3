@@ -74,7 +74,7 @@
   const useGeoBtn = document.getElementById("areaUseGeoBtn");
 
   if(!openBtn || !modal || !searchInput || !list) return;
-
+	
   let lastFocusedEl = null;
 
   function openModal(){

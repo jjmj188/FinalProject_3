@@ -207,7 +207,7 @@ textarea{ resize:none; }
   line-height:1.55;
   font-size: 13px;
   color:#333;
-  background:#fff;
+
 }
 .pf-textarea:focus{ border-color:#cfcfcf; }
 .pf-count{

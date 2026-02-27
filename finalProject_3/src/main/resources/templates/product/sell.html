@@ -5,17 +5,182 @@
 <head>
 <link rel="stylesheet" th:href="@{/css/product_form.css}">
 <script defer th:src="@{/js/product_form.js}"></script>
+<!-- <script defer th:src="@{/js/product_form_address.js}"></script> -->
+
+<style>
+  /* 오타 수정: select-box -> .select-box */
+  .select-box{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:0 14px 0 10px;
+    border-right:1px solid #e5e7eb;
+    height:100%;
+    flex:0 0 auto;
+  }
+
+  /* =========================
+     지역 변경 모달
+  ========================= */
+
+  .area-modal{
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 9999;
+  }
+  .area-modal.is-open{ display:block; }
+
+  /* 반투명 배경 */
+  .area-modal__backdrop{
+    position:absolute;
+    inset:0;
+    background: rgba(0,0,0,.35);
+  }
+
+  /* 모달 패널 */
+  .area-modal__panel{
+    position: relative;
+    width: min(720px, calc(100% - 48px));
+    max-height: min(720px, calc(100vh - 80px));
+    margin: 40px auto;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #111;
+    box-shadow: 0 20px 60px rgba(0,0,0,.18);
+    border: 1px solid rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+
+  /* 헤더 */
+  .area-modal__header{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 18px 18px 12px;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+  .area-modal__title{
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .area-modal__close{
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #444;
+    cursor: pointer;
+    font-size: 26px;
+    line-height: 1;
+  }
+  .area-modal__close:hover{
+    background: rgba(0,0,0,.05);
+  }
+
+  .area-modal__body{
+    padding: 14px 18px 18px;
+  }
+
+/* 지역, 동네 검색 버튼 */
+  .area-search{
+    width: 100%;
+    margin-top: 12px;
+    border-radius: 12px;
+    padding: 12px 14px;
+     background: #f6f7f9;
+    border: 1px solid rgba(0,0,0,.10);
+     color: rgba(0,0,0,.45);
+    font-weight: 700;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 10px;
+    
+  }
+  .area-search:hover{
+    filter: brightness(1.02);
+  }
+
+  /* 현재 위치 버튼 */
+  .area-geo{
+    width: 100%;
+    margin-top: 12px;
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: #fff3ea;
+    color: #ff6a00;
+    font-weight: 700;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 10px;
+    border: 1px solid rgba(255,106,0,.25);
+  }
+  .area-geo:hover{
+    filter: brightness(1.02);
+  }
+
+  /* 리스트 */
+  .area-list{
+    margin-top: 16px;
+  }
+  .area-list__title{
+    font-size: 14px;
+    color: rgba(0,0,0,.55);
+    margin-bottom: 10px;
+  }
+  .area-list__items{
+    list-style:none;
+    padding:0;
+    margin:0;
+    max-height: 360px;
+    overflow:auto;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  /* 스크롤바 */
+  .area-list__items::-webkit-scrollbar{ width: 10px; }
+  .area-list__items::-webkit-scrollbar-thumb{
+    background: rgba(0,0,0,.18);
+    border-radius: 999px;
+  }
+  .area-list__items::-webkit-scrollbar-track{
+    background: rgba(0,0,0,.06);
+    border-radius: 999px;
+  }
+
+  .area-item{
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: #111;
+    padding: 14px 10px;
+    cursor:pointer;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+  .area-item:hover{
+    background: rgba(0,0,0,.04);
+  }
+</style>
+
 </head>
 
 <body>
 	<main class="pf-wrap" data-active="sell">
 		<!-- 상단 탭 -->
 		<nav class="pf-tabs" aria-label="등록 유형">
-  <a class="pf-tab" th:href="@{/product/sell}" data-tab="sell">판매하기</a>
-  <a class="pf-tab" th:href="@{/product/share}" data-tab="share">나눔하기</a>
-  <a class="pf-tab" th:href="@{/product/auction}" data-tab="auction">경매하기</a>
-  <span class="pf-tab-underline" aria-hidden="true"></span>
-</nav>
+			<a class="pf-tab" th:href="@{/product/sell}" data-tab="sell">판매하기</a>
+			<a class="pf-tab" th:href="@{/product/share}" data-tab="share">나눔하기</a>
+			<a class="pf-tab" th:href="@{/product/auction}" data-tab="auction">경매하기</a>
+			<span class="pf-tab-underline" aria-hidden="true"></span>
+		</nav>
 
 		<!-- 섹션 타이틀 -->
 		<section class="pf-section">
@@ -83,7 +248,7 @@
 					</div>
 				</div>
 
-				
+
 
 				<!-- 판매 가격 + 시세 조회 -->
 				<div class="pf-row pf-row-split">
@@ -102,14 +267,13 @@
 						<div class="pf-textarea-wrap">
 							<textarea class="pf-textarea" maxlength="5000"
 								placeholder="- 상품명(브랜드)
-								- 구매 시기 (년, 월, 일)
-								- 사용 기간
-								- 하자 여부
-								* 실제 촬영한 사진과 함께 상세 정보를 입력해주세요.
-								* 카카오톡 아이디 첨부 시 게시글 삭제 및 이용제재 처리 될 수 있어요.
-								
-								안전하고 건전한 거래환경을 위해 과학기술정보통신부, 한국인터넷진흥원, 중고나라가 함께합니다.">
-								</textarea>
+- 구매 시기 (년, 월, 일)
+- 사용 기간
+- 하자 여부
+* 실제 촬영한 사진과 함께 상세 정보를 입력해주세요.
+* 카카오톡 아이디 첨부 시 게시글 삭제 및 이용제재 처리 될 수 있어요.
+
+안전하고 건전한 거래환경을 위해 과학기술정보통신부, 한국인터넷진흥원, 중고나라가 함께합니다."></textarea>
 							<div class="pf-count">
 								<span class="pf-count-now">0</span> / 5000
 							</div>
@@ -254,10 +418,69 @@
 								</div>
 
 								<div class="pf-trade-right">
-									<button type="button" class="pf-loc-btn" id="pfLocationBtn">+
-										위치 설정</button>
+								
+								
+<!-- 지역 설정 버튼 -->
+<div class="select-box">
+  <button type="button" class="btn-area">
+    <i class="fa-solid fa-location-dot"></i><span>지역설정</span>
+  </button>
+</div>
+
+
+<!-- 지역 변경 모달 -->
+<section class="area-modal" id="areaModal" aria-hidden="true">
+  <div class="area-modal__backdrop" data-area-close="true"></div>
+
+  <div class="area-modal__panel" role="dialog" aria-modal="true" aria-labelledby="areaModalTitle">
+    <div class="area-modal__header">
+      <h2 class="area-modal__title" id="areaModalTitle">지역 변경</h2>
+      <button type="button" class="area-modal__close" aria-label="닫기" data-area-close="true">×</button>
+    </div>
+
+    <div class="area-modal__body">
+      <!-- ✅ input 대신 "검색창처럼 생긴 버튼" -->
+     
+       
+        <button type="button" class="area-search" id="areaSearchBtn">
+        <i class="fa-solid fa-location-dot"></i>
+          지역이나 동네로 검색하기
+        </button>
+    
+
+      <button type="button" class="area-geo" id="areaUseGeoBtn">
+        <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+        현재 내 위치 사용하기
+      </button>
+
+      <div class="area-list">
+        <div class="area-list__title">최근 검색한 동네</div>
+        <ul class="area-list__items" id="areaList">
+          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치1동">서울특별시, 강남구, 대치1동</button></li>
+          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치동">서울특별시, 강남구, 대치동</button></li>
+          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치2동">서울특별시, 강남구, 대치2동</button></li>
+          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 대치4동">서울특별시, 강남구, 대치4동</button></li>
+          <li><button type="button" class="area-item" data-area-value="서울특별시, 강남구, 개포3동">서울특별시, 강남구, 개포3동</button></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+									<!-- <button type="button" class="pf-loc-btn" id="pfLocationBtn">+
+										위치 설정</button> -->
+									<!-- <button type="button" class="pf-loc-btn" id="pfMyLocationBtn">내
+										위치</button>
+									<span class="pf-loc-text" id="pfLocationText">위치를 설정해주세요</span> -->
 								</div>
-							</div>
+
+								<!-- 서버로 보낼 값(숨김) -->
+								<input type="hidden" id="pfAddress" name="address" /> <input
+									type="hidden" id="pfExtraAddress" name="extraAddress" /> <input
+									type="hidden" id="pfLat" name="lat" /> <input type="hidden"
+									id="pfLng" name="lng" />
+
+								<!-- 표시용주소 -->
+								<input type="hidden" id="pfShortAddress" name="shortAddress" />
 						</section>
 
 					</div>
@@ -272,27 +495,209 @@
 		</section>
 
 	</main>
-	
+
 	<script>
-  const openLink = document.getElementById('pfShipSettingLink');
-  const modal = document.getElementById('pfShipModal');
-  const closeBtn = document.getElementById('pfShipModalClose');
+(function(){
+  // =========================
+  // DOM
+  // =========================
+  const openBtn   = document.querySelector(".btn-area");      // 상단 "지역설정" 버튼
+  const modal     = document.getElementById("areaModal");
+  const list      = document.getElementById("areaList");
+  const useGeoBtn = document.getElementById("areaUseGeoBtn");
+  const searchBtn = document.getElementById("areaSearchBtn"); // "지역이나 동네로 검색하기" 버튼
 
-  openLink.addEventListener('click', function(e) {
-    e.preventDefault();
-    modal.classList.add('is-open');
+  if(!openBtn || !modal || !list) return;
+
+  let lastFocusedEl = null;
+
+  // =========================
+  // 모달 열기/닫기
+  // =========================
+  function openModal(){
+    lastFocusedEl = document.activeElement;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal(){
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    if(lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  openBtn.addEventListener("click", openModal);
+
+  modal.addEventListener("click", (e) => {
+    if(e.target.closest("[data-area-close='true']")) closeModal();
   });
 
-  closeBtn.addEventListener('click', function() {
-    modal.classList.remove('is-open');
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
   });
 
-  // 배경 클릭 시 닫기
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) {
-      modal.classList.remove('is-open');
+  // =========================
+  // 공통: 설정 완료 처리 (✅ 전체 주소만 표시)
+  // =========================
+  function applyLocationResult(opts){
+    // opts: { fullAddress, extraAddress, lat, lng }
+    const labelSpan = openBtn.querySelector("span");
+    if(labelSpan){
+      labelSpan.textContent = opts.fullAddress || "지역설정";
+    }
+  }
+
+  // =========================
+  // 카카오 SDK 로드 대기
+  // =========================
+  function waitForKakaoServices(cb, tries = 40) {
+    const ok = window.kakao && kakao.maps && kakao.maps.services;
+    if (ok) return cb();
+
+    if (tries <= 0) {
+      console.error("카카오 SDK 로드 실패: Network에서 sdk.js 200 확인 + 중복 로드 제거");
+      return;
+    }
+    setTimeout(() => waitForKakaoServices(cb, tries - 1), 100);
+  }
+
+  function ensureKakaoServices(){
+    if (!window.kakao || !kakao.maps || !kakao.maps.services) {
+      console.error("kakao.maps.services 로드 안됨 (&libraries=services 확인)");
+      return false;
+    }
+    return true;
+  }
+
+  // =========================
+  // 주소 <-> 좌표 변환
+  // =========================
+  function addressToLatLng(address, cb){
+    if (!ensureKakaoServices()) return;
+
+    const geocoder = new kakao.maps.services.Geocoder();
+    geocoder.addressSearch(address, function(result, status){
+      if (status === kakao.maps.services.Status.OK) {
+        cb(result[0].y, result[0].x);
+      } else {
+        cb("", "");
+      }
+    });
+  }
+
+  function latLngToFullAddress(lat, lng, cb){
+    if (!ensureKakaoServices()) return;
+
+    const geocoder = new kakao.maps.services.Geocoder();
+    geocoder.coord2Address(lng, lat, function(result, status){
+      if (status === kakao.maps.services.Status.OK) {
+        const jibun = result[0].address ? result[0].address.address_name : "";
+        const road  = result[0].road_address ? result[0].road_address.address_name : "";
+        cb(road || jibun);
+      } else {
+        cb("");
+      }
+    });
+  }
+
+  // =========================
+  // 1) 주소 검색 팝업(daum Postcode)
+  // =========================
+  function openPostcodeForLocation(){
+    new daum.Postcode({
+      oncomplete: function(data) {
+        let addr = '';
+        let extraAddr = '';
+
+        if (data.userSelectedType === 'R') addr = data.roadAddress;
+        else addr = data.jibunAddress;
+
+        if (data.userSelectedType === 'R') {
+          if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+            extraAddr += data.bname;
+          }
+          if (data.buildingName !== '' && data.apartment === 'Y') {
+            extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+          }
+          if (extraAddr !== '') extraAddr = ' (' + extraAddr + ')';
+        } else {
+          extraAddr = '';
+        }
+
+        const full = addr + extraAddr;
+
+        // ✅ 전체 주소만 화면에 표시
+        applyLocationResult({ fullAddress: full });
+
+        // (선택) 주소 -> 좌표 변환까지 해두기 (필요하면 저장/마커)
+        addressToLatLng(addr, function(lat, lng){
+          // 예: hidden input 저장 or 지도 마커 이동
+          // console.log("lat/lng:", lat, lng);
+        });
+
+        // 모달 닫기
+        closeModal();
+      }
+    }).open();
+  }
+
+  // =========================
+  // 2) 내 위치(geolocation)
+  // =========================
+  function setMyLocation(){
+    if (!navigator.geolocation) {
+      alert("이 브라우저는 위치 기능을 지원하지 않습니다.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      function(pos){
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        // 좌표 -> 전체 주소만 표시
+        latLngToFullAddress(lat, lng, function(fullAddr){
+          applyLocationResult({ fullAddress: fullAddr || "지역설정" });
+          closeModal();
+        });
+      },
+      function(err){
+        if (err.code === 1) alert("위치 권한이 거부되었습니다.");
+        else if (err.code === 2) alert("위치 정보를 가져올 수 없습니다.");
+        else if (err.code === 3) alert("위치 조회 시간이 초과되었습니다.");
+        else alert("위치 조회 중 오류가 발생했습니다.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
+  // =========================
+  // 리스트 클릭(최근 검색한 동네) -> 전체 주소로 표시
+  // =========================
+  list.addEventListener("click", (e) => {
+    const btn = e.target.closest(".area-item");
+    if(!btn) return;
+
+    const val = btn.getAttribute("data-area-value") || btn.textContent.trim();
+    applyLocationResult({ fullAddress: val });
+    closeModal();
+  });
+
+  // =========================
+  // 버튼들 연결 (카카오 로드 후)
+  // =========================
+  waitForKakaoServices(function(){
+    if(searchBtn){
+      searchBtn.addEventListener("click", openPostcodeForLocation);
+    }
+    if(useGeoBtn){
+      useGeoBtn.addEventListener("click", setMyLocation);
     }
   });
+
+})();
 </script>
 </body>
 </html>
