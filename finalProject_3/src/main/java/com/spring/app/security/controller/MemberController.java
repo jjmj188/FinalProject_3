@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/member")
+@RequestMapping("/security")
 public class MemberController {
 	
     @Autowired
@@ -32,12 +32,12 @@ public class MemberController {
 
     @GetMapping("/login")
     public String loginForm() {
-        return "member/login"; // templates/member/login.html
+        return "security/login"; // templates/security/login.html
     }
 
     @GetMapping("/register")
     public String registerForm() {
-        return "member/register";
+        return "security/register";
     }
     
     // 이메일 중복 확인

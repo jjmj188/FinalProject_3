@@ -252,7 +252,7 @@
             const email = $("#email").val().trim();
             if(email === "") { alert("이메일을 입력하세요."); return; }
 
-            const reqUrl = /*[[@{/member/emailDuplicateCheck}]]*/ '/member/emailDuplicateCheck';
+            const reqUrl = /*[[@{/security/emailDuplicateCheck}]]*/ '/security/emailDuplicateCheck';
 
             $.ajax({
                 url: reqUrl, 
@@ -276,7 +276,7 @@
             const nickname = $("#nickname").val().trim();
             if(nickname === "") { alert("닉네임을 입력하세요."); return; }
 
-            const reqUrl = /*[[@{/member/nicknameDuplicateCheck}]]*/ '/member/nicknameDuplicateCheck';
+            const reqUrl = /*[[@{/security/nicknameDuplicateCheck}]]*/ '/security/nicknameDuplicateCheck';
 
             $.ajax({
                 url: reqUrl, 
@@ -300,7 +300,7 @@
             const phone = $("#phone").val().trim();
             if(phone === "") { alert("휴대폰 번호를 입력해주세요."); return; }
 
-            const reqUrl = /*[[@{/member/sendSms}]]*/ '/member/sendSms';
+            const reqUrl = /*[[@{/security/sendSms}]]*/ '/security/sendSms';
 
             $.ajax({
                 url: reqUrl,
@@ -327,7 +327,7 @@
             const code = $("#smsCode").val().trim();
             if(code === "") { alert("인증번호를 입력해주세요."); return; }
 
-            const reqUrl = /*[[@{/member/verifySms}]]*/ '/member/verifySms';
+            const reqUrl = /*[[@{/security/verifySms}]]*/ '/security/verifySms';
 
             $.ajax({
                 url: reqUrl,
@@ -373,7 +373,7 @@
 
             // 서버로 폼 전송
             const frm = document.registerFrm;
-            frm.action = /*[[@{/member/registerEnd}]]*/ '/member/registerEnd'; 
+            frm.action = /*[[@{/security/registerEnd}]]*/ '/security/registerEnd'; 
             frm.method = "post";
             frm.submit();
         }
