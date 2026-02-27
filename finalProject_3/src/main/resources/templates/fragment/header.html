@@ -25,7 +25,7 @@
         <nav class="util" aria-label="유틸 메뉴">
 
           <th:block sec:authorize="isAnonymous()">
-            <a class="util-link" th:href="@{/member/login}">
+            <a class="util-link" th:href="@{/security/login}">
               로그인/회원가입
             </a>
           </th:block>
@@ -34,7 +34,7 @@
 
             <span class="util-sep" aria-hidden="true">|</span>
 
-            <a class="util-link" th:href="@{/member/logout}">
+            <a class="util-link" th:href="@{/security/logout}">
               로그아웃
             </a>
 		  </th:block>

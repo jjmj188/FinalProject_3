@@ -64,7 +64,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: '/member/emailDuplicateCheck',
+            url: '/security/emailDuplicateCheck',
             type: 'POST',
             data: { "email": email },
             success: function(res) {
@@ -94,7 +94,7 @@ $(document).ready(function() {
         $btn.text('발송중...').prop('disabled', true);
 
         $.ajax({
-            url: '/member/sendAuthEmail',
+            url: '/security/sendAuthEmail',
             type: 'POST',
             data: { "email": email },
             success: function(res) {
@@ -127,7 +127,7 @@ $(document).ready(function() {
         let authCode = $('#authCode').val();
         
         $.ajax({
-            url: '/member/verifyAuthCode',
+            url: '/security/verifyAuthCode',
             type: 'POST',
             data: { "authCode": authCode },
             success: function(res) {

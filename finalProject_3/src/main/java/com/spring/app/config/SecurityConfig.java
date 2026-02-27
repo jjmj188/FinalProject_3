@@ -57,16 +57,16 @@ public class SecurityConfig {
             )
             .formLogin(form -> form
                 // ★ 불일치 수정: MemberController의 @RequestMapping("/security/")에 맞춤
-                .loginPage("/member/login")            
-                .loginProcessingUrl("/login/process") // HTML form의 action 경로와 일치시킬 것
+                .loginPage("/security/login")            
+                .loginProcessingUrl("/security/login/process") // HTML form의 action 경로와 일치시킬 것
                 .usernameParameter("email")              
                 .passwordParameter("password")           
                 .successHandler(successHandler)          
-                .failureUrl("/member/login?error=true")
+                .failureUrl("/security/login?error=true")
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutUrl("/member/logout") 
+                .logoutUrl("/security/logout") 
                 .logoutSuccessUrl("/") 
                 .invalidateHttpSession(true) 
                 .deleteCookies("JSESSIONID") 
