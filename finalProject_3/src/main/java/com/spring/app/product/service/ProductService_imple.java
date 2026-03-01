@@ -27,6 +27,15 @@ public class ProductService_imple implements ProductService {
                                    List<ProductShippingOptionDTO> shippingOptionList,
                                    List<ProductMeetLocationDTO> meetLocationList) {
 
+    	if ("나눔".equals(productDto.getSaleType())) {
+            productDto.setProductPrice(0);
+        }
+
+        // (선택) 판매인데 price가 null이면 막기
+        if ("판매".equals(productDto.getSaleType()) && productDto.getProductPrice() == null) {
+            throw new RuntimeException("판매 상품은 가격이 필수입니다.");
+        }
+    	
         // 1) PRODUCTS 저장 (selectKey로 productNo 세팅)
         int n = pdao.insertProduct(productDto);
         if (n != 1) {
