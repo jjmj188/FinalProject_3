@@ -193,67 +193,42 @@
 				<!-- 카드 그리드 -->
 				<div class="grid">
 					<!-- card 1 -->
-					<a class="card" th:href="@{/product/product_detail}">
+					<a class="card" th:each="p : ${list}"
+						th:href="@{/product/product_detail(productNo=${p.productNo})}">
 						<div class="thumb">
 							<span class="thumb-badge selling">판매중</span>
 							<button class="heart" type="button" aria-label="찜">
 								<i class="fa-regular fa-heart"></i>
 							</button>
-							<img src="" alt="">
+							<img th:src="@{${p.imgUrl}}" alt="">
 						</div>
 						<div class="card-body">
-							<div class="item-title">맥북 프로 13인치</div>
-							<div class="price">320,000원</div>
+							<div class="item-title" th:text="${p.productName}">상품명</div>
+							<div class="price"
+							     th:text="${p.saleType == '나눔' ? '무료나눔'
+							              : (p.productPrice != null ? #numbers.formatInteger(p.productPrice, 3, 'COMMA') + '원' : '가격없음')}">
+							</div>
 							<div class="meta">
-								<span><i class="fa-solid fa-location-dot"></i> 강남구</span> <span><i
-									class="fa-regular fa-clock"></i> 10분 전</span> <span><i
-									class="fa-solid fa-eye"></i> 10</span> <span><i
-									class="fa-solid fa-heart"></i> 10</span>
+								
+								<span>
+								  <i class="fa-solid fa-location-dot"></i>
+								  <span th:text="${p.areaGu != null ? p.areaGu : '택배거래'}">강남구</span>
+								</span>
+								
+								 <span>
+									<i class="fa-regular fa-clock"></i>
+									<span class="time-ago"
+									      th:attr="data-time=${#dates.format(p.regDate,'yyyy-MM-dd''T''HH:mm:ss')}">
+										방금 전
+									</span>
+								 </span> 
+								
+								<span><i class="fa-solid fa-eye"></i> 10</span>
+								
 							</div>
 						</div>
 					</a>
 
-					<!-- card 2 -->
-					<a class="card" href="#">
-						<div class="thumb">
-							<span class="thumb-badge trading">거래중</span>
-							<button class="heart" type="button" aria-label="찜">
-								<i class="fa-regular fa-heart"></i>
-							</button>
-							<img src="" alt="">
-						</div>
-						<div class="card-body">
-							<div class="item-title">원목 의자 2개 세트</div>
-							<div class="price">45,000원</div>
-							<div class="meta">
-								<span><i class="fa-solid fa-location-dot"></i> 송파구</span> <span><i
-									class="fa-regular fa-clock"></i> 1시간 전</span> <span><i
-									class="fa-solid fa-eye"></i> 10</span> <span><i
-									class="fa-solid fa-heart"></i> 10</span>
-							</div>
-						</div>
-					</a>
-
-					<!-- card 3 -->
-					<a class="card" href="#">
-						<div class="thumb">
-							<span class="thumb-badge soldout">판매완료</span>
-							<button class="heart" type="button" aria-label="찜">
-								<i class="fa-regular fa-heart"></i>
-							</button>
-							<img src="" alt="">
-						</div>
-						<div class="card-body">
-							<div class="item-title">정품 가죽 자켓</div>
-							<div class="price">90,000원</div>
-							<div class="meta">
-								<span><i class="fa-solid fa-location-dot"></i> 성남시</span> <span><i
-									class="fa-regular fa-clock"></i> 어제</span> <span><i
-									class="fa-solid fa-eye"></i> 10</span> <span><i
-									class="fa-solid fa-heart"></i> 10</span>
-							</div>
-						</div>
-					</a>
 
 				</div>
 
@@ -266,7 +241,7 @@
 			</section>
 		</section>
 	</main>
-<script>
+	<script>
   document.addEventListener("click", (e) => {
     const heartBtn = e.target.closest(".heart");
     if (!heartBtn) return;
@@ -283,9 +258,9 @@
       icon.classList.toggle("fa-solid");
     }
   });
+  
+ 
 </script>
-	<script>
 
-</script>
 </body>
 </html>

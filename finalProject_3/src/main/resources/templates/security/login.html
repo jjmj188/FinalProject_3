@@ -12,7 +12,7 @@
         <div class="container member-container">
             <h2 class="member-title">로그인</h2>
             
-            <form name="loginFrm" th:action="@{/login/process}" method="post">
+            <form name="loginFrm" th:action="@{/security/login/process}" method="post">
     
 			    <div th:if="${param.error}" class="alert alert-danger" style="color: #ee6a7b; font-size: 14px; margin-bottom: 15px;">
 			        이메일 또는 비밀번호가 일치하지 않습니다.
@@ -33,7 +33,7 @@
 
             <div class="register-box">
                 <p>아직 회원이 아니신가요?</p>
-                <a th:href="@{/member/register}" class="btn btn-outline-secondary btn-block">회원가입 하기</a>
+                <a th:href="@{/security/register}" class="btn btn-outline-secondary btn-block">회원가입 하기</a>
             </div>
         </div>
     </main>

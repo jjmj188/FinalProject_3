@@ -1,404 +1,568 @@
-(function(){
-  const wrap = document.querySelector(".pf-wrap");
-  if(!wrap) return;
+/* =========================================================
+   product_form.js (등록 제외 / 모듈만 제공) + 거래제한 모달 + 택배 UI + 직거래 위치(1~3)
+========================================================= */
 
-  // ========== 탭 underline 위치 맞추기 ==========
-  const tabs = document.querySelector(".pf-tabs");
-  const underline = document.querySelector(".pf-tab-underline");
-  const activeKey = wrap.dataset.active;
+(() => {
+  if (window.__PF_FORM_BOUND__ === true) return;
+  window.__PF_FORM_BOUND__ = true;
 
-  function setActiveTab(){
-    const all = Array.from(document.querySelectorAll(".pf-tab"));
-    const active = all.find(a => a.dataset.tab === activeKey) || all[0];
-    all.forEach(a => a.classList.toggle("is-active", a === active));
+  const $ = (sel, el = document) => el.querySelector(sel);
+  const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 
-    if(!tabs || !underline || !active) return;
+  const wrap = $(".pf-wrap");
+  if (!wrap) return;
 
-    const tabsRect = tabs.getBoundingClientRect();
-    const rect = active.getBoundingClientRect();
-    const left = rect.left - tabsRect.left;
+  window.PF = window.PF || {};
 
-    underline.style.width = rect.width + "px";
-    underline.style.transform = `translateX(${left}px)`;
+  function parseNumber(raw) {
+    const n = String(raw ?? "").replace(/[^\d]/g, "");
+    return n ? Number(n) : null;
   }
 
-  setActiveTab();
-  window.addEventListener("resize", setActiveTab);
-
-
-// =========================================================
-// ========== 이미지 미리보기(최대 3개) + 대표이미지 설정 ==========
-// =========================================================
-const fileInput = document.getElementById("pfImageInput");
-const previewWrap = document.getElementById("pfPreviewWrap") || document.querySelector(".pf-preview");
-const MAX_FILES = 3;
-
-let selectedFiles = [];
-let mainIndex = 0; // 대표 이미지 인덱스
-
-function clampMainIndex(){
-  if(selectedFiles.length === 0){
-    mainIndex = 0;
-    return;
+  function safeJsonParse(str, fallback) {
+    try { return JSON.parse(str); } catch { return fallback; }
   }
-  if(mainIndex >= selectedFiles.length) mainIndex = 0;
-  if(mainIndex < 0) mainIndex = 0;
-}
 
-function setMain(idx){
-  mainIndex = idx;
-  clampMainIndex();
-  renderPreviews();
-}
+  // =========================================================
+  // 0) 거래 제한 품목 안내 모달
+  // =========================================================
+  (() => {
+    const link = $("#pfShipSettingLink");
+    const modal = $("#pfShipModal");
+    const closeBtn = $("#pfShipModalClose");
+    if (!link || !modal) return;
 
-function renderPreviews(){
-  if(!previewWrap) return;
+    modal.style.display = "none";
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
 
-  previewWrap.innerHTML = "";
-  previewWrap.classList.toggle("is-on", selectedFiles.length > 0);
+    function openModal() {
+      modal.classList.add("is-open");
+      modal.style.display = "flex";
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
 
-  selectedFiles.forEach((file, idx) => {
-    const url = URL.createObjectURL(file);
+    function closeModal() {
+      modal.classList.remove("is-open");
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
 
-    const item = document.createElement("div");
-    item.className = "pf-preview-item";
-    if(idx === mainIndex) item.classList.add("is-main");
-    item.dataset.index = String(idx);
+    link.addEventListener("click", (e) => { e.preventDefault(); openModal(); });
+    if (closeBtn) closeBtn.addEventListener("click", (e) => { e.preventDefault(); closeModal(); });
 
-    const img = document.createElement("img");
-    img.className = "pf-preview-img";
-    img.src = url;
-    img.alt = file.name || "업로드 이미지";
-
-    // 대표 선택(라디오)
-    const badge = document.createElement("label");
-    badge.className = "pf-main-badge";
-    badge.innerHTML = `
-      <input type="radio" name="pfMainImage" class="pf-main-radio" ${idx === mainIndex ? "checked" : ""}>
-      <span class="pf-main-text">대표</span>
-    `;
-
-    // 라디오 변경
-    const radio = badge.querySelector("input");
-    radio.addEventListener("change", () => setMain(idx));
-
-    // 이미지 클릭해도 대표로 설정(UX 편의)
-    img.addEventListener("click", () => setMain(idx));
-
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "pf-preview-remove";
-    btn.setAttribute("aria-label", "이미지 삭제");
-    btn.textContent = "×";
-
-    btn.addEventListener("click", () => {
-      URL.revokeObjectURL(url);
-
-      // 삭제 전 대표 인덱스 보정
-      if(idx === mainIndex){
-        // 대표를 삭제하면: 우선 0번(또는 남는 첫 이미지)로
-        selectedFiles = selectedFiles.filter((_, i) => i !== idx);
-        mainIndex = 0;
-      } else {
-        selectedFiles = selectedFiles.filter((_, i) => i !== idx);
-        // 삭제가 대표 앞쪽이면 대표 인덱스가 1 줄어듦
-        if(idx < mainIndex) mainIndex -= 1;
-      }
-
-      clampMainIndex();
-      syncInputFiles();
-      renderPreviews();
+    modal.addEventListener("click", (e) => {
+      const content = modal.querySelector(".pf-modal-content");
+      if (!content) return;
+      if (!content.contains(e.target)) closeModal();
     });
 
-    item.appendChild(img);
-    item.appendChild(badge);
-    item.appendChild(btn);
-    previewWrap.appendChild(item);
-  });
-}
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
 
-function syncInputFiles(){
-  if(!fileInput) return;
-  const dt = new DataTransfer();
-  selectedFiles.forEach(f => dt.items.add(f));
-  fileInput.files = dt.files;
-}
+    window.PF.RestrictionModal = { open: openModal, close: closeModal };
+  })();
 
-// 대표 인덱스를 폼 전송 시 같이 보내려면 hidden input 하나 sync
-const mainHidden = document.getElementById("pfMainIndex"); // (옵션) hidden input
+  // =========================================================
+  // 1) 탭 underline
+  // =========================================================
+  (() => {
+    const tabs = $(".pf-tabs");
+    const underline = $(".pf-tab-underline");
+    const activeKey = wrap.dataset.active;
 
-function syncMainHidden(){
-  if(mainHidden) mainHidden.value = String(mainIndex);
-}
+    function setActiveTab() {
+      const all = $$(".pf-tab");
+      const active = all.find(a => a.dataset.tab === activeKey) || all[0];
+      all.forEach(a => a.classList.toggle("is-active", a === active));
+      if (!tabs || !underline || !active) return;
 
-function renderAll(){
-  renderPreviews();
-  syncMainHidden();
-}
-
-if(fileInput && previewWrap){
-  fileInput.addEventListener("change", (e) => {
-    const files = Array.from(e.target.files || []);
-    if(files.length === 0) return;
-
-    if(selectedFiles.length >= MAX_FILES){
-      fileInput.value = "";
-      return;
+      const tabsRect = tabs.getBoundingClientRect();
+      const rect = active.getBoundingClientRect();
+      underline.style.width = rect.width + "px";
+      underline.style.transform = `translateX(${rect.left - tabsRect.left}px)`;
     }
 
-    const remain = MAX_FILES - selectedFiles.length;
-    const toAdd = files.slice(0, remain);
+    setActiveTab();
+    window.addEventListener("resize", setActiveTab);
+  })();
 
-    const beforeLen = selectedFiles.length;
-    selectedFiles = selectedFiles.concat(toAdd);
+  // =========================================================
+  // 2) 이미지(1~3) + 대표(mainIndex)
+  // =========================================================
+  const ImageModule = (() => {
+    const fileInput = $("#pfImageInput");
+    const previewWrap = $("#pfPreviewWrap") || $(".pf-preview");
+    const mainHidden = $("#pfMainIndex");
+    const MAX_FILES = 3;
 
-    // 처음 추가되는 경우 자동 대표(맨 처음 이미지)
-    if(beforeLen === 0 && selectedFiles.length > 0){
-      mainIndex = 0;
+    if (!fileInput || !previewWrap || !mainHidden) return null;
+
+    let selectedFiles = [];
+    let mainIndex = 0;
+
+    function clampMain() {
+      if (selectedFiles.length === 0) { mainIndex = 0; return; }
+      if (mainIndex >= selectedFiles.length) mainIndex = 0;
+      if (mainIndex < 0) mainIndex = 0;
     }
 
-    clampMainIndex();
-    syncInputFiles();
-    renderAll();
-    fileInput.value = "";
-  });
+    function setMain(idx) {
+      mainIndex = idx;
+      clampMain();
+      render();
+    }
 
-  renderAll();
-}
+    function render() {
+      previewWrap.innerHTML = "";
+      previewWrap.classList.toggle("is-on", selectedFiles.length > 0);
+      mainHidden.value = String(mainIndex);
 
-  function syncInputFiles(){
-    if(!fileInput) return;
-    const dt = new DataTransfer();
-    selectedFiles.forEach(f => dt.items.add(f));
-    fileInput.files = dt.files;
-  }
+      selectedFiles.forEach((file, idx) => {
+        const url = URL.createObjectURL(file);
 
-  if(fileInput && previewWrap){
+        const item = document.createElement("div");
+        item.className = "pf-preview-item" + (idx === mainIndex ? " is-main" : "");
+
+        const img = document.createElement("img");
+        img.className = "pf-preview-img";
+        img.src = url;
+        img.alt = file.name || "업로드 이미지";
+        img.addEventListener("click", () => setMain(idx));
+
+        const badge = document.createElement("label");
+        badge.className = "pf-main-badge";
+        badge.innerHTML = `
+          <input type="radio" name="pfMainImagePick" class="pf-main-radio" ${idx === mainIndex ? "checked" : ""}>
+          <span class="pf-main-text">대표</span>
+        `;
+        badge.querySelector("input").addEventListener("change", () => setMain(idx));
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "pf-preview-remove";
+        del.textContent = "×";
+        del.setAttribute("aria-label", "이미지 삭제");
+        del.addEventListener("click", () => {
+          URL.revokeObjectURL(url);
+
+          selectedFiles = selectedFiles.filter((_, i) => i !== idx);
+          if (idx === mainIndex) mainIndex = 0;
+          else if (idx < mainIndex) mainIndex -= 1;
+
+          clampMain();
+          render();
+        });
+
+        item.appendChild(img);
+        item.appendChild(badge);
+        item.appendChild(del);
+        previewWrap.appendChild(item);
+      });
+    }
+
     fileInput.addEventListener("change", (e) => {
       const files = Array.from(e.target.files || []);
-      if(files.length === 0) return;
+      if (files.length === 0) return;
 
-      if(selectedFiles.length >= MAX_FILES){
+      if (selectedFiles.length >= MAX_FILES) {
+        alert("이미지는 최대 3장까지 등록할 수 있어요.");
         fileInput.value = "";
         return;
       }
 
       const remain = MAX_FILES - selectedFiles.length;
-      const toAdd = files.slice(0, remain);
+      selectedFiles = selectedFiles.concat(files.slice(0, remain));
 
-      selectedFiles = selectedFiles.concat(toAdd);
-      syncInputFiles();
-      renderPreviews();
+      clampMain();
+      render();
+
+      // ✅ picker만 비움 (selectedFiles 유지)
       fileInput.value = "";
     });
 
-    renderPreviews();
-  }
+    render();
 
+    return {
+      validate() {
+        if (selectedFiles.length < 1) return { ok: false, msg: "상품 이미지는 최소 1장 등록해야 합니다." };
+        if (selectedFiles.length > 3) return { ok: false, msg: "상품 이미지는 최대 3장까지 등록할 수 있습니다." };
+        if (Number(mainHidden.value) >= selectedFiles.length) mainHidden.value = "0";
+        return { ok: true };
+      },
+      appendToFormData(fd) {
+        // ✅ 중복 방지: 기존 images 제거 후 selectedFiles로만 구성
+        fd.delete("images");
+        selectedFiles.forEach(f => fd.append("images", f));
+      }
+    };
+  })();
 
-  // ========== textarea 글자수 ==========
-  const ta = document.querySelector(".pf-textarea");
-  const now = document.querySelector(".pf-count-now");
-  if(ta && now){
+  window.PF.Image = ImageModule;
+
+  // =========================================================
+  // 3) textarea 글자수
+  // =========================================================
+  (() => {
+    const ta = $(".pf-textarea");
+    const now = $(".pf-count-now");
+    if (!ta || !now) return;
     const update = () => { now.textContent = String(ta.value.length); };
     ta.addEventListener("input", update);
     update();
-  }
-
+  })();
 
   // =========================================================
-  // ========== 거래방법 + 배송비 UI (슬라이드 애니메이션 포함) ==========
+  // 4) 택배(배송비 포함/별도) + shippingOptionsJson
   // =========================================================
-  const shipToggle = document.getElementById("pfShipToggle");
-  const meetToggle = document.getElementById("pfMeetToggle");
+  const ShippingModule = (() => {
+    const shipToggle = $("#pfShipToggle");
+    const meetToggle = $("#pfMeetToggle");
 
-  const shipCard = document.getElementById("pfShipCard");           // 배송비 포함 여부 카드
-  const feeDetail = document.getElementById("pfShipFeeDetail");     // 배송비 입력 영역
-  const shipSettingLink = document.getElementById("pfShipSettingLink");
-  const locationBtn = document.getElementById("pfLocationBtn");
+    const shipCard = $("#pfShipCard");
+    const feeIncluded = $("#pfFeeIncluded");
+    const feeSeparate = $("#pfFeeSeparate");
+    const feeDetail = $("#pfShipFeeDetail");
 
-  const feeIncluded = document.getElementById("pfFeeIncluded");
-  const feeSeparate = document.getElementById("pfFeeSeparate");
+    const shipOptionsHidden = $("#pfShipOptionsJson");
 
-  function openEl(el){
-    if(!el) return;
-    el.classList.add("is-open");
-    el.setAttribute("aria-hidden", "false");
-  }
+    const optChecks = $$(".pf-ship-opt");
+    const feeInputs = $$("[data-fee-for]");
 
-  function closeEl(el){
-    if(!el) return;
-    el.classList.remove("is-open");
-    el.setAttribute("aria-hidden", "true");
-  }
+    if (!shipToggle || !meetToggle || !shipOptionsHidden) return null;
 
-  function updateTradeUI(){
-    if(!shipToggle || !meetToggle) return;
+    function syncOne(type) {
+      const chk = optChecks.find(x => x.dataset.type === type);
+      const inp = $(`[data-fee-for="${type}"]`);
+      if (!chk || !inp) return;
 
-    const isShip = shipToggle.checked;
-    const isMeet = meetToggle.checked;
-    const isSeparate = !!(feeSeparate && feeSeparate.checked);
-
-    // ===== 배송비 카드 슬라이드 표시 =====
-    if(shipCard){
-      if(isShip) openEl(shipCard);
-      else closeEl(shipCard);
+      inp.disabled = !chk.checked;
+      if (!chk.checked) inp.value = "";
     }
 
-    // ===== 배송비 입력 영역 =====
-    if(feeDetail){
-      if(isShip && isSeparate) openEl(feeDetail);
-      else closeEl(feeDetail);
-    }
-
-    // ===== 직거래 버튼 =====
-    if(locationBtn){
-      locationBtn.style.display = isMeet ? "inline-flex" : "none";
-    }
-
-    // ===== 거래제한 품목 안내 노출 조건 =====
-    if(shipSettingLink){
-      shipSettingLink.style.display = (isShip && isSeparate) ? "inline" : "none";
-    }
-  }
-
-  // 배송비 포함/별도 변경
-  if(feeIncluded) feeIncluded.addEventListener("change", updateTradeUI);
-  if(feeSeparate) feeSeparate.addEventListener("change", updateTradeUI);
-
-  // 만나서 직거래 선택 시 → 배송비 카드 + 입력영역 모두 접고 포함으로 초기화
-  if(meetToggle){
-    meetToggle.addEventListener("change", () => {
-      if(meetToggle.checked){
-        if(feeIncluded) feeIncluded.checked = true;
+    function syncShipOptionsJson() {
+      if (!shipToggle.checked) {
+        shipOptionsHidden.value = "[]";
+        return [];
       }
-      updateTradeUI();
+
+      if (feeIncluded && feeIncluded.checked) {
+        const payload = [{ parcelType: "무료배송", shippingFee: 0 }];
+        shipOptionsHidden.value = JSON.stringify(payload);
+        return payload;
+      }
+
+      const selected = [];
+      optChecks.forEach(chk => {
+        if (!chk.checked) return;
+        const type = chk.dataset.type;
+        const inp = $(`[data-fee-for="${type}"]`);
+        const fee = inp ? parseNumber(inp.value) : null;
+        selected.push({ parcelType: type, shippingFee: fee });
+      });
+
+      shipOptionsHidden.value = JSON.stringify(selected);
+      return selected;
+    }
+
+    function setFeeDetailUI() {
+      const isShip = shipToggle.checked;
+      const isSeparate = !!feeSeparate?.checked;
+
+      if (feeDetail) {
+        feeDetail.classList.toggle("is-open", isShip && isSeparate);
+        feeDetail.setAttribute("aria-hidden", (isShip && isSeparate) ? "false" : "true");
+      }
+
+      if (feeIncluded && feeIncluded.checked) {
+        optChecks.forEach(chk => chk.checked = false);
+        feeInputs.forEach(inp => { inp.value = ""; inp.disabled = true; });
+      }
+
+      syncShipOptionsJson();
+    }
+
+    function setTradeUI() {
+      const isShip = shipToggle.checked;
+      const isMeet = meetToggle.checked;
+
+      if (shipCard) shipCard.classList.toggle("is-open", isShip);
+
+      const locBtn = $("#pfLocationBtn");
+      const chips = $("#pfLocChips");
+      if (locBtn) locBtn.style.display = isMeet ? "" : "none";
+      if (chips) chips.style.display = isMeet ? "" : "none";
+
+      if (!isShip) {
+        shipOptionsHidden.value = "[]";
+        if (feeDetail) feeDetail.classList.remove("is-open");
+        feeInputs.forEach(inp => { inp.value = ""; inp.disabled = true; });
+        optChecks.forEach(chk => chk.checked = false);
+      } else {
+        setFeeDetailUI();
+      }
+    }
+
+    if (feeIncluded) feeIncluded.addEventListener("change", setFeeDetailUI);
+    if (feeSeparate) feeSeparate.addEventListener("change", setFeeDetailUI);
+
+    optChecks.forEach(chk => {
+      chk.addEventListener("change", () => {
+        syncOne(chk.dataset.type);
+        syncShipOptionsJson();
+      });
     });
-  }
 
-  // 택배거래 선택 시 → 카드 부드럽게 다시 열림
-  if(shipToggle){
-    shipToggle.addEventListener("change", updateTradeUI);
-  }
+    feeInputs.forEach(inp => inp.addEventListener("input", syncShipOptionsJson));
 
-  updateTradeUI();
+    shipToggle.addEventListener("change", setTradeUI);
+    meetToggle.addEventListener("change", setTradeUI);
 
+    optChecks.forEach(chk => syncOne(chk.dataset.type));
+    setTradeUI();
+    setFeeDetailUI();
 
-  // ========== 기존 "택배 리스트 흐리게" 로직 ==========
-  const shipList = document.getElementById("pfShipList");
-  if(shipToggle && shipList){
-    const syncShip = () => {
-      shipList.style.opacity = shipToggle.checked ? "1" : "0.35";
-      shipList.style.pointerEvents = shipToggle.checked ? "auto" : "none";
-      shipList.style.filter = shipToggle.checked ? "none" : "grayscale(1)";
+    return {
+      syncShipOptionsJson,
+      validate() {
+        if (!shipToggle.checked) return { ok: true };
+
+        if (feeIncluded && feeIncluded.checked) return { ok: true };
+
+        const opts = syncShipOptionsJson();
+        if (opts.length === 0) return { ok: false, msg: "배송비 별도를 선택했다면 배송 옵션을 1개 이상 선택해 주세요." };
+
+        const missing = opts.find(x => x.shippingFee === null);
+        if (missing) return { ok: false, msg: `"${missing.parcelType}" 배송비를 입력해 주세요.` };
+
+        return { ok: true };
+      }
     };
-    shipToggle.addEventListener("change", syncShip);
-    syncShip();
-  }
+  })();
 
+  window.PF.Shipping = ShippingModule;
 
-  // ========== 직거래 입력 활성/비활성 ==========
-  const meetType = document.getElementById("pfMeetType");
-  const meetPlace = document.getElementById("pfMeetPlace");
+  // =========================================================
+  // 5) 직거래 위치 1~3 -> meetLocationsJson
+  // =========================================================
+  const MeetLocationModule = (() => {
+    const openBtn = $("#pfLocationBtn");
+    const modal = $("#areaModal");
+    const list = $("#areaList");
+    const useGeoBtn = $("#areaUseGeoBtn");
+    const searchBtn = $("#areaSearchBtn");
+    const chipsWrap = $("#pfLocChips");
+    const hidden = $("#pfMeetLocations");
 
-  function syncMeet(){
-    if(!meetToggle || !meetType || !meetPlace) return;
-    const on = meetToggle.checked && meetType.checked;
-    meetPlace.disabled = !on;
-    meetPlace.classList.toggle("pf-input-gray", !on);
-    if(!on) meetPlace.value = "";
-  }
+    if (!openBtn || !modal || !list || !chipsWrap || !hidden) return null;
 
-  if(meetToggle && meetType && meetPlace){
-    meetToggle.addEventListener("change", () => {
-      if(!meetToggle.checked){
-        meetType.checked = false;
-      }
-      syncMeet();
-    });
-    meetType.addEventListener("change", syncMeet);
-    syncMeet();
-  }
+    const MAX_LOC = 3;
+    let lastFocusedEl = null;
 
-})();
-
-(function(){
-  const startEl = document.getElementById('aucStartAt');
-  const endDateEl = document.getElementById('aucEndDate');
-  const endTimeEl = document.getElementById('aucEndTime');
-  const endAtHidden = document.getElementById('aucEndAt');
-  if(!startEl || !endDateEl || !endTimeEl || !endAtHidden) return;
-
-  function pad(n){ return String(n).padStart(2, '0'); }
-
-  function toDateValue(d){
-    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-  }
-
-  function toTimeValue(d){
-    return pad(d.getHours()) + ':' + pad(d.getMinutes());
-  }
-
-  function toDatetimeLocalValue(d){
-    return toDateValue(d) + 'T' + toTimeValue(d);
-  }
-
-  function buildEndAt(){
-    const d = endDateEl.value;
-    const t = endTimeEl.value;
-    endAtHidden.value = (d && t) ? (d + 'T' + t) : '';
-  }
-
-  function enforceRule(){
-    // 종료값 합치기
-    buildEndAt();
-
-    // 시작/종료 검증(종료 > 시작)
-    if(!startEl.value || !endAtHidden.value) return;
-
-    const s = new Date(startEl.value);
-    const e = new Date(endAtHidden.value);
-
-    if(e.getTime() <= s.getTime()){
-      // 자동으로 최소 1시간 뒤로 보정
-      const minEnd = new Date(s.getTime() + 60*60*1000);
-      endDateEl.value = toDateValue(minEnd);
-      endTimeEl.value = toTimeValue(minEnd);
-      buildEndAt();
+    function load() {
+      const v = safeJsonParse(hidden.value || "[]", []);
+      return Array.isArray(v) ? v : [];
     }
-  }
+    function save(arr) { hidden.value = JSON.stringify(arr); }
 
-  // 기본값: 시작=5분 뒤, 종료=+24시간(마감시간은 시작기준)
-  const now = new Date();
-  const defaultStart = new Date(now.getTime() + 5*60*1000);
-  const defaultEnd = new Date(defaultStart.getTime() + 24*60*60*1000);
+    function isDup(arr, fullAddress) {
+      const key = (fullAddress || "").trim();
+      return arr.some(x => (x.fullAddress || "").trim() === key);
+    }
 
-  startEl.value = toDatetimeLocalValue(defaultStart);
-  endDateEl.value = toDateValue(defaultEnd);
-  endTimeEl.value = toTimeValue(defaultEnd);
-  buildEndAt();
+    function shortText(addr) {
+      if (!addr) return "";
+      return addr.length > 28 ? addr.slice(0, 28) + "…" : addr;
+    }
 
-  // 이벤트
-  startEl.addEventListener('change', enforceRule);
-  endDateEl.addEventListener('change', enforceRule);
-  endTimeEl.addEventListener('change', enforceRule);
+    function renderChips() {
+      const arr = load();
+      chipsWrap.innerHTML = "";
 
-  // 폼 제출 직전 hidden 확정(폼이 있을 때만)
-  const form = startEl.closest('form');
-  if(form){
-    form.addEventListener('submit', function(e){
-      buildEndAt();
-      if(!startEl.value || !endAtHidden.value){
-        e.preventDefault();
-        alert('경매 시작시간과 종료일/시간을 입력해 주세요.');
-        return;
+      arr.forEach((loc, idx) => {
+        const chip = document.createElement("div");
+        chip.className = "pf-loc-chip";
+
+        const text = document.createElement("span");
+        text.className = "pf-loc-chip__text";
+        text.title = loc.fullAddress || "";
+        text.textContent = shortText(loc.fullAddress);
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "pf-loc-chip__del";
+        del.setAttribute("aria-label", "삭제");
+        del.textContent = "×";
+        del.addEventListener("click", () => {
+          const next = load().filter((_, i) => i !== idx);
+          save(next);
+          renderChips();
+          updateAddButtonState();
+        });
+
+        chip.appendChild(text);
+        chip.appendChild(del);
+        chipsWrap.appendChild(chip);
+      });
+    }
+
+    function updateAddButtonState() {
+      const arr = load();
+      const span = openBtn.querySelector("span");
+      if (arr.length >= MAX_LOC) {
+        openBtn.disabled = true;
+        openBtn.style.opacity = "0.6";
+        openBtn.style.cursor = "not-allowed";
+        if (span) span.textContent = "위치 3개까지 설정 가능";
+      } else {
+        openBtn.disabled = false;
+        openBtn.style.opacity = "";
+        openBtn.style.cursor = "";
+        if (span) span.textContent = "+ 위치 설정";
       }
-      const s = new Date(startEl.value);
-      const e2 = new Date(endAtHidden.value);
-      if(e2.getTime() <= s.getTime()){
-        e.preventDefault();
-        alert('경매 종료일/시간은 시작시간 이후여야 합니다.');
-      }
+    }
+
+    function openModal() {
+      const meetToggle = document.querySelector("#pfMeetToggle");
+      if (meetToggle && !meetToggle.checked) return;
+
+      if (load().length >= MAX_LOC) { alert("위치는 최대 3개까지 설정할 수 있어요."); return; }
+      lastFocusedEl = document.activeElement;
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+    function closeModal() {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      if (lastFocusedEl) lastFocusedEl.focus();
+    }
+
+    openBtn.addEventListener("click", openModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target.closest("[data-area-close='true']")) closeModal();
     });
-  }
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+
+    function ensureKakaoServices() { return !!(window.kakao && kakao.maps && kakao.maps.services); }
+    function waitForKakaoServices(cb, tries = 40) {
+      if (ensureKakaoServices()) return cb();
+      if (tries <= 0) { console.error("카카오 SDK 로드 실패: &libraries=services 확인"); return; }
+      setTimeout(() => waitForKakaoServices(cb, tries - 1), 100);
+    }
+
+    function addressToLatLng(address, cb) {
+      if (!ensureKakaoServices()) return cb("", "");
+      const geocoder = new kakao.maps.services.Geocoder();
+      geocoder.addressSearch(address, (result, status) => {
+        if (status === kakao.maps.services.Status.OK) cb(result[0].y, result[0].x);
+        else cb("", "");
+      });
+    }
+
+    function latLngToFullAddress(lat, lng, cb) {
+      if (!ensureKakaoServices()) return cb("");
+      const geocoder = new kakao.maps.services.Geocoder();
+      geocoder.coord2Address(lng, lat, (result, status) => {
+        if (status === kakao.maps.services.Status.OK) {
+          const jibun = result[0].address ? result[0].address.address_name : "";
+          const road = result[0].road_address ? result[0].road_address.address_name : "";
+          cb(road || jibun);
+        } else cb("");
+      });
+    }
+
+    function addLocation(fullAddress, lat, lng) {
+      const addr = (fullAddress || "").trim();
+      if (!addr) return;
+
+      const arr = load();
+      if (arr.length >= MAX_LOC) { alert("위치는 최대 3개까지 설정할 수 있어요."); return; }
+      if (isDup(arr, addr)) { alert("이미 추가된 위치예요."); return; }
+
+      arr.push({ placeName: "", fullAddress: addr, latitude: lat || "", longitude: lng || "" });
+      save(arr);
+      renderChips();
+      updateAddButtonState();
+    }
+
+    function openPostcodeForLocation() {
+      new daum.Postcode({
+        oncomplete: function (data) {
+          const addr = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
+          let extraAddr = "";
+
+          if (data.userSelectedType === "R") {
+            if (data.bname !== "" && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
+            if (data.buildingName !== "" && data.apartment === "Y") {
+              extraAddr += extraAddr !== "" ? ", " + data.buildingName : data.buildingName;
+            }
+            if (extraAddr !== "") extraAddr = " (" + extraAddr + ")";
+          }
+
+          const full = addr + extraAddr;
+          addressToLatLng(addr, (lat, lng) => {
+            addLocation(full, lat, lng);
+            closeModal();
+          });
+        }
+      }).open();
+    }
+
+    function setMyLocation() {
+      if (!navigator.geolocation) { alert("이 브라우저는 위치 기능을 지원하지 않습니다."); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          latLngToFullAddress(lat, lng, (fullAddr) => {
+            addLocation(fullAddr || "현재 위치", lat, lng);
+            closeModal();
+          });
+        },
+        (err) => {
+          if (err.code === 1) alert("위치 권한이 거부되었습니다.");
+          else if (err.code === 2) alert("위치 정보를 가져올 수 없습니다.");
+          else if (err.code === 3) alert("위치 조회 시간이 초과되었습니다.");
+          else alert("위치 조회 중 오류가 발생했습니다.");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest(".area-item");
+      if (!btn) return;
+      const val = btn.getAttribute("data-area-value") || btn.textContent.trim();
+      addLocation(val, "", "");
+      closeModal();
+    });
+
+    waitForKakaoServices(() => {
+      if (searchBtn) searchBtn.addEventListener("click", openPostcodeForLocation);
+      if (useGeoBtn) useGeoBtn.addEventListener("click", setMyLocation);
+    });
+
+    renderChips();
+    updateAddButtonState();
+
+    return {
+      validate(tradeMethod) {
+        if (tradeMethod !== "직거래") return { ok: true };
+        const arr = load();
+        if (arr.length === 0) return { ok: false, msg: "직거래를 선택했다면 위치를 1개 이상 설정해 주세요." };
+        if (arr.length > 3) return { ok: false, msg: "직거래 위치는 최대 3개까지 설정할 수 있어요." };
+        return { ok: true };
+      }
+    };
+  })();
+
+  window.PF.Meet = MeetLocationModule;
+
 })();

@@ -25,19 +25,18 @@
         <nav class="util" aria-label="유틸 메뉴">
 
           <th:block sec:authorize="isAnonymous()">
-            <a class="util-link" th:href="@{/member/login}">
+            <a class="util-link" th:href="@{/security/login}">
               로그인/회원가입
             </a>
           </th:block>
 
           <th:block sec:authorize="isAuthenticated()">
 
-            <span class="util-sep" aria-hidden="true">|</span>
-
-            <a class="util-link" th:href="@{/logout}">
-              로그아웃
+            <a class="util-link" th:href="@{/security/logout}">
+				로그아웃
             </a>
-
+		  </th:block>
+		  
             <span class="util-sep" aria-hidden="true">|</span>
 
             <a th:href="@{/chat}">
@@ -81,8 +80,6 @@
                 </div>
               </div>
             </a>
-            
-          </th:block>
 
         </nav>
       </div>
@@ -122,7 +119,7 @@
           <nav class="gnb" aria-label="주요 메뉴">
             <a th:href="@{/product/product_list}" class="gnb-link">장터</a>
             <a th:href="@{/product/price_check}" class="gnb-link">시세조회</a>
-            <a th:href="@{/auction}" class="gnb-link">경매장</a>
+            <a th:href="@{/product/auction}" class="gnb-link">경매장</a>
             <a th:href="@{/product/sell}" class="gnb-link">판매하기</a>
           </nav>
 

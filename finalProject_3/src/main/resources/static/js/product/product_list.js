@@ -74,7 +74,7 @@
   const useGeoBtn = document.getElementById("areaUseGeoBtn");
 
   if(!openBtn || !modal || !searchInput || !list) return;
-
+	
   let lastFocusedEl = null;
 
   function openModal(){
@@ -157,4 +157,37 @@
       { enableHighAccuracy: true, timeout: 8000 }
     );
   });
+  
+  document.addEventListener("DOMContentLoaded", function () {
+
+    function formatTimeAgo(dateString) {
+      if (!dateString) return "";
+
+      const now = new Date();
+      const past = new Date(dateString);
+      const diff = Math.floor((now - past) / 1000); // 초 차이
+
+      if (diff < 60) return diff + "초 전";
+
+      const minutes = Math.floor(diff / 60);
+      if (minutes < 60) return minutes + "분 전";
+
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return hours + "시간 전";
+
+      const days = Math.floor(hours / 24);
+      return days + "일 전";
+    }
+
+    const times = document.querySelectorAll(".time-ago");
+
+    times.forEach(el => {
+      const dateString = el.dataset.time;
+      el.textContent = formatTimeAgo(dateString);
+    });
+
+  });
 })();
+
+
+
