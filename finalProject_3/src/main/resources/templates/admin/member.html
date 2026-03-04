@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원관리 - 관리자</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #f5f5f0;
+            --sidebar-border: #e5e5e0;
+            --nav-hover: #ebebeb;
+            --nav-active-bg: #6c757d;
+            --card-bg: #f8f8f8;
+            --card-border: #e8e8e8;
+        }
+        body {
+            min-height: 100vh;
+            background-color: #fff;
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        }
+        .admin-sidebar {
+            min-height: 100vh;
+            background-color: var(--sidebar-bg);
+            width: 220px;
+            padding: 1.5rem 0;
+            border-right: 1px solid var(--sidebar-border);
+            position: fixed;
+            z-index: 100;
+        }
+        .admin-profile { margin-bottom: 2.5rem; }
+        .admin-avatar {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background-color: #fff;
+            margin: 0 auto 0.5rem;
+            display: block;
+            border: 1px solid var(--sidebar-border);
+            background-image: url('https://via.placeholder.com/65');
+            background-size: cover;
+        }
+        .admin-name {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #495057;
+            font-weight: 600;
+        }
+        .nav-menu-item {
+            display: block;
+            width: calc(100% - 1rem);
+            margin: 0 0.5rem 0.35rem;
+            padding: 0.65rem 1rem;
+            background-color: #fff;
+            border: 1px solid var(--sidebar-border);
+            border-radius: 8px;
+            color: #212529;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .nav-menu-item:hover { background-color: var(--nav-hover); color: #212529; }
+        .nav-menu-item.active {
+            background-color: var(--nav-active-bg);
+            border-color: #5a6268;
+            color: #fff;
+            font-weight: 500;
+        }
+        .main-content {
+            margin-left: 220px;
+            flex: 1;
+            padding: 1.5rem 2rem;
+        }
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+        .filter-bar {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 1.25rem 0 1rem;
+            font-size: 0.9rem;
+        }
+        .member-table-wrap {
+            background-color: #fff;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .member-table thead th {
+            background-color: #f1f3f5;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body class="d-flex">
+
+    <aside class="admin-sidebar flex-shrink-0">
+        <div class="admin-profile">
+            <div class="admin-avatar"></div>
+            <p class="admin-name mb-0">관리자님 환영합니다</p>
+        </div>
+        <nav>
+            <a th:href="@{/admin/member}" class="nav-menu-item active">회원관리</a>
+            <a th:href="@{/admin/product}" class="nav-menu-item">상품관리</a>
+            <a th:href="@{/admin/review}" class="nav-menu-item">리뷰관리</a>
+            <a th:href="@{/admin/transaction}" class="nav-menu-item">거래관리</a>
+            <a th:href="@{/admin/dashboard}" class="nav-menu-item">콘텐츠 및 운영</a>
+        </nav>
+    </aside>
+
+    <main class="main-content w-100">
+        <h4 class="mb-4 fw-bold">회원 관리</h4>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <div class="text-muted small">총 가입자 수</div>
+                    <div class="h4 fw-bold mb-0" th:text="${totalMembers != null ? totalMembers + '명' : '0명'}">0명</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <div class="text-muted small">신규 가입 (오늘)</div>
+                    <div class="h4 fw-bold mb-0 text-primary" th:text="${newMembers != null ? newMembers + '명' : '0명'}">0명</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <div class="text-muted small">일시/영구 정지</div>
+                    <div class="h4 fw-bold mb-0 text-danger" th:text="${suspendedMembers != null ? suspendedMembers + '명' : '0명'}">0명</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-bar d-flex align-items-center justify-content-between">
+            <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" style="width: 120px;">
+                    <option value="">전체상태</option>
+                    <option value="1">활동중</option>
+                    <option value="0">탈퇴/정지</option>
+                </select>
+                <input type="text" class="form-control form-control-sm" placeholder="이메일 또는 이름 검색" style="width: 200px;">
+                <button class="btn btn-dark btn-sm">검색</button>
+            </div>
+            <div class="text-muted small">
+                조회 결과 : <span class="fw-bold" th:text="${#lists.size(members)}">0</span>명
+            </div>
+        </div>
+
+        <div class="member-table-wrap">
+            <table class="table member-table table-hover mb-0">
+                <thead>
+                    <tr class="text-center">
+                        <th>번호</th>
+                        <th>계정 정보</th>
+                        <th>연락처</th>
+                        <th>상태</th>
+                        <th>매너온도</th>
+                        <th>가입일</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m, stat : ${members}" class="text-center align-middle">
+                        <td th:text="${stat.count}">1</td>
+                        <td class="text-start">
+                            <div class="fw-bold" th:text="${m.email}">email@address.com</div>
+                            <small class="text-muted" th:text="${m.userName}">회원명</small>
+                        </td>
+                        <td th:text="${m.phone}">010-0000-0000</td>
+                        <td>
+                            <span th:if="${m.status == 0}" class="badge bg-dark">탈퇴</span>
+                            <span th:if="${m.status == 1 and m.suspended == 1}" class="badge bg-danger">관리자정지</span>
+                            <span th:if="${m.status == 1 and m.idle == 1}" class="badge bg-secondary">휴면</span>
+                            <span th:if="${m.status == 1 and m.suspended == 0 and m.idle == 0}" class="badge bg-success">활동중</span>
+                        </td>
+                        <td><span class="fw-bold text-primary" th:text="${m.mannerTemp}">50</span>℃</td>
+                        <td th:text="${m.regDate}">2026-02-10</td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm" 
+                                    th:onclick="openMemberModal([[${m.userNo}]])">상세보기</button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(members)}">
+                        <td colspan="7" class="py-5 text-center text-muted">가입된 회원이 존재하지 않습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center pagination-sm">
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/member(page=${currentPage - 1})}">이전</a>
+                </li>
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/admin/member(page=${i})}"
+                       th:text="${i}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/member(page=${currentPage + 1})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+    </main>
+
+    <div class="modal fade" id="memberDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">회원 상세 정보</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center border-end">
+                            <img id="modalProfileImg" src="https://via.placeholder.com/150" class="rounded-circle img-thumbnail mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                            <h4 id="modalNickname" class="fw-bold">닉네임</h4>
+                            <p id="modalManner" class="text-primary fw-bold">50℃</p>
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-sm">
+                                <tr><th width="30%">이메일</th><td id="modalEmail"></td></tr>
+                                <tr><th>이름</th><td id="modalName"></td></tr>
+                                <tr><th>연락처</th><td id="modalPhone"></td></tr>
+                                <tr><th>가입일</th><td id="modalRegDate"></td></tr>
+                                <tr><th>상태</th><td id="modalStatus"></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-danger">활동 정지</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        function openMemberModal(userNo) {
+            if(!userNo) {
+                alert("유효하지 않은 회원 번호입니다.");
+                return;
+            }
+
+            // 서버 API 호출 (사용자 정보를 JSON으로 반환하는 컨트롤러 필요)
+            const ctx = /*[[@{/}]]*/ '/';
+            fetch(`${ctx}admin/member/detail?userNo=${userNo}`)
+                .then(response => {
+                    if(!response.ok) throw new Error("데이터를 가져오는데 실패했습니다.");
+                    return response.json();
+                })
+                .then(data => {
+                  
+                    document.getElementById('modalProfileImg').src = data.profileImg || 'https://via.placeholder.com/150';
+                    document.getElementById('modalNickname').innerText = data.nickname;
+                    document.getElementById('modalManner').innerText = data.mannerTemp + '℃';
+                    document.getElementById('modalEmail').innerText = data.email;
+                    document.getElementById('modalName').innerText = data.userName;
+                    document.getElementById('modalPhone').innerText = data.phone; 
+                    document.getElementById('modalRegDate').innerText = data.regDate;
+                    
+                    
+                    let statusText = "활동중";
+                    if(data.status == 0) statusText = "탈퇴";
+                    else if(data.suspended == 1) statusText = "관리자정지";
+                    else if(data.idle == 1) statusText = "휴면";
+                    document.getElementById('modalStatus').innerText = statusText;
+
+                    // 모달 열기
+                    const modal = new bootstrap.Modal(document.getElementById('memberDetailModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("정보를 불러오는 중 오류가 발생했습니다.");
+                });
+        }
+    </script>
+</body>
+</html>

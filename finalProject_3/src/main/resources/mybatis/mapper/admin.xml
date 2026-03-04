@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin">
+	 <!-- 광고 insert해주기  -->
+    <insert id="insertAd" parameterType="com.spring.app.admin.ad.domain.AdDTO">
+        INSERT INTO AD_INQUIRIES (
+            AD_ID,
+            BRAND_NAME,
+            MANAGER_NAME,
+            COMPANY_EMAIL,
+            PHONE,
+            CONTENT,
+            START_DATE,
+            END_DATE,
+            DURATION_WEEKS,
+            AMOUNT,
+            FILE_PATH,
+            AGREED_YN,
+            STATUS,
+            CREATED_AT
+        ) VALUES (
+            AD_ID_SEQ.NEXTVAL,  #{brandName},       #{managerName},     #{companyEmail},
+            #{phone},
+            #{content},
+            #{startDate},       #{endDate},
+            #{durationWeeks},
+            #{amount},
+            #{filePath},        #{agreedYn},        'WAIT',             SYSDATE             )
+    </insert>
+    
+    <!--  회원 전체 목록 -->
+    <select id="selectMemberList"
+            resultType="com.spring.app.security.domain.MemberDTO">
+	       SELECT
+	    USER_NO as userNo,
+	    USER_NAME as userName,
+	    EMAIL as email,
+	    PHONE as phone,
+	    REG_DATE as regDate,
+	    STATUS as status,
+	    IDLE as idle,
+	    SUSPENDED as suspended,
+	    MANNER_TEMP as mannerTemp
+	FROM MEMBER
+	ORDER BY REG_DATE DESC
+    </select>
+		 <!--  멤버한명보기 -->
+   <select id="detailMember" parameterType="int"
+        resultType="com.spring.app.security.domain.MemberDTO">
+       SELECT
+	    USER_NO as userNo,
+	    USER_NAME as userName,
+	    EMAIL as email,
+	    PHONE as phone,
+	    REG_DATE as regDate,
+	    STATUS as status,
+	    IDLE as idle,
+	    SUSPENDED as suspended,
+	    MANNER_TEMP as mannerTemp
+	FROM MEMBER
+	WHERE USER_NO = #{userNo}
+    </select>
+
+    <!--  페이징 회원 목록 -->
+    <select id="selectMemberListPaged" parameterType="map"
+            resultType="com.spring.app.security.domain.MemberDTO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT USER_NO as userNo, USER_NAME as userName, EMAIL as email,
+                       PHONE as phone, REG_DATE as regDate, STATUS as status,
+                       IDLE as idle, SUSPENDED as suspended, MANNER_TEMP as mannerTemp
+                FROM MEMBER
+                ORDER BY REG_DATE DESC
+            ) a WHERE ROWNUM &lt;= #{end}
+        ) WHERE rn &gt; #{start}
+    </select>
+
+
+    <!--  신규 가입자 수 (오늘 가입자) -->
+    <select id="countNewMembers"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE TRUNC(REG_DATE) = TRUNC(SYSDATE)
+    </select>
+
+
+    <!--  탈퇴 회원 수 (예: status = 0 이 탈퇴라면) -->
+    <select id="countWithdrawals"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE status = 0
+    </select>
+
+
+    <!--  전체 회원 수 -->
+    <select id="countTotalMembers"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM member
+    </select>
+
+
+  <select id="selectProduct" resultType="com.spring.app.product.domain.ProductDTO">
+    SELECT 
+        p.product_no AS productNo, 
+        p.product_name AS productName, 
+        p.product_price AS productPrice,
+        p.seller_email AS sellerEmail,   p.category_no AS categoryNo,      p.trade_status AS tradeStatus,    p.reg_date AS regDate,            m.nickname AS sellerNickname
+    FROM products p
+    JOIN member m ON p.seller_email = m.email
+    ORDER BY p.reg_date DESC
+    OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+</select>
+
+    <select id="selectCount" resultType="int">
+        SELECT COUNT(*) FROM products
+    </select>
+
+
+
+</mapper>

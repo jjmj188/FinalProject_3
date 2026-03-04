@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지 - 상품관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --sidebar-color: #f5f5f0;
+            --sidebar-border: #e5e5e0;
+            --card-bg: #ffffff;
+            --nav-active-bg: #6c757d;
+        }
+
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); min-height: 100vh; }
+        
+        .admin-sidebar {
+            min-height: 100vh; background-color: var(--sidebar-color);
+            width: 220px; padding: 1.5rem 0; border-right: 1px solid var(--sidebar-border);
+            position: fixed; z-index: 100;
+        }
+        .nav-menu-item {
+            display: block; width: calc(100% - 1rem); margin: 0 0.5rem 0.35rem;
+            padding: 0.65rem 1rem; background-color: #fff; border: 1px solid var(--sidebar-border);
+            border-radius: 8px; color: #212529; text-decoration: none; font-size: 0.9rem;
+            text-align: center; transition: all 0.2s;
+        }
+        .nav-menu-item.active { background-color: var(--nav-active-bg); color: #fff; border-color: #5a6268; }
+
+        .main-content { margin-left: 220px; padding: 1.5rem 2rem; width: calc(100% - 220px); }
+        .card { background: var(--card-bg); border-radius: 8px; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; }
+        .data-table thead th { background-color: #f1f3f5; font-weight: 600; font-size: 0.85rem; text-align: center; }
+        
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .reserve { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .soldout { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+        .onsale { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        
+        .chart-wrapper { height: 180px; width: 100%; }
+    </style>
+</head>
+<body class="d-flex">
+
+    <aside class="admin-sidebar flex-shrink-0">
+        <div class="text-center mb-4">
+            <div class="rounded-circle bg-white border mx-auto mb-2" style="width: 65px; height: 65px;"></div>
+            <p class="small fw-bold mb-0">관리자님 환영합니다</p>
+        </div>
+        <nav>
+            <a th:href="@{/admin/member}" class="nav-menu-item">회원관리</a>
+            <a th:href="@{/admin/product}" class="nav-menu-item active">상품관리</a>
+            <a th:href="@{/admin/review}" class="nav-menu-item">리뷰관리</a>
+            <a th:href="@{/admin/transaction}" class="nav-menu-item">거래관리</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <h4 class="mb-4 fw-bold">상품 관리</h4>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-8">
+                <div class="card h-100">
+                    <div class="fw-bold mb-2 small">일별 상품 등록 현황</div>
+                    <div class="chart-wrapper">
+                        <canvas id="productChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex flex-column gap-3 h-100">
+                    <div class="card flex-fill py-2 text-center">
+                        <div class="text-muted small">총 등록 상품</div>
+                        <div class="h4 fw-bold mb-0" th:text="${totalProducts + '건'}">0건</div>
+                    </div>
+                    <div class="card flex-fill py-2 text-center">
+                        <div class="text-muted small">판매중 상품</div>
+                        <div class="h4 fw-bold mb-0 text-success" th:text="${onsaleCount + '건'}">0건</div>
+                    </div>
+                    <div class="card flex-fill py-2 text-center border-danger">
+                        <div class="text-muted small">신고된 상품</div>
+                        <div class="h4 fw-bold mb-0 text-danger" th:text="${reportCount + '건'}">0건</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 py-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" style="width: 120px;">
+                        <option value="">전체상태</option>
+                        <option value="판매중">판매중</option>
+                        <option value="예약중">예약중</option>
+                        <option value="판매완료">판매완료</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm" placeholder="상품명 또는 판매자 검색" style="width: 250px;">
+                    <button class="btn btn-dark btn-sm">검색</button>
+                </div>
+                <div class="text-muted small">
+                    조회 결과 : <span class="fw-bold" th:text="${#lists.size(productList)}">0</span>개
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-0 overflow-hidden">
+            <table class="table data-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>판매자(이메일)</th>
+                        <th>상품명</th>
+                        <th>카테고리</th>
+                        <th>판매가격</th>
+                        <th>상태</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody class="align-middle text-center">
+                    <tr th:if="${#lists.isEmpty(productList)}">
+                        <td colspan="7" class="py-5 text-muted">등록된 상품이 없습니다.</td>
+                    </tr>
+                    <tr th:each="product, stat : ${productList}">
+                        <td th:text="${(currentPage - 1) * size + stat.count}">1</td>
+                        <td th:text="${product.sellerEmail}">email@domain.com</td>
+                        <td class="text-start fw-bold" th:text="${product.productName}">상품명</td>
+                        <td><small class="text-muted" th:text="${product.areaGu}">카테고리</small></td>
+                        <td>
+                            <span th:text="${product.productPrice > 0 ? #numbers.formatInteger(product.productPrice, 0, 'COMMA') + '원' : '나눔'}">0원</span>
+                        </td>
+                        <td>
+                            <span class="status-badge" 
+                                  th:classappend="${product.tradeStatus == '예약중' ? 'reserve' : (product.tradeStatus == '판매완료' ? 'soldout' : 'onsale')}"
+                                  th:text="${product.tradeStatus}">판매중</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-secondary btn-sm" 
+                                    th:onclick="openProductModal([[${product.productNo}]])">상세</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav th:if="${totalPages > 0}" class="mt-4">
+            <ul class="pagination justify-content-center pagination-sm">
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/product(page=${currentPage - 1}, size=${size})}">이전</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/product(page=${i}, size=${size})}" th:text="${i}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/product(page=${currentPage + 1}, size=${size})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        // 1. 차트 렌더링
+        const ctx = document.getElementById('productChart').getContext('2d');
+        const chartData = /*[[${chartData}]]*/ [];
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['월', '화', '수', '목', '금', '토', '일'],
+                datasets: [{
+                    label: '등록 건수',
+                    data: chartData,
+                    borderColor: '#6c757d',
+                    backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 5 } } }
+            }
+        });
+
+        // 2. 모달 기능
+        function openProductModal(productNo) {
+            // 여기에 fetch 로직 구현
+            alert("상품 번호 " + productNo + "의 상세 정보를 불러옵니다.");
+        }
+    </script>
+</body>
+</html>

@@ -36,4 +36,7 @@ public class ProductDTO {
     private String areaGu;
     private String imgUrl;
     
+    //카테고리 이름
+    private String categoryName;
+    
 }

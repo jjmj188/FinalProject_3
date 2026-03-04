@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>광고 제휴 제안 및 문의</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    /* 기존 스타일 유지 */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background-color: #f5f5f7; color: #111; line-height: 1.5; }
+    .page { max-width: 960px; margin: 0 auto; padding: 60px 20px 80px; }
+    header { text-align: center; margin-bottom: 32px; }
+    header h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+    header p { font-size: 14px; color: #666; white-space: pre-line; }
+    main { background-color: #fff; border-radius: 16px; padding: 32px 28px 28px; box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08); border: 1px solid #ececec; }
+    form { display: flex; flex-direction: column; gap: 20px; }
+    .field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    @media (max-width: 640px) { .field-row { grid-template-columns: 1fr; } }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 600; color: #333; }
+    .required-mark { color: #ff4b4b; margin-left: 2px; }
+    .field input[type="text"], .field input[type="email"], .field select, .field textarea { border-radius: 10px; border: 1px solid #e1e1e6; padding: 11px 12px; font-size: 14px; transition: all 0.15s ease; background-color: #fafafa; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #444cf7; box-shadow: 0 0 0 1px rgba(68, 76, 247, 0.16); background-color: #fff; }
+    textarea { min-height: 160px; resize: vertical; }
+    .section-title { margin: 8px 0; font-size: 13px; font-weight: 600; color: #555; display: flex; align-items: center; gap: 4px; }
+    .section-title::before { content: ""; display: inline-block; width: 4px; height: 14px; border-radius: 999px; background-color: #444cf7; }
+    .agreement-box { background-color: #fafafa; border-radius: 10px; border: 1px solid #e4e4e8; padding: 16px 18px; font-size: 13px; color: #555; }
+    .agreement-check { margin-top: 8px; display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+    #period-summary { margin-top: 14px; padding: 14px 16px; background-color: #f8f9fb; border-radius: 10px; border: 1px solid #e1e3ec; }
+    .submit-wrap { margin-top: 24px; text-align: center; }
+    button[type="submit"] { width: 100%; max-width: 260px; height: 46px; border-radius: 999px; border: none; background-color: #e0e0e5; color: #999; font-size: 15px; font-weight: 600; cursor: not-allowed; transition: all 0.15s ease; }
+    button[type="submit"].active { background-color: #444cf7; color: #fff; cursor: pointer; box-shadow: 0 12px 22px rgba(68, 76, 247, 0.25); }
+    button[type="submit"].active:hover { background-color: #373fe0; transform: translateY(-1px); }
+  
+  .ad-container {
+  max-width: 560px;
+  margin: 40px auto;
+}
+
+.ad-container main {
+  padding: 32px 28px;
+}
+  
+  </style>
+</head>
+<body>
+  <div class="page">
+   <div class="ad-container">
+    <header>
+      <h1>광고 제휴 제안 및 문의</h1>
+      <p>광고에 대해 관심 있으신가요? 양식에 맞춰 내용을 전달주시면 확인 후 연락드리겠습니다.</p>
+    </header>
+
+    <main>
+      <form id="adForm" enctype="multipart/form-data">
+        <section>
+          <div class="field-row">
+            <div class="field">
+              <label>브랜드명 (회사명)<span class="required-mark">*</span></label>
+              <input type="text" name="brandName" placeholder="브랜드명을 입력해 주세요" required />
+            </div>
+            <div class="field">
+              <label>담당자명<span class="required-mark">*</span></label>
+              <input type="text" name="managerName" placeholder="담당자명을 입력해 주세요" required />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>이메일<span class="required-mark">*</span></label>
+              <input type="email" name="companyEmail" placeholder="이메일을 입력해 주세요" required />
+            </div>
+            <div class="field">
+              <label>전화번호</label>
+              <input type="text" name="phone" placeholder="전화번호를 입력해 주세요" />
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-title"><span>게시기간 설정</span></div>
+          <div class="field-row">
+            <div class="field">
+              <label>시작 날짜 선택<span class="required-mark">*</span></label>
+              <input type="text" id="startDate" name="startDate" required />
+            </div>
+            <div class="field">
+              <label>게시 기간 선택<span class="required-mark">*</span></label>
+              <select id="weekSelect" name="durationWeeks">
+                <option value="1">1주일 (7일)</option>
+                <option value="2">2주일 (14일)</option>
+                <option value="3">3주일 (21일)</option>
+                <option value="4">4주일 (28일)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="period-summary">
+            <p>종료 예정일: <strong id="display-end-date">-</strong></p>
+            <p>예상 광고비: <strong id="display-amount">1,000,000원</strong></p>
+            <input type="hidden" id="endDate" name="endDate" />
+            <input type="hidden" id="amount" name="amount" value="1000000" />
+          </div>
+        </section>
+
+        <div class="field">
+          <label>문의내용<span class="required-mark">*</span></label>
+          <textarea name="content" placeholder="내용을 입력해 주세요" required></textarea>
+        </div>
+
+        <div class="field">
+          <label>첨부파일</label>
+          <input type="file" name="attachment" />
+        </div>
+
+        <section>
+          <div class="section-title"><span>개인 정보 수집 및 이용 동의</span></div>
+          <div class="agreement-box">
+            <p>수집된 정보는 이용목적 달성 후 1개월간 보관 후 파기합니다.</p>
+          </div>
+          <label class="agreement-check">
+            <input type="checkbox" id="agree" name="agreedYn" value="Y" />
+            <span>개인정보 수집 및 이용에 동의합니다.</span>
+          </label>
+        </section>
+
+        <div class="submit-wrap">
+          <button type="submit" id="submitButton" disabled>제출하기</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    const adForm = document.getElementById('adForm');
+    const startDateInput = document.getElementById('startDate');
+    const weekSelect = document.getElementById('weekSelect');
+    const displayEndDate = document.getElementById('display-end-date');
+    const displayAmount = document.getElementById('display-amount');
+    const endDateHidden = document.getElementById('endDate');
+    const amountHidden = document.getElementById('amount');
+    const agreeCheckbox = document.getElementById('agree');
+    const submitButton = document.getElementById('submitButton');
+
+    // 날짜 포맷팅 함수들
+    const formatForInput = (date) => date.toISOString().split('T')[0];
+    const formatForDisplay = (date) => date.getFullYear() + "." + String(date.getMonth() + 1).padStart(2, '0') + "." + String(date.getDate()).padStart(2, '0');
+
+    // 다음 주 월요일 계산
+    const getNextMonday = (date) => {
+      const res = new Date(date);
+      const day = res.getDay();
+      const diff = (day === 1) ? 0 : (day === 0 ? 1 : 8 - day);
+      res.setDate(res.getDate() + diff);
+      return res;
+    };
+
+    const startMin = getNextMonday(new Date());
+
+    // Flatpickr 초기화
+    const fp = flatpickr("#startDate", {
+      minDate: formatForInput(startMin),
+      defaultDate: formatForInput(startMin),
+      disable: [date => date.getDay() !== 1],
+      locale: "ko",
+      altInput: true,
+      altFormat: "Y.m.d",
+      dateFormat: "Y-m-d",
+      onChange: (selectedDates) => calculatePeriod(selectedDates[0])
+    });
+
+    function calculatePeriod(selectedDate) {
+      const start = selectedDate || startMin;
+      const weeks = parseInt(weekSelect.value, 10);
+      const end = new Date(start);
+      end.setDate(start.getDate() + (weeks * 7) - 1);
+
+      displayEndDate.innerText = formatForDisplay(end);
+      endDateHidden.value = formatForInput(end);
+      
+      const price = weeks * 1000000;
+      displayAmount.innerText = price.toLocaleString() + "원";
+      amountHidden.value = price;
+    }
+
+    weekSelect.addEventListener('change', () => calculatePeriod(fp.selectedDates[0]));
+    
+    agreeCheckbox.addEventListener('change', function() {
+      submitButton.disabled = !this.checked;
+      submitButton.classList.toggle('active', this.checked);
+    });
+
+    // [중요] 폼 제출 이벤트 수정
+    adForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      Swal.fire({
+        title: '광고 신청 확인',
+        text: "입력하신 내용으로 신청하시겠습니까?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#444cf7',
+        confirmButtonText: '제출하기',
+        cancelButtonText: '취소'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const formData = new FormData(adForm);
+
+          fetch('/finalProject_3/admin/ad/register', {
+            method: 'POST',
+            body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('성공', '신청이 완료되었습니다!', 'success')
+              .then(() => location.href = "/index"); // 성공 시 메인으로 이동
+            } else {
+              Swal.fire('실패', '저장 중 오류가 발생했습니다.', 'error');
+            }
+          })
+          .catch(() => Swal.fire('에러', '통신 중 오류가 발생했습니다.', 'error'));
+        }
+      });
+    });
+
+    // 초기 실행
+    calculatePeriod(startMin);
+  </script>
+</body>
+</html>
