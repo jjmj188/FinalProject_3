@@ -141,4 +141,91 @@
 
 </select>
 
+
+  <!-- 상품 상세 - 기본정보 (PRODUCTS) -->
+
+ <select id="selectProductDetail" resultType="com.spring.app.product.domain.ProductDTO">
+
+SELECT
+    PRODUCTS.PRODUCT_NO       AS productNo,
+    PRODUCTS.SELLER_EMAIL     AS sellerEmail,
+    PRODUCTS.CATEGORY_NO      AS categoryNo,
+
+    CATEGORY.CATEGORY_NAME    AS categoryName,
+
+    PRODUCTS.SALE_TYPE        AS saleType,
+    PRODUCTS.PRODUCT_NAME     AS productName,
+    PRODUCTS.PRODUCT_PRICE    AS productPrice,
+    PRODUCTS.PRODUCT_DESC     AS productDesc,
+    PRODUCTS.PRODUCT_CONDITION AS productCondition,
+    PRODUCTS.TRADE_STATUS     AS tradeStatus,
+    PRODUCTS.TRADE_METHOD     AS tradeMethod,
+    PRODUCTS.VIEW_COUNT       AS viewCount,
+    PRODUCTS.REG_DATE         AS regDate
+
+FROM PRODUCTS
+LEFT JOIN CATEGORY
+ON PRODUCTS.CATEGORY_NO = CATEGORY.CATEGORY_NO
+
+WHERE PRODUCTS.PRODUCT_NO = #{productNo}
+
+</select>
+
+  <!-- 상품 상세 - 이미지 목록  -->
+
+  <select id="selectProductImages"
+          parameterType="int"
+          resultType="com.spring.app.product.domain.ProductImageDTO">
+
+    SELECT
+      PRODUCT_IMAGE.PRD_IMG_NO  AS prdImgNo,
+      PRODUCT_IMAGE.PRODUCT_NO  AS productNo,
+      PRODUCT_IMAGE.IMG_URL     AS imgUrl,
+      PRODUCT_IMAGE.ORGFILENAME AS orgfilename,
+      PRODUCT_IMAGE.FILENAME    AS filename,
+      PRODUCT_IMAGE.SORT_NO     AS sortNo,
+      PRODUCT_IMAGE.IS_MAIN     AS isMain
+    FROM PRODUCT_IMAGE
+    WHERE PRODUCT_IMAGE.PRODUCT_NO = #{productNo}
+    ORDER BY
+      CASE WHEN PRODUCT_IMAGE.IS_MAIN = 'Y' THEN 0 ELSE 1 END,
+      PRODUCT_IMAGE.SORT_NO
+
+  </select>
+
+  <!-- 상품 상세 - 배송 옵션  -->
+  <select id="selectShippingOption"
+          parameterType="int"
+          resultType="com.spring.app.product.domain.ProductShippingOptionDTO">
+
+    SELECT
+      PRODUCT_SHIPPING_OPTION.OPTION_NO    AS optionNo,
+      PRODUCT_SHIPPING_OPTION.PRODUCT_NO   AS productNo,
+      PRODUCT_SHIPPING_OPTION.PARCEL_TYPE  AS parcelType,
+      PRODUCT_SHIPPING_OPTION.SHIPPING_FEE AS shippingFee
+    FROM PRODUCT_SHIPPING_OPTION
+    WHERE PRODUCT_SHIPPING_OPTION.PRODUCT_NO = #{productNo}
+    ORDER BY PRODUCT_SHIPPING_OPTION.OPTION_NO
+
+  </select>
+
+  <!-- 상품 상세 - 직거래 위치  -->
+  <select id="selectMeetLocation"
+          parameterType="int"
+          resultType="com.spring.app.product.domain.ProductMeetLocationDTO">
+
+    SELECT
+      PRODUCT_MEET_LOCATION.LOCATION_NO  AS locationNo,
+      PRODUCT_MEET_LOCATION.PRODUCT_NO   AS productNo,
+      PRODUCT_MEET_LOCATION.PLACE_NAME   AS placeName,
+      PRODUCT_MEET_LOCATION.FULL_ADDRESS AS fullAddress,
+      PRODUCT_MEET_LOCATION.LATITUDE     AS latitude,
+      PRODUCT_MEET_LOCATION.LONGITUDE    AS longitude,
+      PRODUCT_MEET_LOCATION.SORT_NO      AS sortNo
+    FROM PRODUCT_MEET_LOCATION
+    WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = #{productNo}
+    ORDER BY PRODUCT_MEET_LOCATION.SORT_NO
+
+  </select>
+
 </mapper>
