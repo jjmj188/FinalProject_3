@@ -476,15 +476,15 @@
       min-width:0;
     }
     .item-title{
-      font-size:14px;
-      font-weight:bold;
-      line-height:1.3;
-      letter-spacing:-.2px;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
+  font-size:14px;
+  font-weight:bold;
+  line-height:1.3;
+  letter-spacing:-.2px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
     .price{
       font-size:16px;
       font-weight:bold;

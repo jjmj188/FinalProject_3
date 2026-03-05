@@ -113,7 +113,6 @@
     )
   </insert>
   
-<!-- 장터(상품목록) -->
 <select id="selectProductListSimple"
         resultType="com.spring.app.product.domain.ProductDTO">
 
@@ -125,7 +124,7 @@
     PRODUCTS.TRADE_STATUS    AS tradeStatus,
     PRODUCTS.REG_DATE        AS regDate,
 
-    (SELECT SUBSTR(FULL_ADDRESS, 1, INSTR(FULL_ADDRESS, ' ', 1, 2)-1)
+    (SELECT PLACE_NAME
        FROM PRODUCT_MEET_LOCATION
       WHERE PRODUCT_NO = PRODUCTS.PRODUCT_NO
         AND ROWNUM = 1) AS areaGu,
