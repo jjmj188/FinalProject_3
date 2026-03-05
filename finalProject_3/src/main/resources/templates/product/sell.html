@@ -36,7 +36,13 @@
         const imgR = window.PF.Image.validate();
         if (!imgR.ok) { alert(imgR.msg); return; }
 
-        const tradeMethod = $("#pfShipToggle").is(":checked") ? "택배" : "직거래";
+        const tradeMethod = $("#pfMeetToggle").is(":checked") ? "직거래" : "택배";
+
+        if (tradeMethod === "택배" && window.PF.Shipping) {
+          const r = window.PF.Shipping.validate();
+          if (!r.ok) { alert(r.msg); return; }
+          window.PF.Shipping.syncShipOptionsJson();
+        }
 
         if (window.PF.Shipping) {
           const r = window.PF.Shipping.validate();

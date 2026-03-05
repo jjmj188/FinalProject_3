@@ -1,5 +1,7 @@
 /* =========================================================
    product_form.js (등록 제외 / 모듈만 제공) + 거래제한 모달 + 택배 UI + 직거래 위치(1~3)
+   + 공백만 입력 방지(alert)
+   + 판매가격 숫자만 입력/검증(alert)
 ========================================================= */
 
 (() => {
@@ -22,6 +24,47 @@
   function safeJsonParse(str, fallback) {
     try { return JSON.parse(str); } catch { return fallback; }
   }
+
+  // =========================================================
+  // 공통 유효성: 공백만 입력 방지 / alert + focus
+  // =========================================================
+  function isBlank(value) {
+    return String(value ?? "").trim().length === 0;
+  }
+
+  function alertAndFocus(msg, el) {
+    alert(msg);
+    if (el && typeof el.focus === "function") el.focus();
+  }
+
+  // =========================================================
+  // -1) 공백만 입력 방지 (blur 시 alert)
+  //  - "아예 미입력"은 여기서 막지 않고(0글자면 통과),
+  //    "뭔가 입력했는데 공백뿐"인 경우만 막음
+  // =========================================================
+  (() => {
+    const candidates = [
+      $("#pfTitle"),
+      $("#pfName"),
+      $("#pfPrice"),
+      $("#pfSellPrice"),
+      $(".pf-textarea"),
+      ...$$("input[type='text']"),
+      ...$$("textarea")
+    ];
+
+    const uniq = Array.from(new Set(candidates.filter(Boolean)));
+
+    uniq.forEach((el) => {
+      el.addEventListener("blur", () => {
+        const raw = String(el.value ?? "");
+        if (raw.length > 0 && isBlank(raw)) {
+          el.value = "";
+          alertAndFocus("공백만 입력할 수 없습니다.", el);
+        }
+      });
+    });
+  })();
 
   // =========================================================
   // 0) 거래 제한 품목 안내 모달
@@ -139,7 +182,8 @@
           <input type="radio" name="pfMainImagePick" class="pf-main-radio" ${idx === mainIndex ? "checked" : ""}>
           <span class="pf-main-text">대표</span>
         `;
-        badge.querySelector("input").addEventListener("change", () => setMain(idx));
+        const radio = badge.querySelector("input");
+        if (radio) radio.addEventListener("change", () => setMain(idx));
 
         const del = document.createElement("button");
         del.type = "button";
@@ -316,7 +360,46 @@
       });
     });
 
-    feeInputs.forEach(inp => inp.addEventListener("input", syncShipOptionsJson));
+	// ✅ 배송비 입력: 숫자만 허용 + (blur 시) 범위 체크 + JSON 동기화
+	(() => {
+	  let lastFeeAlertAt = 0;
+
+	  feeInputs.forEach(inp => {
+	    inp.addEventListener("input", () => {
+	      const before = String(inp.value ?? "");
+	      const onlyDigits = before.replace(/[^\d]/g, "");
+
+	      if (before !== onlyDigits) {
+	        inp.value = onlyDigits;
+
+	        const now = Date.now();
+	        if (now - lastFeeAlertAt > 800) {
+	          lastFeeAlertAt = now;
+	          alertAndFocus("배송비는 숫자만 입력할 수 있습니다.", inp);
+	        }
+	      }
+
+	      syncShipOptionsJson();
+	    });
+
+	    // ✅ 입력 끝났을 때 범위 검사(알럿 폭탄 방지)
+	    inp.addEventListener("blur", () => {
+	      const raw = String(inp.value ?? "");
+	      if (raw.length > 0 && isBlank(raw)) {
+	        inp.value = "";
+	        alertAndFocus("공백만 입력할 수 없습니다.", inp);
+	        return;
+	      }
+
+	      const r = validateFeeRangeForInput(inp);
+	      if (!r.ok) {
+	        inp.value = ""; // 범위 밖이면 비워버림(원하면 유지로 바꿀 수 있음)
+	        alertAndFocus(r.msg, inp);
+	        syncShipOptionsJson();
+	      }
+	    });
+	  });
+	})();
 
     shipToggle.addEventListener("change", setTradeUI);
     meetToggle.addEventListener("change", setTradeUI);
@@ -338,12 +421,81 @@
         const missing = opts.find(x => x.shippingFee === null);
         if (missing) return { ok: false, msg: `"${missing.parcelType}" 배송비를 입력해 주세요.` };
 
+		
+		// ✅ 범위 체크(체크된 것만)
+		for (const x of opts) {
+		  const range = getRange(x.parcelType);
+		  if (!range) continue;
+		  const fee = x.shippingFee;
+		  if (fee < range.min || fee > range.max) {
+		    return {
+		      ok: false,
+		      msg: `${x.parcelType} 배송비는 ${range.min.toLocaleString()}원 ~ ${range.max.toLocaleString()}원 이내로 입력해 주세요.`
+		    };
+		  }
+		}
+		
         return { ok: true };
       }
     };
   })();
 
   window.PF.Shipping = ShippingModule;
+
+  // =========================================================
+  // 4.5) 판매가격 숫자만 입력 + 검증(alert)
+  // =========================================================
+  const PriceModule = (() => {
+    // ✅ 여기 핵심: name="productPrice" 를 잡아야 함
+    const priceEl =
+      $("#pfPrice") ||
+      document.querySelector("input[name='productPrice']");
+
+    if (!priceEl) return null;
+
+    let lastAlertAt = 0;
+
+    priceEl.addEventListener("input", () => {
+      const before = String(priceEl.value ?? "");
+      const onlyDigits = before.replace(/[^\d]/g, "");
+      if (before !== onlyDigits) {
+        priceEl.value = onlyDigits;
+
+        const now = Date.now();
+        if (now - lastAlertAt > 800) {
+          lastAlertAt = now;
+          alertAndFocus("판매가격은 숫자만 입력할 수 있습니다.", priceEl);
+        }
+      }
+    });
+
+    priceEl.addEventListener("blur", () => {
+      const raw = String(priceEl.value ?? "");
+      if (raw.length > 0 && isBlank(raw)) {
+        priceEl.value = "";
+        alertAndFocus("공백만 입력할 수 없습니다.", priceEl);
+      }
+    });
+
+    return {
+      el: priceEl,
+      // ✅ 제출 직전에 한번 더 강제 정리 (서버 null 방지)
+      normalize() {
+        priceEl.value = String(priceEl.value ?? "").replace(/[^\d]/g, "");
+      },
+      validate() {
+        this.normalize();
+        if (isBlank(priceEl.value)) return { ok: false, msg: "판매가격을 입력해 주세요." };
+
+        const n = parseNumber(priceEl.value);
+        if (n === null) return { ok: false, msg: "판매가격은 숫자만 입력해 주세요." };
+        if (n <= 0) return { ok: false, msg: "판매가격은 0원보다 커야 합니다." };
+        return { ok: true, value: n };
+      }
+    };
+  })();
+
+  window.PF.Price = PriceModule;
 
   // =========================================================
   // 5) 직거래 위치 1~3 -> meetLocationsJson
@@ -564,5 +716,108 @@
   })();
 
   window.PF.Meet = MeetLocationModule;
+
+  // =========================================================
+  // 6) 폼 submit 시 유효성 검사 + alert (등록 제외지만, 기본 submit 막기는 여기서)
+  //  - form id가 있으면 #pfForm 를 쓰고, 없으면 wrap 안 첫 form
+  // =========================================================
+  (() => {
+    const form =
+      $("#pfForm") ||
+      wrap.querySelector("form") ||
+      document.querySelector("form");
+
+    if (!form) return;
+
+    form.addEventListener("submit", (e) => {
+      // 공백만 입력 방지: required 성격의 대표 필드(있으면 체크)
+      const titleEl = $("#pfTitle") || $("#pfName");
+      if (titleEl && isBlank(titleEl.value)) {
+        e.preventDefault();
+        alertAndFocus("제목(상품명)을 입력해 주세요.", titleEl);
+        return;
+      }
+
+      const descEl = $(".pf-textarea");
+      if (descEl && isBlank(descEl.value)) {
+        e.preventDefault();
+        alertAndFocus("상품 설명을 입력해 주세요.", descEl);
+        return;
+      }
+
+      // 이미지
+      const imgV = window.PF.Image?.validate?.();
+      if (imgV && imgV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(imgV.msg);
+        return;
+      }
+
+      // 배송
+      const shipV = window.PF.Shipping?.validate?.();
+      if (shipV && shipV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(shipV.msg);
+        return;
+      }
+
+      // 판매가격
+      const priceV = window.PF.Price?.validate?.();
+      if (priceV && priceV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(priceV.msg, window.PF.Price?.el);
+        return;
+      }
+
+      // 직거래 위치
+      const meetToggle = $("#pfMeetToggle");
+      const tradeMethod = meetToggle?.checked ? "직거래" : "택배";
+
+      const meetV = window.PF.Meet?.validate?.(tradeMethod);
+      if (meetV && meetV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(meetV.msg);
+        return;
+      }
+
+      // ✅ 통과
+    });
+  })();
+  
+  // ✅ 배송비 허용 범위(원)
+  const FEE_RANGE = {
+    "일반택배": { min: 2700, max: 17000 },
+    "CU반값": { min: 1800, max: 2700 },
+    "GS반값": { min: 1900, max: 4400 }
+  };
+
+  function getRange(type) {
+    return FEE_RANGE[type] || null;
+  }
+
+  function validateFeeRangeForInput(inp) {
+    if (!inp) return { ok: true };
+
+    const type = inp.getAttribute("data-fee-for"); // "일반택배" | "CU반값" | "GS반값"
+    const range = getRange(type);
+    if (!range) return { ok: true };
+
+    // disabled이면(체크 안 됨) 검사 안 함
+    if (inp.disabled) return { ok: true };
+
+    const fee = parseNumber(inp.value);
+
+    // 값이 비었으면(아직 입력 중) 여기서 알럿 안 띄움
+    if (fee === null) return { ok: true };
+
+    if (fee < range.min || fee > range.max) {
+      return {
+        ok: false,
+        msg: `${type} 배송비는 ${range.min.toLocaleString()}원 ~ ${range.max.toLocaleString()}원 이내로 입력해 주세요.`
+      };
+    }
+
+    return { ok: true };
+  }
 
 })();
