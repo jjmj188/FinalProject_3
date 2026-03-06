@@ -5,6 +5,46 @@
 <head>
     <title>로그인</title>
     <link rel="stylesheet" th:href="@{/css/security/member-style.css}">
+    <style>
+        /* ================= 팝업(모달) 전용 디자인 (블랙 & 화이트) ================= */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #fff; width: 100%; max-width: 420px;
+            padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .modal-header h3 { margin: 0; font-size: 20px; font-weight: bold; color: #333; }
+        .close-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: #999; line-height: 1; margin-top: -5px; }
+        
+        /* 탭 메뉴 (블랙/화이트) */
+        .tab-menu { display: flex; border: 1px solid #e2e2e2; margin-bottom: 20px; border-radius: 4px; overflow: hidden; }
+        .tab-item { flex: 1; text-align: center; padding: 15px 0; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .tab-active { background: #222; color: #fff; border: 1px solid #222; margin: -1px; }
+        .tab-inactive { background: #fafafa; color: #666; }
+        
+        /* 입력창 및 포커스 색상 변경 */
+        .input-group { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+        .input-group input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none; }
+        .input-group input:focus { border-color: #222; }
+        
+        /* 모든 버튼을 검은색 바탕에 흰 글씨로 통일 */
+        .btn-action-outline, .btn-action { background: #222; color: #fff; border: 1px solid #222; padding: 0 15px; border-radius: 4px; cursor: pointer; font-size: 13px; height: 42px; white-space: nowrap; font-weight: 500; transition: background 0.2s; }
+        .btn-action-outline:hover, .btn-action:hover { background: #000; border-color: #000; }
+        
+        .btn-full { width: 100%; background: #222; color: #fff; border: none; padding: 14px 0; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: background 0.2s; }
+        .btn-full:hover { background: #000; }
+        
+        /* 안내 문구 및 타이머 */
+        .help-text { text-align: center; color: #666; margin-bottom: 20px; font-size: 14px; }
+        .timer-text { color: #f03f40; font-weight: bold; font-size: 14px; min-width: 45px; text-align: center; }
+    </style>
 </head>
 
 <body>
@@ -29,6 +69,9 @@
 			    </div>
 			
 			    <button type="submit" class="btn btn-dark btn-block mt-5">로그인</button>
+			    <div style="text-align: center; margin-top: 15px;">
+				    <a href="javascript:void(0);" onclick="openFindModal()" style="color: #666; font-size: 14px; text-decoration: none;">이메일 / 비밀번호 찾기</a>
+				</div>
 			</form>
 
             <div class="register-box">
@@ -36,9 +79,256 @@
                 <a th:href="@{/security/register}" class="btn btn-outline-secondary btn-block">회원가입 하기</a>
             </div>
         </div>
+
+        <div id="findModal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>계정 찾기</h3>
+                    <button type="button" class="close-btn" onclick="closeFindModal()">&times;</button>
+                </div>
+                
+                <div class="tab-menu">
+                    <div id="tabEmail" class="tab-item tab-active" onclick="switchTab('email')">이메일 찾기</div>
+                    <div id="tabPwd" class="tab-item tab-inactive" onclick="switchTab('pwd')">비밀번호 찾기</div>
+                </div>
+
+                <div id="findEmailArea">
+                    <p class="help-text">가입 시 등록한 휴대폰 번호로 이메일을 찾습니다.</p>
+                    <div class="input-group">
+                        <input type="text" id="findPhone1" placeholder="휴대폰 번호 (숫자만)" maxlength="11">
+                        <button type="button" class="btn-action-outline" onclick="sendFindSms('email')">인증번호 전송</button>
+                    </div>
+                    <div id="authAreaEmail" class="input-group" style="display: none;">
+                        <input type="text" id="findCode1" placeholder="인증번호 6자리 입력" maxlength="6">
+                        <span id="timerEmail" class="timer-text">03:00</span>
+                        <button type="button" class="btn-action" onclick="findEmailAction()">이메일 찾기</button>
+                    </div>
+                    <div id="resultEmail" style="margin-top: 20px; text-align: center; font-size: 16px; color: #222; display: none; padding: 20px 0; background: #fafafa; border: 1px solid #eee; border-radius: 4px;"></div>
+                </div>
+
+                <div id="findPwdArea" style="display: none;">
+                    <p class="help-text">가입 시 등록한 휴대폰 인증 후 새 비밀번호를 설정합니다.</p>
+                    <div class="input-group">
+                        <input type="text" id="findPhone2" placeholder="휴대폰 번호 (숫자만)" maxlength="11">
+                        <button type="button" class="btn-action-outline" onclick="sendFindSms('pwd')">인증번호 전송</button>
+                    </div>
+                    <div id="authAreaPwd" class="input-group" style="display: none;">
+                        <input type="text" id="findCode2" placeholder="인증번호 6자리 입력" maxlength="6">
+                        <span id="timerPwd" class="timer-text">03:00</span>
+                        <button type="button" class="btn-action" onclick="verifySmsForPwd()">인증확인</button>
+                    </div>
+                    
+                    <div id="newPwdArea" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                        <div style="margin-bottom: 15px;">
+                            <input type="password" id="newPassword" placeholder="새 비밀번호 (영문, 숫자, 특수문자 8~15자)" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; outline: none;">
+                            <input type="password" id="newPasswordConfirm" placeholder="새 비밀번호 확인" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; outline: none;">
+                        </div>
+                        <button type="button" class="btn-full" onclick="resetPasswordAction()">비밀번호 변경하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script th:inline="javascript">
+	    /*<![CDATA[*/
+	    
+        // 타이머 관련 변수
+        let timerInterval;
+        let timeLeft = 180; // 3분 = 180초
+
+	    // 팝업 열기/닫기
+	    function openFindModal() { 
+	        $("#findModal").fadeIn(200); 
+	        resetModalInputs();
+	    }
+	    function closeFindModal() { 
+	        $("#findModal").fadeOut(200); 
+            clearInterval(timerInterval); // 모달 닫을 때 타이머 정지
+	    }
+	
+	    // 입력창 및 타이머 초기화 함수
+	    function resetModalInputs() {
+	        $("#findPhone1, #findCode1, #findPhone2, #findCode2, #newPassword, #newPasswordConfirm").val("").attr("readonly", false).css("background", "#fff");
+	        $("#authAreaEmail, #authAreaPwd, #newPwdArea, #resultEmail").hide();
+            clearInterval(timerInterval);
+	        switchTab('email'); 
+	    }
+	
+	    // 탭 전환 로직
+	    function switchTab(type) {
+            clearInterval(timerInterval); // 탭 전환 시 타이머 정지
+            
+	        if(type === 'email') {
+	            $("#tabEmail").removeClass("tab-inactive").addClass("tab-active");
+	            $("#tabPwd").removeClass("tab-active").addClass("tab-inactive");
+	            $("#findEmailArea").show();
+	            $("#findPwdArea").hide();
+	        } else {
+	            $("#tabPwd").removeClass("tab-inactive").addClass("tab-active");
+	            $("#tabEmail").removeClass("tab-active").addClass("tab-inactive");
+	            $("#findPwdArea").show();
+	            $("#findEmailArea").hide();
+	        }
+	    }
+
+        // 타이머 시작 함수
+        function startTimer(type) {
+            clearInterval(timerInterval); 
+            timeLeft = 180; 
+            const timerId = type === 'email' ? "#timerEmail" : "#timerPwd";
+            
+            $(timerId).text(formatTime(timeLeft)).css("color", "#f03f40"); // 빨간색 타이머 유지
+
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                $(timerId).text(formatTime(timeLeft));
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("인증 시간이 만료되었습니다. 인증번호를 다시 전송해주세요.");
+                    if(type === 'email') $("#findCode1").val("");
+                    else $("#findCode2").val("");
+                }
+            }, 1000); 
+        }
+
+        // 시간 포맷 변환 (MM:SS)
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        }
+	
+	    // 인증번호 전송
+	    let currentFindPhone = "";
+	    function sendFindSms(type) {
+	        const phoneInputId = type === 'email' ? "#findPhone1" : "#findPhone2";
+	        const phone = $(phoneInputId).val().trim();
+	        
+	        const regExpPhone = /^[0-9]{11}$/;
+	        if(!regExpPhone.test(phone)) {
+	            alert("휴대폰 번호는 11자리 숫자만 입력해주세요.");
+	            $(phoneInputId).focus();
+	            return;
+	        }
+	
+	        const reqUrl = /*[[@{/security/sendSmsForFind}]]*/ '/security/sendSmsForFind';
+	
+	        $.ajax({
+	            url: reqUrl,
+	            type: "post",
+	            data: {"phone": phone},
+	            success: function(res) {
+	                alert(res.msg);
+	                if(res.success) {
+	                    currentFindPhone = phone;
+	                    $(phoneInputId).attr("readonly", true).css("background", "#f5f5f5");
+	                    
+	                    if(type === 'email') $("#authAreaEmail").css("display", "flex");
+	                    else $("#authAreaPwd").css("display", "flex");
+
+                        // 타이머 작동 시작
+                        startTimer(type);
+	                }
+	            },
+	            error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+	        });
+	    }
+	
+	    // 이메일 찾기 처리
+	    function findEmailAction() {
+            if(timeLeft <= 0) { alert("인증 시간이 만료되었습니다."); return; }
+
+	        const code = $("#findCode1").val().trim();
+	        if(code === "") { alert("인증번호를 입력해주세요."); return; }
+	
+	        const reqUrl = /*[[@{/security/findEmail}]]*/ '/security/findEmail';
+	
+	        $.ajax({
+	            url: reqUrl, 
+	            type: "post",
+	            data: {"phone": currentFindPhone, "code": code},
+	            success: function(res) {
+	                if(res.success) {
+                        clearInterval(timerInterval);
+                        $("#timerEmail").text("완료").css("color", "#222");
+                        
+	                    $("#authAreaEmail").hide();
+	                    $("#resultEmail").html("고객님의 이메일은<br><b style='font-size: 18px; margin-top:10px; display:block;'>[" + res.email + "]</b><br>입니다.").show();
+	                } else { 
+	                    alert(res.msg); 
+	                }
+	            },
+	            error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+	        });
+	    }
+	
+	    // 비밀번호 찾기(재설정)
+	    function verifySmsForPwd() {
+            if(timeLeft <= 0) { alert("인증 시간이 만료되었습니다."); return; }
+
+	        const code = $("#findCode2").val().trim();
+	        if(code === "") { alert("인증번호를 입력해주세요."); return; }
+	
+	        const reqUrl = /*[[@{/security/findEmail}]]*/ '/security/findEmail'; 
+	
+	        $.ajax({
+	            url: reqUrl, 
+	            type: "post",
+	            data: {"phone": currentFindPhone, "code": code},
+	            success: function(res) {
+	                if(res.success) {
+                        clearInterval(timerInterval);
+                        $("#timerPwd").text("완료").css("color", "#222");
+
+	                    alert("인증이 완료되었습니다. 새 비밀번호를 설정해주세요.");
+	                    $("#authAreaPwd").hide();
+	                    $("#findCode2").attr("readonly", true).css("background", "#f5f5f5");
+	                    $("#newPwdArea").slideDown();
+	                } else { 
+	                    alert(res.msg); 
+	                }
+	            },
+	            error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+	        });
+	    }
+	
+	    // 비밀번호 찾기(재설정)
+	    function resetPasswordAction() {
+	        const newPwd = $("#newPassword").val().trim();
+            const newPwdConfirm = $("#newPasswordConfirm").val().trim();
+	        
+	        const regExpPw = new RegExp(/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).*$/);
+	        if(!regExpPw.test(newPwd)) {
+	            alert("비밀번호는 영문, 숫자, 특수문자를 포함하여 8~15자리로 입력해주세요.");
+	            $("#newPassword").focus();
+	            return;
+	        }
+
+            if(newPwd !== newPwdConfirm) {
+                alert("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+                $("#newPasswordConfirm").focus();
+                return;
+            }
+	
+	        const reqUrl = /*[[@{/security/resetPassword}]]*/ '/security/resetPassword';
+	
+	        $.ajax({
+	            url: reqUrl, 
+	            type: "post",
+	            data: {"phone": currentFindPhone, "newPassword": newPwd},
+	            success: function(res) {
+	                alert(res.msg);
+	                if(res.success) {
+	                    closeFindModal(); 
+	                }
+	            },
+	            error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+	        });
+	    }
+	    
+	    /*]]>*/
     </script>
 </body>
 </html>

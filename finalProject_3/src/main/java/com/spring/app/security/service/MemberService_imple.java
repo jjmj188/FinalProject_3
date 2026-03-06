@@ -1,5 +1,7 @@
 package com.spring.app.security.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +47,18 @@ public class MemberService_imple implements MemberService {
         
         // TODO: 향후 CoolSMS 등 실제 API 연동 시 여기에 코드 추가
         return authCode;
+    }
+    
+    @Override
+    public String findEmailByPhone(String phone) {
+        return dao.findEmailByPhone(phone);
+    }
+
+    @Override
+    public void updatePasswordByPhone(String phone, String encodedPassword) {
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("phone", phone);
+        paramMap.put("password", encodedPassword);
+        dao.updatePasswordByPhone(paramMap);
     }
 }

@@ -1,5 +1,7 @@
 package com.spring.app.security.model;
 
+import java.util.Map;
+
 import com.spring.app.security.domain.MemberDTO;
 
 public interface MemberDAO {
@@ -18,4 +20,7 @@ public interface MemberDAO {
     
     // ★ [추가] 로그인 시 이메일로 사용자 정보(DTO) 가져오기
     MemberDTO findByEmail(String email);
+    
+    String findEmailByPhone(String phone);
+    void updatePasswordByPhone(Map<String, String> paramMap);
 }

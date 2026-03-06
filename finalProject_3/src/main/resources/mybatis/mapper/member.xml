@@ -57,4 +57,14 @@
         FROM MEMBER
         WHERE EMAIL = #{email} AND STATUS = 0
     </select>
+    
+    <select id="findEmailByPhone" parameterType="String" resultType="String">
+	    SELECT email FROM member WHERE phone = #{phone}
+	</select>
+	
+	<update id="updatePasswordByPhone" parameterType="java.util.Map">
+	    UPDATE member 
+	    SET password = #{password} 
+	    WHERE phone = #{phone}
+	</update>
 </mapper>
