@@ -251,7 +251,7 @@ public class ProductController {
     
     //상품상세페이지
     @GetMapping("/product_detail/{productNo}")
-    public String detail(@PathVariable int productNo, Model model) {
+    public String detail(@PathVariable("productNo") int productNo, Model model) {
         ProductDTO productDTO = pservice.getProductDetailFull(productNo);
         model.addAttribute("product", productDTO);
         return "product/product_detail";
