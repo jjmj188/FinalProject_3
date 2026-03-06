@@ -53,48 +53,48 @@
 
 		<!-- 지역 변경 모달-->
 		<section class="area-modal" id="areaModal" aria-hidden="true">
-			<div class="area-modal__backdrop" data-area-close="true"></div>
+  <div class="area-modal__backdrop" data-area-close="true"></div>
 
-			<div class="area-modal__panel" role="dialog" aria-modal="true"
-				aria-labelledby="areaModalTitle">
-				<div class="area-modal__header">
-					<h2 class="area-modal__title" id="areaModalTitle">지역 변경</h2>
-					<button type="button" class="area-modal__close" aria-label="닫기"
-						data-area-close="true">×</button>
-				</div>
+  <div class="area-modal__panel" role="dialog" aria-modal="true" aria-labelledby="areaModalTitle">
+    <div class="area-modal__header">
+      <h2 class="area-modal__title" id="areaModalTitle">지역 변경</h2>
+      <button type="button" class="area-modal__close" aria-label="닫기" data-area-close="true">×</button>
+    </div>
 
-				<div class="area-modal__body">
-					<div class="area-search">
-						<i class="fa-solid fa-magnifying-glass area-search__icon"
-							aria-hidden="true"></i> <input type="text"
-							class="area-search__input" id="areaSearchInput"
-							placeholder="지역이나 동네로 검색하기" autocomplete="off" />
-					</div>
+    <div class="area-modal__body">
+      <!-- 1) 검색 버튼(문구 변경) -->
+      <button type="button" class="area-search" id="areaSearchBtn">
+        <i class="fa-solid fa-location-dot"></i> 검색어로
+      </button>
 
-					<button type="button" class="area-geo" id="areaUseGeoBtn">
-						<i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
-						현재 내 위치 사용하기
-					</button>
+      <!-- 2) 현재 내 위치 버튼(그대로) -->
+      <button type="button" class="area-geo" id="areaUseGeoBtn">
+        <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+        현재 내 위치 사용하기
+      </button>
 
-					<div class="area-list">
-						<div class="area-list__title">최근 검색한 동네</div>
-						<!-- 최신순 5개까지만 -->
-						<ul class="area-list__items" id="areaList">
-							<li><button type="button" class="area-item"
-									data-area-value="서울특별시, 강남구, 대치1동">서울특별시, 강남구, 대치1동</button></li>
-							<li><button type="button" class="area-item"
-									data-area-value="서울특별시, 강남구, 대치동">서울특별시, 강남구, 대치동</button></li>
-							<li><button type="button" class="area-item"
-									data-area-value="서울특별시, 강남구, 대치2동">서울특별시, 강남구, 대치2동</button></li>
-							<li><button type="button" class="area-item"
-									data-area-value="서울특별시, 강남구, 대치4동">서울특별시, 강남구, 대치4동</button></li>
-							<li><button type="button" class="area-item"
-									data-area-value="서울특별시, 강남구, 개포3동">서울특별시, 강남구, 개포3동</button></li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</section>
+      <!-- ✅ 3) 지도/검색 UI: geo 버튼 아래에 위치 -->
+      <div class="area-searchwrap" id="areaSearchWrap" aria-hidden="true">
+        <div class="area-searchwrap__search">
+          <input type="text" id="areaKakaoKeyword" placeholder="장소/동네/역 이름으로 검색" />
+          <button type="button" id="areaKakaoSearchBtn">검색</button>
+        </div>
+
+        <div id="areaKakaoMap" class="area-searchwrap__map"></div>
+
+        <ul id="areaKakaoResult" class="area-searchwrap__result"></ul>
+        <div class="area-searchwrap__hint">지도에서 클릭해도 선택돼요.</div>
+      </div>
+
+      <div class="area-list">
+        <div class="area-list__title">최근 검색한 동네</div>
+        <ul class="area-list__items" id="areaList">
+          <li style="padding: 10px 6px; opacity: .7;">최근 검색 기록이 없어요.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
 
 		<!-- 상품 리스트 -->
 		<section class="market-page">
