@@ -47,7 +47,7 @@ public class ProductController {
     private static final String IMAGE_WEB_PREFIX = "/upload/";
 
     @GetMapping("/product_list")
-    public String product_list(@RequestParam(required = false) String searchWord, Model model) {
+    public String product_list(@RequestParam(name = "searchWord", required = false) String searchWord, Model model) {
 
         List<ProductDTO> list;
 
