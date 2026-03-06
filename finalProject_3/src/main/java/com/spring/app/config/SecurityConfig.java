@@ -48,8 +48,9 @@ public class SecurityConfig {
                     "/product/price_check", // 시세조회
                     "/product/auction",   // 경매장
                     "/product/share",
-                    "/product/product_detail", // 상품 상세
-                    "/product/product_user_profile"
+                    "/product/product_detail/**", // 상품 상세
+                    "/product/product_user_profile",
+                    "/product/wordSearchShow"//자동검색어
                 ).permitAll() 
                 
                 // 위에서 허용한 URL 외의 요청(예: /product/sell)은 자동 로그인 요구

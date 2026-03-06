@@ -1,5 +1,14 @@
 /* =========================================================
-   product_form.js (등록 제외 / 모듈만 제공) + 거래제한 모달 + 택배 UI + 직거래 위치(1~3)
+   product_form.js (등록 제외 / 모듈만 제공) - 전체본
+   + 거래제한 모달 + 택배 UI + 직거래 위치(1~3)
+   + 공백만 입력 방지(alert)
+   + 판매가격 숫자만 입력/검증(alert)
+   + ✅ 최근 검색한 동네 캐시(24h TTL, 개수 제한 없음)
+   + ✅ 위치설정: 1차 모달(areaModal) 내부에서 "검색어로" 버튼 클릭 시
+        지도/검색 UI(areaSearchWrap) 펼치기(2차 모달 제거)
+   + ✅ placeName/fullAddress 분리 저장
+        - 예: "홍대입구역 2호선 / 서울마포구 양화로 지하 160"
+        - 화면(칩)에는 placeName 우선 표시
 ========================================================= */
 
 (() => {
@@ -22,6 +31,152 @@
   function safeJsonParse(str, fallback) {
     try { return JSON.parse(str); } catch { return fallback; }
   }
+
+  // =========================================================
+  // 공통 유효성: 공백만 입력 방지 / alert + focus
+  // =========================================================
+  function isBlank(value) {
+    return String(value ?? "").trim().length === 0;
+  }
+
+  function alertAndFocus(msg, el) {
+    alert(msg);
+    if (el && typeof el.focus === "function") el.focus();
+  }
+
+  // =========================================================
+  // ✅ 최근 검색한 동네 캐시 (localStorage + TTL 24h, 개수 제한 없음)
+  // =========================================================
+  const RECENT_AREA_KEY = "PF_RECENT_AREAS_V1";
+  const RECENT_AREA_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+
+  function readRecentAreas() {
+    try {
+      const raw = localStorage.getItem(RECENT_AREA_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+
+      const t = Date.now();
+      const alive = arr.filter(x =>
+        x &&
+        typeof x.value === "string" &&
+        x.value.trim() !== "" &&
+        typeof x.savedAt === "number" &&
+        (t - x.savedAt) <= RECENT_AREA_TTL_MS
+      );
+
+      if (alive.length !== arr.length) {
+        localStorage.setItem(RECENT_AREA_KEY, JSON.stringify(alive));
+      }
+      return alive;
+    } catch {
+      return [];
+    }
+  }
+
+  function writeRecentAreas(arr) {
+    try { localStorage.setItem(RECENT_AREA_KEY, JSON.stringify(arr)); } catch {}
+  }
+
+  function pushRecentArea(value) {
+    const v = String(value ?? "").trim();
+    if (!v) return;
+
+    const current = readRecentAreas();
+    const filtered = current.filter(x => String(x.value).trim() !== v);
+    filtered.unshift({ value: v, savedAt: Date.now() });
+    writeRecentAreas(filtered);
+  }
+
+  function renderRecentAreaList(ulEl) {
+    if (!ulEl) return;
+
+    const items = readRecentAreas();
+    ulEl.innerHTML = "";
+
+    if (items.length === 0) {
+      const li = document.createElement("li");
+      li.style.padding = "10px 6px";
+      li.style.opacity = "0.7";
+      li.textContent = "최근 검색 기록이 없어요.";
+      ulEl.appendChild(li);
+      return;
+    }
+
+    items.forEach(x => {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "area-item";
+      btn.setAttribute("data-area-value", x.value);
+      btn.textContent = x.value;
+      li.appendChild(btn);
+      ulEl.appendChild(li);
+    });
+  }
+
+  // =========================================================
+  // ✅ placeName / fullAddress 분리 도구
+  // =========================================================
+  function splitPlaceAndAddress(raw) {
+    const v = String(raw ?? "").trim();
+    if (!v) return { placeName: "", fullAddress: "" };
+
+    // "A / B" 형태면 분리
+    if (v.includes("/")) {
+      const [a, b] = v.split("/");
+      return { placeName: (a || "").trim(), fullAddress: (b || "").trim() };
+    }
+
+    // "A · B" 형태면 분리 (검색 결과 표기에서 종종 사용)
+    if (v.includes("·")) {
+      const [a, b] = v.split("·");
+      return { placeName: (a || "").trim(), fullAddress: (b || "").trim() };
+    }
+
+    // 그 외는 fullAddress로만 취급
+    return { placeName: "", fullAddress: v };
+  }
+
+  function displayNameOf(loc) {
+    const pn = String(loc?.placeName ?? "").trim();
+    if (pn) return pn;
+
+    const fa = String(loc?.fullAddress ?? "").trim();
+    if (!fa) return "";
+
+    if (fa.includes("/")) return fa.split("/")[0].trim();
+    if (fa.includes("·")) return fa.split("·")[0].trim();
+    return fa;
+  }
+
+  // =========================================================
+  // -1) 공백만 입력 방지 (blur 시 alert)
+  // =========================================================
+  (() => {
+    const candidates = [
+      $("#pfTitle"),
+      $("#pfName"),
+      $("#pfPrice"),
+      $("#pfSellPrice"),
+      $(".pf-textarea"),
+      ...$$("input[type='text']"),
+      ...$$("textarea")
+    ];
+
+    const uniq = Array.from(new Set(candidates.filter(Boolean)));
+
+    uniq.forEach((el) => {
+      el.addEventListener("blur", () => {
+        const raw = String(el.value ?? "");
+        if (raw.length > 0 && isBlank(raw)) {
+          el.value = "";
+          alertAndFocus("공백만 입력할 수 없습니다.", el);
+        }
+      });
+    });
+  })();
 
   // =========================================================
   // 0) 거래 제한 품목 안내 모달
@@ -139,7 +294,8 @@
           <input type="radio" name="pfMainImagePick" class="pf-main-radio" ${idx === mainIndex ? "checked" : ""}>
           <span class="pf-main-text">대표</span>
         `;
-        badge.querySelector("input").addEventListener("change", () => setMain(idx));
+        const radio = badge.querySelector("input");
+        if (radio) radio.addEventListener("change", () => setMain(idx));
 
         const del = document.createElement("button");
         del.type = "button";
@@ -179,8 +335,6 @@
 
       clampMain();
       render();
-
-      // ✅ picker만 비움 (selectedFiles 유지)
       fileInput.value = "";
     });
 
@@ -194,7 +348,6 @@
         return { ok: true };
       },
       appendToFormData(fd) {
-        // ✅ 중복 방지: 기존 images 제거 후 selectedFiles로만 구성
         fd.delete("images");
         selectedFiles.forEach(f => fd.append("images", f));
       }
@@ -316,7 +469,44 @@
       });
     });
 
-    feeInputs.forEach(inp => inp.addEventListener("input", syncShipOptionsJson));
+    (() => {
+      let lastFeeAlertAt = 0;
+
+      feeInputs.forEach(inp => {
+        inp.addEventListener("input", () => {
+          const before = String(inp.value ?? "");
+          const onlyDigits = before.replace(/[^\d]/g, "");
+
+          if (before !== onlyDigits) {
+            inp.value = onlyDigits;
+
+            const now = Date.now();
+            if (now - lastFeeAlertAt > 800) {
+              lastFeeAlertAt = now;
+              alertAndFocus("배송비는 숫자만 입력할 수 있습니다.", inp);
+            }
+          }
+
+          syncShipOptionsJson();
+        });
+
+        inp.addEventListener("blur", () => {
+          const raw = String(inp.value ?? "");
+          if (raw.length > 0 && isBlank(raw)) {
+            inp.value = "";
+            alertAndFocus("공백만 입력할 수 없습니다.", inp);
+            return;
+          }
+
+          const r = validateFeeRangeForInput(inp);
+          if (!r.ok) {
+            inp.value = "";
+            alertAndFocus(r.msg, inp);
+            syncShipOptionsJson();
+          }
+        });
+      });
+    })();
 
     shipToggle.addEventListener("change", setTradeUI);
     meetToggle.addEventListener("change", setTradeUI);
@@ -329,7 +519,6 @@
       syncShipOptionsJson,
       validate() {
         if (!shipToggle.checked) return { ok: true };
-
         if (feeIncluded && feeIncluded.checked) return { ok: true };
 
         const opts = syncShipOptionsJson();
@@ -337,6 +526,18 @@
 
         const missing = opts.find(x => x.shippingFee === null);
         if (missing) return { ok: false, msg: `"${missing.parcelType}" 배송비를 입력해 주세요.` };
+
+        for (const x of opts) {
+          const range = getRange(x.parcelType);
+          if (!range) continue;
+          const fee = x.shippingFee;
+          if (fee < range.min || fee > range.max) {
+            return {
+              ok: false,
+              msg: `${x.parcelType} 배송비는 ${range.min.toLocaleString()}원 ~ ${range.max.toLocaleString()}원 이내로 입력해 주세요.`
+            };
+          }
+        }
 
         return { ok: true };
       }
@@ -346,7 +547,62 @@
   window.PF.Shipping = ShippingModule;
 
   // =========================================================
+  // 4.5) 판매가격 숫자만 입력 + 검증(alert)
+  // =========================================================
+  const PriceModule = (() => {
+    const priceEl =
+      $("#pfPrice") ||
+      document.querySelector("input[name='productPrice']");
+
+    if (!priceEl) return null;
+
+    let lastAlertAt = 0;
+
+    priceEl.addEventListener("input", () => {
+      const before = String(priceEl.value ?? "");
+      const onlyDigits = before.replace(/[^\d]/g, "");
+      if (before !== onlyDigits) {
+        priceEl.value = onlyDigits;
+
+        const now = Date.now();
+        if (now - lastAlertAt > 800) {
+          lastAlertAt = now;
+          alertAndFocus("판매가격은 숫자만 입력할 수 있습니다.", priceEl);
+        }
+      }
+    });
+
+    priceEl.addEventListener("blur", () => {
+      const raw = String(priceEl.value ?? "");
+      if (raw.length > 0 && isBlank(raw)) {
+        priceEl.value = "";
+        alertAndFocus("공백만 입력할 수 없습니다.", priceEl);
+      }
+    });
+
+    return {
+      el: priceEl,
+      normalize() {
+        priceEl.value = String(priceEl.value ?? "").replace(/[^\d]/g, "");
+      },
+      validate() {
+        this.normalize();
+        if (isBlank(priceEl.value)) return { ok: false, msg: "판매가격을 입력해 주세요." };
+
+        const n = parseNumber(priceEl.value);
+        if (n === null) return { ok: false, msg: "판매가격은 숫자만 입력해 주세요." };
+        if (n <= 0) return { ok: false, msg: "판매가격은 0원보다 커야 합니다." };
+        return { ok: true, value: n };
+      }
+    };
+  })();
+
+  window.PF.Price = PriceModule;
+
+  // =========================================================
   // 5) 직거래 위치 1~3 -> meetLocationsJson
+  //    ✅ areaModal 내부에서 "검색어로" 클릭 시 지도/검색 UI 펼침
+  //    ✅ placeName/fullAddress 분리 저장 + 칩에는 placeName만 표시
   // =========================================================
   const MeetLocationModule = (() => {
     const openBtn = $("#pfLocationBtn");
@@ -356,6 +612,13 @@
     const searchBtn = $("#areaSearchBtn");
     const chipsWrap = $("#pfLocChips");
     const hidden = $("#pfMeetLocations");
+
+    // ✅ areaModal 내부 검색/지도 UI
+    const searchWrap = $("#areaSearchWrap");
+    const mapEl = $("#areaKakaoMap");
+    const kwInput = $("#areaKakaoKeyword");
+    const kwBtn = $("#areaKakaoSearchBtn");
+    const resultUl = $("#areaKakaoResult");
 
     if (!openBtn || !modal || !list || !chipsWrap || !hidden) return null;
 
@@ -368,14 +631,18 @@
     }
     function save(arr) { hidden.value = JSON.stringify(arr); }
 
-    function isDup(arr, fullAddress) {
-      const key = (fullAddress || "").trim();
-      return arr.some(x => (x.fullAddress || "").trim() === key);
+    function isDupByKey(arr, key) {
+      const k = String(key ?? "").trim();
+      if (!k) return false;
+      return arr.some(x => {
+        const xKey = (String(x.fullAddress ?? "").trim() || String(x.placeName ?? "").trim());
+        return xKey === k;
+      });
     }
 
-    function shortText(addr) {
-      if (!addr) return "";
-      return addr.length > 28 ? addr.slice(0, 28) + "…" : addr;
+    function shortText(t) {
+      if (!t) return "";
+      return t.length > 28 ? t.slice(0, 28) + "…" : t;
     }
 
     function renderChips() {
@@ -388,8 +655,8 @@
 
         const text = document.createElement("span");
         text.className = "pf-loc-chip__text";
-        text.title = loc.fullAddress || "";
-        text.textContent = shortText(loc.fullAddress);
+        text.title = (loc.placeName || loc.fullAddress || "");
+        text.textContent = shortText(displayNameOf(loc)); // ✅ placeName 우선
 
         const del = document.createElement("button");
         del.type = "button";
@@ -430,11 +697,23 @@
       if (meetToggle && !meetToggle.checked) return;
 
       if (load().length >= MAX_LOC) { alert("위치는 최대 3개까지 설정할 수 있어요."); return; }
+
+      renderRecentAreaList(list);
+
+      // ✅ 검색 UI 기본 접힘
+      if (searchWrap) {
+        searchWrap.classList.remove("is-open");
+        searchWrap.setAttribute("aria-hidden", "true");
+      }
+      if (resultUl) resultUl.innerHTML = "";
+      if (kwInput) kwInput.value = "";
+
       lastFocusedEl = document.activeElement;
       modal.classList.add("is-open");
       modal.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
     }
+
     function closeModal() {
       modal.classList.remove("is-open");
       modal.setAttribute("aria-hidden", "true");
@@ -450,10 +729,16 @@
       if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
     });
 
-    function ensureKakaoServices() { return !!(window.kakao && kakao.maps && kakao.maps.services); }
-    function waitForKakaoServices(cb, tries = 40) {
+    function ensureKakaoServices() {
+      return !!(window.kakao && kakao.maps && kakao.maps.services);
+    }
+    function waitForKakaoServices(cb, tries = 50) {
       if (ensureKakaoServices()) return cb();
-      if (tries <= 0) { console.error("카카오 SDK 로드 실패: &libraries=services 확인"); return; }
+      if (tries <= 0) {
+        console.error("카카오 SDK 로드 실패: script appkey / libraries=services 확인");
+        alert("카카오맵 로드에 실패했어요. appkey/도메인 등록을 확인해 주세요.");
+        return;
+      }
       setTimeout(() => waitForKakaoServices(cb, tries - 1), 100);
     }
 
@@ -478,41 +763,199 @@
       });
     }
 
-    function addLocation(fullAddress, lat, lng) {
-      const addr = (fullAddress || "").trim();
-      if (!addr) return;
+    function addLocation(placeName, fullAddress, lat, lng) {
+      const pn = String(placeName ?? "").trim();
+      const fa = String(fullAddress ?? "").trim();
+
+      const key = fa || pn;
+      if (!key) return;
 
       const arr = load();
       if (arr.length >= MAX_LOC) { alert("위치는 최대 3개까지 설정할 수 있어요."); return; }
-      if (isDup(arr, addr)) { alert("이미 추가된 위치예요."); return; }
+      if (isDupByKey(arr, key)) { alert("이미 추가된 위치예요."); return; }
 
-      arr.push({ placeName: "", fullAddress: addr, latitude: lat || "", longitude: lng || "" });
+      arr.push({
+        placeName: pn,
+        fullAddress: fa,
+        latitude: lat || "",
+        longitude: lng || ""
+      });
+
       save(arr);
       renderChips();
       updateAddButtonState();
     }
 
-    function openPostcodeForLocation() {
-      new daum.Postcode({
-        oncomplete: function (data) {
-          const addr = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
-          let extraAddr = "";
+    // =========================
+    // ✅ areaModal 내부에서 검색 UI 열기
+    // =========================
+    function openSearchUI() {
+      if (!searchWrap) return;
 
-          if (data.userSelectedType === "R") {
-            if (data.bname !== "" && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
-            if (data.buildingName !== "" && data.apartment === "Y") {
-              extraAddr += extraAddr !== "" ? ", " + data.buildingName : data.buildingName;
-            }
-            if (extraAddr !== "") extraAddr = " (" + extraAddr + ")";
+      searchWrap.classList.add("is-open");
+      searchWrap.setAttribute("aria-hidden", "false");
+
+      waitForKakaoServices(() => {
+        ensureMap();
+        setTimeout(() => {
+          try { kakao.maps.event.trigger(map, "resize"); } catch {}
+        }, 0);
+      });
+
+      if (kwInput) kwInput.focus();
+    }
+
+    // =========================
+    // ✅ 카카오맵(검색 + 지도 클릭) 로직
+    // =========================
+    let map = null;
+    let places = null;
+    let markers = [];
+    let pickMarker = null;
+
+    function clearMarkers() {
+      markers.forEach(m => m.setMap(null));
+      markers = [];
+    }
+
+    function ensureMap() {
+      if (map) return;
+      if (!mapEl) return;
+
+      map = new kakao.maps.Map(mapEl, {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 4
+      });
+
+      places = new kakao.maps.services.Places();
+      pickMarker = new kakao.maps.Marker();
+
+      // ✅ 지도 클릭으로 선택(역지오코딩은 주소만 나오는 경우가 많아서 placeName은 비움)
+      kakao.maps.event.addListener(map, "click", function(mouseEvent) {
+        const latlng = mouseEvent.latLng;
+        const lat = latlng.getLat();
+        const lng = latlng.getLng();
+
+        pickMarker.setPosition(latlng);
+        pickMarker.setMap(map);
+
+        latLngToFullAddress(lat, lng, (fullAddr) => {
+          const fa = String(fullAddr || "").trim();
+          if (!fa) {
+            alert("주소를 가져오지 못했어요. 다른 지점을 눌러주세요.");
+            return;
           }
 
-          const full = addr + extraAddr;
-          addressToLatLng(addr, (lat, lng) => {
-            addLocation(full, lat, lng);
-            closeModal();
+          // 최근검색에는 " / " 형태로 들어가도 OK (placeName 없음)
+          pushRecentArea(fa);
+          addLocation("", fa, lat, lng);
+          closeModal();
+        });
+      });
+    }
+
+    function renderSearchResults(items) {
+      if (!resultUl) return;
+      resultUl.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        const li = document.createElement("li");
+        li.style.padding = "10px 8px";
+        li.style.opacity = ".7";
+        li.textContent = "검색 결과가 없어요.";
+        resultUl.appendChild(li);
+        return;
+      }
+
+      items.forEach((p) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+
+        const placeName = (p.place_name || "").trim();
+        const fullAddress = (p.road_address_name || p.address_name || "").trim();
+        btn.textContent = `${placeName}${fullAddress ? " · " + fullAddress : ""}`;
+
+        btn.addEventListener("click", () => {
+          const lat = Number(p.y);
+          const lng = Number(p.x);
+
+          waitForKakaoServices(() => {
+            ensureMap();
+            const latlng = new kakao.maps.LatLng(lat, lng);
+            map.setCenter(latlng);
+            map.setLevel(3);
+
+            pickMarker.setPosition(latlng);
+            pickMarker.setMap(map);
           });
-        }
-      }).open();
+
+          if (!placeName && !fullAddress) {
+            alert("선택한 위치의 주소 정보가 부족해요.");
+            return;
+          }
+
+          // 최근 검색: "place / address" 저장(원하는 형태 유지)
+          pushRecentArea(`${placeName}${fullAddress ? " / " + fullAddress : ""}`);
+          addLocation(placeName, fullAddress, lat, lng);
+          closeModal();
+        });
+
+        li.appendChild(btn);
+        resultUl.appendChild(li);
+      });
+    }
+
+    function searchKeyword() {
+      const keyword = String(kwInput?.value ?? "").trim();
+      if (!keyword) {
+        alert("검색어를 입력해 주세요.");
+        kwInput?.focus?.();
+        return;
+      }
+
+      waitForKakaoServices(() => {
+        ensureMap();
+
+        places.keywordSearch(keyword, (data, status) => {
+          if (status !== kakao.maps.services.Status.OK) {
+            renderSearchResults([]);
+            return;
+          }
+
+          clearMarkers();
+          const bounds = new kakao.maps.LatLngBounds();
+
+          data.forEach((p) => {
+            const lat = Number(p.y);
+            const lng = Number(p.x);
+            const latlng = new kakao.maps.LatLng(lat, lng);
+
+            const m = new kakao.maps.Marker({ position: latlng });
+            m.setMap(map);
+            markers.push(m);
+
+            bounds.extend(latlng);
+
+            // 마커 클릭도 선택
+            kakao.maps.event.addListener(m, "click", () => {
+              const placeName = (p.place_name || "").trim();
+              const fullAddress = (p.road_address_name || p.address_name || "").trim();
+              if (!placeName && !fullAddress) return;
+
+              pickMarker.setPosition(latlng);
+              pickMarker.setMap(map);
+
+              pushRecentArea(`${placeName}${fullAddress ? " / " + fullAddress : ""}`);
+              addLocation(placeName, fullAddress, lat, lng);
+              closeModal();
+            });
+          });
+
+          map.setBounds(bounds);
+          renderSearchResults(data);
+        });
+      });
     }
 
     function setMyLocation() {
@@ -521,9 +964,14 @@
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
-          latLngToFullAddress(lat, lng, (fullAddr) => {
-            addLocation(fullAddr || "현재 위치", lat, lng);
-            closeModal();
+
+          waitForKakaoServices(() => {
+            latLngToFullAddress(lat, lng, (fullAddr) => {
+              const fa = (fullAddr || "현재 위치").trim();
+              pushRecentArea(fa);
+              addLocation("", fa, lat, lng);
+              closeModal();
+            });
           });
         },
         (err) => {
@@ -536,17 +984,36 @@
       );
     }
 
+    // ✅ 최근 리스트 클릭 시: "place / address" 형태면 placeName만 화면에 나오도록 저장
     list.addEventListener("click", (e) => {
       const btn = e.target.closest(".area-item");
       if (!btn) return;
+
       const val = btn.getAttribute("data-area-value") || btn.textContent.trim();
-      addLocation(val, "", "");
-      closeModal();
+      pushRecentArea(val);
+
+      const sp = splitPlaceAndAddress(val);
+
+      // 좌표는 addressSearch에 fullAddress가 유리함(없으면 placeName로 시도)
+      const query = sp.fullAddress || sp.placeName || val;
+
+      waitForKakaoServices(() => {
+        addressToLatLng(query, (lat, lng) => {
+          addLocation(sp.placeName, sp.fullAddress, lat, lng);
+          closeModal();
+        });
+      });
     });
 
+    // 이벤트 바인딩
     waitForKakaoServices(() => {
-      if (searchBtn) searchBtn.addEventListener("click", openPostcodeForLocation);
+      if (searchBtn) searchBtn.addEventListener("click", openSearchUI);
       if (useGeoBtn) useGeoBtn.addEventListener("click", setMyLocation);
+
+      if (kwBtn) kwBtn.addEventListener("click", searchKeyword);
+      if (kwInput) kwInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); searchKeyword(); }
+      });
     });
 
     renderChips();
@@ -564,5 +1031,97 @@
   })();
 
   window.PF.Meet = MeetLocationModule;
+
+  // =========================================================
+  // 6) 폼 submit 시 유효성 검사 + alert
+  // =========================================================
+  (() => {
+    const form =
+      $("#pfForm") ||
+      wrap.querySelector("form") ||
+      document.querySelector("form");
+
+    if (!form) return;
+
+    form.addEventListener("submit", (e) => {
+      const titleEl = $("#pfTitle") || $("#pfName");
+      if (titleEl && isBlank(titleEl.value)) {
+        e.preventDefault();
+        alertAndFocus("제목(상품명)을 입력해 주세요.", titleEl);
+        return;
+      }
+
+      const descEl = $(".pf-textarea");
+      if (descEl && isBlank(descEl.value)) {
+        e.preventDefault();
+        alertAndFocus("상품 설명을 입력해 주세요.", descEl);
+        return;
+      }
+
+      const imgV = window.PF.Image?.validate?.();
+      if (imgV && imgV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(imgV.msg);
+        return;
+      }
+
+      const shipV = window.PF.Shipping?.validate?.();
+      if (shipV && shipV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(shipV.msg);
+        return;
+      }
+
+      const priceV = window.PF.Price?.validate?.();
+      if (priceV && priceV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(priceV.msg, window.PF.Price?.el);
+        return;
+      }
+
+      const meetToggle = $("#pfMeetToggle");
+      const tradeMethod = meetToggle?.checked ? "직거래" : "택배";
+
+      const meetV = window.PF.Meet?.validate?.(tradeMethod);
+      if (meetV && meetV.ok === false) {
+        e.preventDefault();
+        alertAndFocus(meetV.msg);
+        return;
+      }
+    });
+  })();
+
+  // ✅ 배송비 허용 범위(원)
+  const FEE_RANGE = {
+    "일반택배": { min: 2700, max: 17000 },
+    "CU반값": { min: 1800, max: 2700 },
+    "GS반값": { min: 1900, max: 4400 }
+  };
+
+  function getRange(type) {
+    return FEE_RANGE[type] || null;
+  }
+
+  function validateFeeRangeForInput(inp) {
+    if (!inp) return { ok: true };
+
+    const type = inp.getAttribute("data-fee-for");
+    const range = getRange(type);
+    if (!range) return { ok: true };
+
+    if (inp.disabled) return { ok: true };
+
+    const fee = parseNumber(inp.value);
+    if (fee === null) return { ok: true };
+
+    if (fee < range.min || fee > range.max) {
+      return {
+        ok: false,
+        msg: `${type} 배송비는 ${range.min.toLocaleString()}원 ~ ${range.max.toLocaleString()}원 이내로 입력해 주세요.`
+      };
+    }
+
+    return { ok: true };
+  }
 
 })();

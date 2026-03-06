@@ -1,22 +1,52 @@
 package com.spring.app.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice   // @ControllerAdvice 은 모든 컨트롤러에 대해서 보조업무(조언)를 해주는 클래스. HTML 페이지를 반환해줌.
-// @ControllerAdvice 의 역할은 전역예외처리(@ExceptionHandler)를 해주는 것으로서
-// 모든 컨트롤러에서 발생하는 특정 예외를 한 곳에서 가로채서 처리해준다. 각 컨트롤러 마다 try-catch 를 넣을 필요가 없어진다.
-//@RestControllerAdvice  // @RestControllerAdvice = @ControllerAdvice + @ResponseBody. 만약에 HTML 페이지가 아니라 JSON 데이터를 반환하고 싶을 때 사용함.
+import jakarta.servlet.http.HttpServletRequest;
+
+@ControllerAdvice
 public class GlobalExceptionHandler {
-	
-	@ExceptionHandler(BadWordException.class)// 모든 곳에서 BadWordException 이 발생했을때 예외처리를 해주겠다는 말이다. 
-	public String handleBadWordException(BadWordException e, Model model) {
-		
-		model.addAttribute("errorMessage", e.getMessage());// model 저장소에 BadWordException 에러메시지를 저장하여
-		
-		
-		return "error_forbidden_word";  // error_forbidden_word.html 페이지에서 보여주도록 한다.
-	       //  src/main/resources/templates/error_forbidden_word.html 페이지를 만들어야 한다.
-	}
+
+    @ExceptionHandler(BadWordException.class)
+    public Object handleBadWordException(BadWordException e,
+                                         HttpServletRequest request,
+                                         Model model) {
+
+        // 1) AJAX 여부 판단
+        String xrw = request.getHeader("X-Requested-With");
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(xrw);
+
+        // 2) Accept 헤더에 JSON 포함 여부 판단
+        String accept = request.getHeader("Accept");
+        boolean wantsJson = accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE);
+
+        // 3) Content-Type 이 JSON 인지(요청 바디 기준)
+        String contentType = request.getContentType();
+        boolean isJsonRequest = contentType != null && contentType.contains(MediaType.APPLICATION_JSON_VALUE);
+
+        // ===== JSON으로 내려줘야 하는 경우 =====
+        // (AJAX이거나, Accept가 JSON이거나, JSON 요청이면 JSON 응답)
+        if (isAjax || wantsJson || isJsonRequest) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("success", false);
+            body.put("message", e.getMessage());
+
+            // 금지어는 "서버 에러"가 아니라 "요청값 문제"라 400이 맞음
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+
+        // ===== 화면(HTML)로 내려줘야 하는 경우 =====
+        model.addAttribute("errorMessage", e.getMessage());
+        return "error_forbidden_word"; // templates/error_forbidden_word.html
+    }
+
+   
 }

@@ -1,6 +1,7 @@
 package com.spring.app.product.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,4 +127,18 @@ public class ProductService_imple implements ProductService {
 
         return productDTO;
     }
+    
+    
+    //검색
+    @Override
+    public List<String> wordSearchShow(Map<String, String> paraMap) {
+        return pdao.wordSearchShow(paraMap);
+    }
+    
+  //검색된 상품목록 보이기
+    @Override
+    public List<ProductDTO> searchProductList(String searchWord) {
+        return pdao.searchProductList(searchWord);
+    }
+    
 }

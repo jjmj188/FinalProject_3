@@ -2,6 +2,7 @@ package com.spring.app.product.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,16 +46,24 @@ public class ProductController {
 
     private static final String IMAGE_WEB_PREFIX = "/upload/";
 
-    // 장터(상품목록)
     @GetMapping("/product_list")
-    public String product_list(Model model) {
+    public String product_list(@RequestParam(name = "searchWord", required = false) String searchWord, Model model) {
 
-        List<ProductDTO> list = pservice.selectProductListSimple();
+        List<ProductDTO> list;
+
+        if(searchWord != null && !searchWord.trim().isEmpty()) {
+        	//검색된 상품목록 보이기
+            list = pservice.searchProductList(searchWord);
+        }
+        else {
+            list = pservice.selectProductListSimple();
+        }
+
         model.addAttribute("list", list);
+        model.addAttribute("searchWord", searchWord);
 
         return "product/product_list";
     }
-    
     
    
  
@@ -239,13 +248,11 @@ public class ProductController {
         return "product/share";
     }
 
+    
     //상품상세페이지
     @GetMapping("/product_detail/{productNo}")
-    public String detail(@PathVariable int productNo, Model model) {
-
+    public String detail(@PathVariable("productNo") int productNo, Model model) {
         ProductDTO productDTO = pservice.getProductDetailFull(productNo);
-
-     
         model.addAttribute("product", productDTO);
         return "product/product_detail";
     }
@@ -268,5 +275,24 @@ public class ProductController {
     @GetMapping("/product_user_profile")
     public String product_user_profile() {
         return "product/product_user_profile";
+    }
+    
+    //검색
+    @GetMapping("wordSearchShow")
+    @ResponseBody
+    public List<Map<String, String>> wordSearchShow(@RequestParam Map<String, String> paraMap) {
+        List<String> wordList = pservice.wordSearchShow(paraMap);
+
+        List<Map<String, String>> mapList = new ArrayList<>();
+
+        if (wordList != null) {
+            for (String word : wordList) {
+                Map<String, String> map = new HashMap<>();
+                map.put("word", word);
+                mapList.add(map);
+            }
+        }
+
+        return mapList;
     }
 }

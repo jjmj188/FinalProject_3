@@ -1,6 +1,7 @@
 package com.spring.app.product.model;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -32,5 +33,11 @@ public interface ProductDAO {
     List<ProductShippingOptionDTO> selectShippingOption(int productNo);
 
     List<ProductMeetLocationDTO> selectMeetLocation(int productNo);
+
+    //검색
+	List<String> wordSearchShow(Map<String, String> paraMap);
+
+	//검색된 상품목록 보이기
+	List<ProductDTO> searchProductList(String searchWord);
     
 }

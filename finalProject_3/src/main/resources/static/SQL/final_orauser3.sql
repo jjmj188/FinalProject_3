@@ -33,7 +33,7 @@ CREATE TABLE MEMBER (
     WITHDRAW_REASON    VARCHAR2(500),                         -- 탈퇴사유(STATUS=0일 때 기록)
 
     CASH_BALANCE       NUMBER DEFAULT 0 NOT NULL,             -- 보유캐시
-    MANNER_TEMP        NUMBER DEFAULT 50 NOT NULL,            -- 매너온도(기본 50)
+    MANNER_TEMP        NUMBER DEFAULT 50 NOT NULL,            -- 매너온도(기본 36.5)
 
     PROFILE_IMG        VARCHAR2(500),                         -- 프로필이미지
     RECENT_CATEGORY    VARCHAR2(50),                          -- 최근거래 카테고리
@@ -58,8 +58,6 @@ NOMAXVALUE
 NOMINVALUE
 NOCYCLE
 NOCACHE;
-
-
 
 /* =========================================================
     카테고리 (CATEGORY)
@@ -152,7 +150,32 @@ NOMINVALUE
 NOCYCLE
 NOCACHE;
 
+
+/* =========================================================
+    비회원 위치 (GUEST_REGION)
+   ========================================================= */
+CREATE TABLE GUEST_REGION (
+  GUEST_REGION_NO   NUMBER          NOT NULL,        -- PK
+  GUEST_KEY         VARCHAR2(100)   NOT NULL,        -- 세션/디바이스/쿠키키
+  REGION_NO         NUMBER          NOT NULL,        -- 지역번호(FK)
+
+  LATITUDE          NUMBER(10,7)    NULL,            -- 위도
+  LONGITUDE         NUMBER(10,7)    NULL,            -- 경도
+  UPDATED_AT        TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL, -- 갱신시각
+
+  CONSTRAINT PK_GUEST_REGION PRIMARY KEY (GUEST_REGION_NO),
+  CONSTRAINT UQ_GUEST_REGION_KEY UNIQUE (GUEST_KEY),
+  CONSTRAINT FK_GUEST_REGION_REGION FOREIGN KEY (REGION_NO)
+    REFERENCES REGION(REGION_NO)
+);
+
+CREATE SEQUENCE SEQ_GUEST_REGION_NO
+START WITH 1 INCREMENT BY 1
+NOMAXVALUE NOMINVALUE
+NOCYCLE NOCACHE;
+
 select * from PRODUCTS
+
 /* =========================================================
    상품 (PRODUCTS) - 수정본
    - 이미지: PRODUCT_IMAGE에서 관리 (IS_MAIN='Y' 대표)
@@ -396,28 +419,6 @@ NOMAXVALUE NOMINVALUE
 NOCYCLE NOCACHE;
 
 
-/* =========================================================
-    비회원 위치 (GUEST_REGION)
-   ========================================================= */
-CREATE TABLE GUEST_REGION (
-  GUEST_REGION_NO   NUMBER          NOT NULL,        -- PK
-  GUEST_KEY         VARCHAR2(100)   NOT NULL,        -- 세션/디바이스/쿠키키
-  REGION_NO         NUMBER          NOT NULL,        -- 지역번호(FK)
-
-  LATITUDE          NUMBER(10,7)    NULL,            -- 위도
-  LONGITUDE         NUMBER(10,7)    NULL,            -- 경도
-  UPDATED_AT        TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL, -- 갱신시각
-
-  CONSTRAINT PK_GUEST_REGION PRIMARY KEY (GUEST_REGION_NO),
-  CONSTRAINT UQ_GUEST_REGION_KEY UNIQUE (GUEST_KEY),
-  CONSTRAINT FK_GUEST_REGION_REGION FOREIGN KEY (REGION_NO)
-    REFERENCES REGION(REGION_NO)
-);
-
-CREATE SEQUENCE SEQ_GUEST_REGION_NO
-START WITH 1 INCREMENT BY 1
-NOMAXVALUE NOMINVALUE
-NOCYCLE NOCACHE;
 
 /* =========================================================
     인기검색어 (POPULAR_KEYWORD)
