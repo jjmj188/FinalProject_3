@@ -6,6 +6,8 @@
 
 <link rel="stylesheet" th:href="@{/css/product/product_list.css}">
 <script defer th:src="@{/js/product/product_list.js}"></script>
+
+
 </head>
 <body>
 	<main>
@@ -17,18 +19,23 @@
 				</h1>
 
 				<div class="search-wrap">
-					<div class="search-pill">
+					<div class="search-pill" style="position: relative;">
 						<div class="select-box">
 							<button type="button" class="btn-area">
 								<i class="fa-solid fa-location-dot"></i><span>지역설정</span>
 							</button>
 						</div>
 
-						<input class="search-input" type="text" placeholder="검색어를 입력해주세요" />
+						<input class="search-input" type="text" id="searchWord"
+							name="searchWord" placeholder="검색어를 입력해주세요" autocomplete="off" />
 
-						<button class="search-btn" type="button">
+						<button class="search-btn" type="button" id="searchBtn">
 							<i class="fa-solid fa-magnifying-glass"></i>
 						</button>
+						
+						<!-- 자동완성 리스트 -->
+						<div id="displayList"></div>
+					
 					</div>
 
 					<div class="popular">
@@ -53,48 +60,51 @@
 
 		<!-- 지역 변경 모달-->
 		<section class="area-modal" id="areaModal" aria-hidden="true">
-  <div class="area-modal__backdrop" data-area-close="true"></div>
+			<div class="area-modal__backdrop" data-area-close="true"></div>
 
-  <div class="area-modal__panel" role="dialog" aria-modal="true" aria-labelledby="areaModalTitle">
-    <div class="area-modal__header">
-      <h2 class="area-modal__title" id="areaModalTitle">지역 변경</h2>
-      <button type="button" class="area-modal__close" aria-label="닫기" data-area-close="true">×</button>
-    </div>
+			<div class="area-modal__panel" role="dialog" aria-modal="true"
+				aria-labelledby="areaModalTitle">
+				<div class="area-modal__header">
+					<h2 class="area-modal__title" id="areaModalTitle">지역 변경</h2>
+					<button type="button" class="area-modal__close" aria-label="닫기"
+						data-area-close="true">×</button>
+				</div>
 
-    <div class="area-modal__body">
-      <!-- 1) 검색 버튼(문구 변경) -->
-      <button type="button" class="area-search" id="areaSearchBtn">
-        <i class="fa-solid fa-location-dot"></i> 검색어로
-      </button>
+				<div class="area-modal__body">
+					<!-- 1) 검색 버튼(문구 변경) -->
+					<button type="button" class="area-search" id="areaSearchBtn">
+						<i class="fa-solid fa-location-dot"></i> 검색어로
+					</button>
 
-      <!-- 2) 현재 내 위치 버튼(그대로) -->
-      <button type="button" class="area-geo" id="areaUseGeoBtn">
-        <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
-        현재 내 위치 사용하기
-      </button>
+					<!-- 2) 현재 내 위치 버튼(그대로) -->
+					<button type="button" class="area-geo" id="areaUseGeoBtn">
+						<i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+						현재 내 위치 사용하기
+					</button>
 
-      <!-- ✅ 3) 지도/검색 UI: geo 버튼 아래에 위치 -->
-      <div class="area-searchwrap" id="areaSearchWrap" aria-hidden="true">
-        <div class="area-searchwrap__search">
-          <input type="text" id="areaKakaoKeyword" placeholder="장소/동네/역 이름으로 검색" />
-          <button type="button" id="areaKakaoSearchBtn">검색</button>
-        </div>
+					<!-- ✅ 3) 지도/검색 UI: geo 버튼 아래에 위치 -->
+					<div class="area-searchwrap" id="areaSearchWrap" aria-hidden="true">
+						<div class="area-searchwrap__search">
+							<input type="text" id="areaKakaoKeyword"
+								placeholder="장소/동네/역 이름으로 검색" />
+							<button type="button" id="areaKakaoSearchBtn">검색</button>
+						</div>
 
-        <div id="areaKakaoMap" class="area-searchwrap__map"></div>
+						<div id="areaKakaoMap" class="area-searchwrap__map"></div>
 
-        <ul id="areaKakaoResult" class="area-searchwrap__result"></ul>
-        <div class="area-searchwrap__hint">지도에서 클릭해도 선택돼요.</div>
-      </div>
+						<ul id="areaKakaoResult" class="area-searchwrap__result"></ul>
+						<div class="area-searchwrap__hint">지도에서 클릭해도 선택돼요.</div>
+					</div>
 
-      <div class="area-list">
-        <div class="area-list__title">최근 검색한 동네</div>
-        <ul class="area-list__items" id="areaList">
-          <li style="padding: 10px 6px; opacity: .7;">최근 검색 기록이 없어요.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+					<div class="area-list">
+						<div class="area-list__title">최근 검색한 동네</div>
+						<ul class="area-list__items" id="areaList">
+							<li style="padding: 10px 6px; opacity: .7;">최근 검색 기록이 없어요.</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</section>
 
 		<!-- 상품 리스트 -->
 		<section class="market-page">
@@ -193,9 +203,8 @@
 				<!-- 카드 그리드 -->
 				<div class="grid">
 					<!-- card 1 -->
-					<a class="card"
-					   th:each="p : ${list}"
-					   th:href="@{|/product/product_detail/${p.productNo}|}">
+					<a class="card" th:each="p : ${list}"
+						th:href="@{|/product/product_detail/${p.productNo}|}">
 						<div class="thumb">
 							<span class="thumb-badge selling">판매중</span>
 							<button class="heart" type="button" aria-label="찜">
@@ -206,26 +215,19 @@
 						<div class="card-body">
 							<div class="item-title" th:text="${p.productName}">상품명</div>
 							<div class="price"
-							     th:text="${p.saleType == '나눔' ? '무료나눔'
+								th:text="${p.saleType == '나눔' ? '무료나눔'
 							              : (p.productPrice != null ? #numbers.formatInteger(p.productPrice, 3, 'COMMA') + '원' : '가격없음')}">
 							</div>
 							<div class="meta">
-								
-								<span>
-								  <i class="fa-solid fa-location-dot"></i>
-								  <span th:text="${p.areaGu != null ? p.areaGu : '택배거래'}">강남구</span>
-								</span>
-								
-								 <span>
-									<i class="fa-regular fa-clock"></i>
-									<span class="time-ago"
-									      th:attr="data-time=${#dates.format(p.regDate,'yyyy-MM-dd''T''HH:mm:ss')}">
-										방금 전
-									</span>
-								 </span> 
-								
-								<span><i class="fa-solid fa-eye"></i> 10</span>
-								
+
+								<span> <i class="fa-solid fa-location-dot"></i> <span
+									th:text="${p.areaGu != null ? p.areaGu : '택배거래'}">강남구</span>
+								</span> <span> <i class="fa-regular fa-clock"></i> <span
+									class="time-ago"
+									th:attr="data-time=${#dates.format(p.regDate,'yyyy-MM-dd''T''HH:mm:ss')}">
+										방금 전 </span>
+								</span> <span><i class="fa-solid fa-eye"></i> 10</span>
+
 							</div>
 						</div>
 					</a>
@@ -242,26 +244,156 @@
 			</section>
 		</section>
 	</main>
-	<script>
-  document.addEventListener("click", (e) => {
-    const heartBtn = e.target.closest(".heart");
-    if (!heartBtn) return;
 
-    // a.card 이동 방지
-    e.preventDefault();
-    e.stopPropagation();
+<script th:inline="javascript">
+/*<![CDATA[*/
 
-    heartBtn.classList.toggle("on");
+window.searchBtnClick = function(){
+	const searchWord = $("#searchWord").val().trim();
 
-    const icon = heartBtn.querySelector("i");
-    if (icon) {
-      icon.classList.toggle("fa-regular");
-      icon.classList.toggle("fa-solid");
-    }
-  });
-  
- 
+	if(searchWord === ""){
+		alert("검색어를 입력하세요.");
+		$("#searchWord").focus();
+		return;
+	}
+
+	const url = /*[[@{/product/product_list}]]*/ "";
+	location.href = url + "?searchWord=" + encodeURIComponent(searchWord);
+};
+
+$(function(){
+	$("#searchBtn").on("click", function(e){
+		e.preventDefault();
+		e.stopPropagation();
+		window.searchBtnClick();
+	});
+});
+
+$(function(){
+
+	const $searchInput = $("input.search-input");
+	const $displayList = $("#displayList");
+	const $popularItems = $(".popular-item");
+
+	console.log("페이지 JS 실행됨");
+
+	$displayList.hide();
+
+	// 검색어 입력 시 자동완성
+	$searchInput.on("keyup", function(e){
+		const searchWord = $(this).val().trim();
+
+		if(e.key === "Enter"){
+			return;
+		}
+
+		if(searchWord.length === 0){
+			$displayList.hide().empty();
+			return;
+		}
+
+		$.ajax({
+			url: /*[[@{/product/wordSearchShow}]]*/ "",
+			type: "get",
+			data: {
+				"searchWord": searchWord
+			},
+			dataType: "json",
+			success: function(json){
+				if(json && json.length > 0){
+					let v_html = "";
+
+					$.each(json, function(index, item){
+						const word = item.word;
+						const idx = word.toLowerCase().indexOf(searchWord.toLowerCase());
+						const len = searchWord.length;
+
+						let result = word;
+
+						if(idx > -1){
+							result =
+								word.substring(0, idx)
+								+ "<span style='color:red;'>"
+								+ word.substring(idx, idx + len)
+								+ "</span>"
+								+ word.substring(idx + len);
+						}
+
+						v_html += "<span class='result' style='cursor:pointer; display:block; padding:8px 10px;'>"
+								+ result
+								+ "</span>";
+					});
+
+					$displayList.html(v_html).show();
+				}
+				else{
+					$displayList.hide().empty();
+				}
+			},
+			error: function(request, status, error){
+				console.log("AJAX ERROR:", request.status, request.responseText, error);
+				$displayList.hide().empty();
+			}
+		});
+	});
+
+	// 엔터로 검색
+	$searchInput.on("keydown", function(e){
+		if(e.key === "Enter"){
+			e.preventDefault();
+			window.searchBtnClick();
+		}
+	});
+
+	// 검색 버튼 클릭
+	$("#searchBtn").on("click", function(){
+		window.searchBtnClick();
+	});
+
+	// 검색창 포커스 시 자동완성 다시 보여주기
+	$searchInput.on("focus", function(){
+		if($(this).val().trim().length > 0 && $displayList.children().length > 0){
+			$displayList.show();
+		}
+	});
+
+	// 자동완성 항목 클릭
+	$(document).on("click", ".result", function(){
+		const word = $(this).text().trim();
+		$searchInput.val(word);
+		$displayList.hide().empty();
+		window.searchBtnClick();
+	});
+
+	// 인기 검색어 클릭
+	$popularItems.on("click", function(){
+		const word = $(this).text().trim();
+		$searchInput.val(word);
+		$displayList.hide().empty();
+		window.searchBtnClick();
+	});
+
+	// 검색창 바깥 클릭 시 자동완성 닫기
+	$(document).on("click", function(e){
+		if(!$(e.target).closest(".search-pill").length){
+			$displayList.hide();
+		}
+	});
+
+	// 하트 버튼 클릭
+	$(document).on("click", ".heart", function(e){
+		e.preventDefault();
+		e.stopPropagation();
+
+		$(this).toggleClass("on");
+
+		const $icon = $(this).find("i");
+		$icon.toggleClass("fa-regular");
+		$icon.toggleClass("fa-solid");
+	});
+
+});
+/*]]>*/
 </script>
-
 </body>
 </html>
