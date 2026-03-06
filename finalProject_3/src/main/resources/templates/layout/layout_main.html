@@ -3,6 +3,15 @@
       lang="ko"
       xmlns:th="http://www.thymeleaf.org">
 <head>
+  
+  <script>
+    function toggleChatPopup() {
+        const modal = document.getElementById('chatModal');
+        if (modal) {
+            modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
+        } else {}
+    }
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -39,6 +48,8 @@
 
   <div id="mycontent" th:replace="${content}"></div>
 
+  <div th:replace="~{chat/chat_popup :: chat_popup}"></div>
+  
   <div id="myfooter" th:insert="~{fragment/footer :: footer}"></div>
 </div>
 
@@ -49,3 +60,4 @@
 <th:block th:replace="${bodyJs}"></th:block>
 </body>
 </html>
+
