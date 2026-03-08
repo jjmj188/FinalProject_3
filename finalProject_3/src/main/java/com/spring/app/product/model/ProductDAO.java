@@ -40,11 +40,21 @@ public interface ProductDAO {
     //검색
 	List<String> wordSearchShow(Map<String, String> paraMap);
 
-	//지역+상품검색
-	List<ProductDTO> selectProductListByCondition(@Param("searchWord") String searchWord, @Param("areaDong") String areaDong);
+	//지역+상품검색+상품필터
+	List<ProductDTO> selectProductListByCondition(@Param("searchWord") String searchWord,
+            @Param("areaDong") String areaDong,
+            @Param("tradeAvailable") String tradeAvailable,
+            @Param("parcelAvailable") String parcelAvailable,
+            @Param("categoryNo") Integer categoryNo,
+            @Param("sortType") String sortType,
+            @Param("priceMin") Integer priceMin,
+            @Param("priceMax") Integer priceMax);
 	
 	//인기검색어
 	void insertSearchLog(SearchLogDTO searchLogDto);
 	List<SearchKeywordDTO> selectPopularKeywordList();
+	
+	//조회수
+	int updateViewCount(int productNo);
     
 }

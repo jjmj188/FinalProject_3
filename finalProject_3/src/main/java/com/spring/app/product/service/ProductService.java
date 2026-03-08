@@ -29,14 +29,28 @@ public interface ProductService {
 
 	
 
-	//지역+상품검색
-	List<ProductDTO> selectProductListByCondition(String searchWord, String areaDong);
+	//지역+상품검색+상품필터
+	List<ProductDTO> selectProductListByCondition(String searchWord,
+            String areaDong,
+            String tradeAvailable,
+            String parcelAvailable,
+            Integer categoryNo,
+            String sortType,
+            Integer priceMin,
+            Integer priceMax);
 
 	//인기검색어
 	void insertSearchLog(SearchLogDTO searchLogDto);
 	List<SearchKeywordDTO> selectPopularKeywordList();
+	
+	//조회수
+	void updateViewCount(int productNo);
+	
+	
+	
+	
 	}
 	
-
+	
 	
 	

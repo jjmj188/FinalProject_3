@@ -127,35 +127,44 @@
 						<div class="filter-group">
 							<div class="fg-title">조건</div>
 							<div class="check-row">
-								<label class="check"><input type="checkbox"> 거래
-									가능만 보기</label> <label class="check"><input type="checkbox">
-									택배 가능</label>
+								<label class="check">
+									<input type="checkbox" id="tradeAvailable" name="tradeAvailable" value="Y"
+									       th:checked="${param.tradeAvailable != null}">
+									거래 가능만 보기
+								</label>
+								
+								<label class="check">
+									<input type="checkbox" id="parcelAvailable" name="parcelAvailable" value="Y"
+									       th:checked="${param.parcelAvailable != null}">
+									택배 가능
+								</label>
 							</div>
 						</div>
 						
 						<!-- 카테고리 -->
 						<div class="filter-group">
 							<div class="fg-title">카테고리</div>
-							<select class="select" aria-label="정렬">
-								<option>패션(수입명품 / 패션의류 / 패션잡화)</option>
-								<option>육아(출산 / 유아동)</option>
-								<option>디지털·전자기기(모바일 / 태블릿 / 노트북 / PC / 카메라 / 캠코더)</option>
-								<option>가전(가전제품)</option>
-								<option>홈·인테리어(가구 / 인테리어 / 리빙 / 생활)</option>
-								<option>취미(게임, 반려동물, 독서)</option>
-								<option>여행(등산, 캠핑 등등)</option>
-								<option>공구/산업용품</option>
+							<select class="select" id="categoryNo" name="categoryNo" aria-label="카테고리">
+								<option value="">전체 카테고리</option>
+								<option value="1" th:selected="${param.categoryNo != null and param.categoryNo[0] == '1'}">패션(수입명품 / 패션의류 / 패션잡화)</option>
+								<option value="2" th:selected="${param.categoryNo != null and param.categoryNo[0] == '2'}">육아(출산 / 유아동)</option>
+								<option value="3" th:selected="${param.categoryNo != null and param.categoryNo[0] == '3'}">디지털·전자기기(모바일 / 태블릿 / 노트북 / PC / 카메라 / 캠코더)</option>
+								<option value="4" th:selected="${param.categoryNo != null and param.categoryNo[0] == '4'}">가전(가전제품)</option>
+								<option value="5" th:selected="${param.categoryNo != null and param.categoryNo[0] == '5'}">홈·인테리어(가구 / 인테리어 / 리빙 / 생활)</option>
+								<option value="6" th:selected="${param.categoryNo != null and param.categoryNo[0] == '6'}">취미(게임, 반려동물, 독서)</option>
+								<option value="7" th:selected="${param.categoryNo != null and param.categoryNo[0] == '7'}">여행(등산, 캠핑 등등)</option>
+								<option value="8" th:selected="${param.categoryNo != null and param.categoryNo[0] == '8'}">공구/산업용품</option>
 							</select>
 						</div>
 
 						<!-- 정렬 -->
 						<div class="filter-group">
 							<div class="fg-title">정렬</div>
-							<select class="select" aria-label="정렬">
-								<option>최신순</option>
-								<option>인기순</option>
-								<option>가격 낮은순</option>
-								<option>가격 높은순</option>
+							<select class="select" id="sortType" name="sortType" aria-label="정렬">
+								<option value="latest" th:selected="${param.sortType == null or param.sortType[0] == 'latest'}">최신순</option>
+								<option value="view" th:selected="${param.sortType != null and param.sortType[0] == 'view'}">인기순</option>
+								<option value="priceAsc" th:selected="${param.sortType != null and param.sortType[0] == 'priceAsc'}">가격 낮은순</option>
+								<option value="priceDesc" th:selected="${param.sortType != null and param.sortType[0] == 'priceDesc'}">가격 높은순</option>
 							</select>
 						</div>
 
@@ -177,21 +186,23 @@
 
 							<div class="range-row" aria-label="가격 범위">
 								<div class="price-input">
-									<span class="won">₩</span> <input id="priceMin" type="number"
-										placeholder="최소" />
+									<span class="won">₩</span>
+									<input id="priceMin" name="priceMin" type="number" placeholder="최소"
+									       th:value="${param.priceMin != null ? param.priceMin[0] : ''}" />
 								</div>
-
+							
 								<span class="range-dash">-</span>
-
+							
 								<div class="price-input">
-									<span class="won">₩</span> <input id="priceMax" type="number"
-										placeholder="최대" />
+									<span class="won">₩</span>
+									<input id="priceMax" name="priceMax" type="number" placeholder="최대"
+									       th:value="${param.priceMax != null ? param.priceMax[0] : ''}" />
 								</div>
 							</div>
 
 							<div class="filter-actions">
-								<button class="btn btn-primary" type="button">필터적용</button>
-								<button class="btn btn-ghost" type="button">초기화</button>
+								<button class="btn btn-primary" type="button" id="applyFilterBtn">필터적용</button>
+								<button class="btn btn-ghost" type="button" id="resetFilterBtn">초기화</button>
 							</div>
 						</div>
 					</div>
@@ -220,20 +231,30 @@
 				<!-- 검색 결과 없음 -->
 				
 <div class="no-result"
-     th:if="${#lists.isEmpty(list)
+       th:if="${#lists.isEmpty(list)
              and (
                 (param.searchWord != null and !#strings.isEmpty(param.searchWord[0]))
                 or
                 (param.areaDong != null and !#strings.isEmpty(param.areaDong[0]))
+                or
+                (param.tradeAvailable != null)
+                or
+                (param.parcelAvailable != null)
+                or
+                (param.categoryNo != null and !#strings.isEmpty(param.categoryNo[0]))
+                or
+                (param.priceMin != null and !#strings.isEmpty(param.priceMin[0]))
+                or
+                (param.priceMax != null and !#strings.isEmpty(param.priceMax[0]))
              )}">
 
     <div class="no-result-inner">
         <i class="fa-solid fa-circle-exclamation"></i>
 
         <div class="no-result-text"
-             th:if="${param.searchWord != null and !#strings.isEmpty(param.searchWord[0])
-                     and param.areaDong != null and !#strings.isEmpty(param.areaDong[0])}"
-             th:text="|${param.areaDong[0]}에서 &quot;${param.searchWord[0]}&quot; 검색 결과가 없습니다.|">
+     th:if="${(param.searchWord == null or #strings.isEmpty(param.searchWord[0]))
+             and (param.areaDong == null or #strings.isEmpty(param.areaDong[0]))}"
+     th:text="'조건에 맞는 상품이 없습니다.'">
         </div>
 
         <div class="no-result-text"
@@ -270,13 +291,20 @@
 							</div>
 							<div class="meta">
 
-								<span> <i class="fa-solid fa-location-dot"></i> <span
-									th:text="${p.areaGu != null ? p.areaGu : '택배거래'}">강남구</span>
-								</span> <span> <i class="fa-regular fa-clock"></i> <span
+								<span>
+									<i class="fa-solid fa-location-dot"></i>
+									<span th:text="${p.placeName != null and !#strings.isEmpty(p.placeName) ? p.placeName : '택배거래'}">장소명</span>
+								</span>
+								
+								 <span> <i class="fa-regular fa-clock"></i> <span
 									class="time-ago"
 									th:attr="data-time=${#dates.format(p.regDate,'yyyy-MM-dd''T''HH:mm:ss')}">
 										방금 전 </span>
-								</span> <span><i class="fa-solid fa-eye"></i> 10</span>
+								</span> 
+								<span>
+									<i class="fa-solid fa-eye"></i>
+									<span th:text="${p.viewCount}">0</span>
+								</span>
 
 							</div>
 						</div>
@@ -308,28 +336,67 @@ $(function () {
 	// 검색
 	// ===============================
 	window.searchBtnClick = function () {
-		const searchWord = $searchInput.val().trim();
-		const areaDong = $("#areaDong").val().trim();
-		const url = /*[[@{/product/product_list}]]*/ "";
+	const searchWord = $("#searchWord").val().trim();
+	const areaDong = $("#areaDong").val().trim();
+	const tradeAvailable = $("#tradeAvailable").is(":checked");
+	const parcelAvailable = $("#parcelAvailable").is(":checked");
+	const categoryNo = $("#categoryNo").val();
+	const sortType = $("#sortType").val();
+	const priceMin = $("#priceMin").val().trim();
+	const priceMax = $("#priceMax").val().trim();
+	const url = /*[[@{/product/product_list}]]*/ "";
 
-		if (searchWord === "" && areaDong === "") {
-			alert("검색어 또는 지역을 선택하세요.");
-			$searchInput.focus();
-			return;
-		}
+	const isSortChanged = sortType !== "" && sortType !== "latest";
 
-		const params = new URLSearchParams();
+	if (searchWord === "" &&
+		areaDong === "" &&
+		!tradeAvailable &&
+		!parcelAvailable &&
+		categoryNo === "" &&
+		priceMin === "" &&
+		priceMax === "" &&
+		!isSortChanged) {
+		alert("검색어, 지역 또는 필터 조건을 선택하세요.");
+		$("#searchWord").focus();
+		return;
+	}
 
-		if (searchWord !== "") {
-			params.append("searchWord", searchWord);
-		}
+	const params = new URLSearchParams();
 
-		if (areaDong !== "") {
-			params.append("areaDong", areaDong);
-		}
+	if (searchWord !== "") params.append("searchWord", searchWord);
+	if (areaDong !== "") params.append("areaDong", areaDong);
+	if (tradeAvailable) params.append("tradeAvailable", "Y");
+	if (parcelAvailable) params.append("parcelAvailable", "Y");
+	if (categoryNo !== "") params.append("categoryNo", categoryNo);
+	if (sortType !== "") params.append("sortType", sortType);
+	if (priceMin !== "") params.append("priceMin", priceMin);
+	if (priceMax !== "") params.append("priceMax", priceMax);
 
-		location.href = url + "?" + params.toString();
-	};
+	location.href = url + "?" + params.toString();
+};
+
+$("#applyFilterBtn").on("click", function () {
+	window.searchBtnClick();
+});
+
+$("#resetFilterBtn").on("click", function () {
+	$("#tradeAvailable").prop("checked", false);
+	$("#parcelAvailable").prop("checked", false);
+	$("#categoryNo").val("");
+	$("#sortType").val("latest");
+	$("#priceMin").val("");
+	$("#priceMax").val("");
+
+	const url = /*[[@{/product/product_list}]]*/ "";
+	const searchWord = $("#searchWord").val().trim();
+	const areaDong = $("#areaDong").val().trim();
+
+	const params = new URLSearchParams();
+	if (searchWord !== "") params.append("searchWord", searchWord);
+	if (areaDong !== "") params.append("areaDong", areaDong);
+
+	location.href = params.toString() ? url + "?" + params.toString() : url;
+});
 
 	$displayList.hide();
 
@@ -483,13 +550,7 @@ $(function () {
 		minEl.addEventListener("blur", syncRangeActive);
 		maxEl.addEventListener("blur", syncRangeActive);
 
-		const resetBtn = document.querySelector(".filter-actions .btn-ghost");
-		if (resetBtn) {
-			resetBtn.addEventListener("click", () => {
-				clearPillActive();
-				clearRangeValues();
-			});
-		}
+		
 	}
 
 	// ===============================
@@ -1060,6 +1121,12 @@ $(function () {
 		if (labelSpan) {
 			labelSpan.textContent = initialAreaDong;
 		}
+	}
+});
+
+window.addEventListener("pageshow", function (event) {
+	if (event.persisted) {
+		window.location.reload();
 	}
 });
 /*]]>*/

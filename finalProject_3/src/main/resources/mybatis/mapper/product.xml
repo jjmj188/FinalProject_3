@@ -122,31 +122,32 @@
 	</insert>
 
 	<select id="selectProductListSimple"
-		resultType="com.spring.app.product.domain.ProductDTO">
+	resultType="com.spring.app.product.domain.ProductDTO">
 
-		SELECT
-		PRODUCTS.PRODUCT_NO AS productNo,
-		PRODUCTS.PRODUCT_NAME AS productName,
-		PRODUCTS.SALE_TYPE AS saleType,
-		PRODUCTS.PRODUCT_PRICE AS productPrice,
-		PRODUCTS.TRADE_STATUS AS tradeStatus,
-		PRODUCTS.REG_DATE AS regDate,
+	SELECT
+	PRODUCTS.PRODUCT_NO AS productNo,
+	PRODUCTS.PRODUCT_NAME AS productName,
+	PRODUCTS.SALE_TYPE AS saleType,
+	PRODUCTS.PRODUCT_PRICE AS productPrice,
+	PRODUCTS.TRADE_STATUS AS tradeStatus,
+	PRODUCTS.REG_DATE AS regDate,
+	PRODUCTS.VIEW_COUNT AS viewCount,
 
-		(SELECT PLACE_NAME
-		FROM PRODUCT_MEET_LOCATION
-		WHERE PRODUCT_NO = PRODUCTS.PRODUCT_NO
-		AND ROWNUM = 1) AS areaGu,
+	(SELECT PRODUCT_MEET_LOCATION.PLACE_NAME
+	 FROM PRODUCT_MEET_LOCATION
+	 WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+	 AND ROWNUM = 1) AS placeName,
 
-		(SELECT PRODUCT_IMAGE.IMG_URL
-		FROM PRODUCT_IMAGE
-		WHERE PRODUCT_IMAGE.PRODUCT_NO = PRODUCTS.PRODUCT_NO
-		AND PRODUCT_IMAGE.IS_MAIN = 'Y'
-		AND ROWNUM = 1) AS imgUrl
+	(SELECT PRODUCT_IMAGE.IMG_URL
+	 FROM PRODUCT_IMAGE
+	 WHERE PRODUCT_IMAGE.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+	 AND PRODUCT_IMAGE.IS_MAIN = 'Y'
+	 AND ROWNUM = 1) AS imgUrl
 
-		FROM PRODUCTS
-		ORDER BY PRODUCTS.REG_DATE DESC
+	FROM PRODUCTS
+	ORDER BY PRODUCTS.REG_DATE DESC
 
-	</select>
+</select>
 
 
 	<!-- 상품 상세 - 기본정보 (PRODUCTS) -->
@@ -245,7 +246,7 @@
 </select>
 
 	<select id="selectProductListByCondition"
-        resultType="com.spring.app.product.domain.ProductDTO">
+    resultType="com.spring.app.product.domain.ProductDTO">
 
     SELECT
         PRODUCTS.PRODUCT_NO AS productNo,
@@ -254,13 +255,15 @@
         PRODUCTS.PRODUCT_PRICE AS productPrice,
         PRODUCTS.TRADE_STATUS AS tradeStatus,
         PRODUCTS.REG_DATE AS regDate,
+        PRODUCTS.VIEW_COUNT AS viewCount,
+        PRODUCTS.CATEGORY_NO AS categoryNo,
 
         (
-            SELECT PLACE_NAME
+            SELECT PRODUCT_MEET_LOCATION.PLACE_NAME
             FROM PRODUCT_MEET_LOCATION
             WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
             AND ROWNUM = 1
-        ) AS areaGu,
+        ) AS placeName,
 
         (
             SELECT PRODUCT_IMAGE.IMG_URL
@@ -282,14 +285,44 @@
             SELECT 1
             FROM PRODUCT_MEET_LOCATION
             WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
-              AND (
-                    PRODUCT_MEET_LOCATION.FULL_ADDRESS LIKE '%' || #{areaDong} || '%'
-                 OR PRODUCT_MEET_LOCATION.PLACE_NAME LIKE '%' || #{areaDong} || '%'
-              )
+              AND PRODUCT_MEET_LOCATION.FULL_ADDRESS LIKE '%' || #{areaDong} || '%'
         )
     </if>
 
-    ORDER BY PRODUCTS.REG_DATE DESC
+    <if test="tradeAvailable != null and tradeAvailable != ''">
+        AND PRODUCTS.TRADE_STATUS = '판매중'
+    </if>
+
+    <if test="parcelAvailable != null and parcelAvailable != ''">
+        AND PRODUCTS.TRADE_METHOD = '택배'
+    </if>
+
+    <if test="categoryNo != null">
+        AND PRODUCTS.CATEGORY_NO = #{categoryNo}
+    </if>
+
+    <if test="priceMin != null">
+        AND PRODUCTS.PRODUCT_PRICE &gt;= #{priceMin}
+    </if>
+
+    <if test="priceMax != null">
+        AND PRODUCTS.PRODUCT_PRICE &lt;= #{priceMax}
+    </if>
+
+    <choose>
+        <when test="sortType == 'view'">
+            ORDER BY PRODUCTS.VIEW_COUNT DESC, PRODUCTS.REG_DATE DESC
+        </when>
+        <when test="sortType == 'priceAsc'">
+            ORDER BY PRODUCTS.PRODUCT_PRICE ASC, PRODUCTS.REG_DATE DESC
+        </when>
+        <when test="sortType == 'priceDesc'">
+            ORDER BY PRODUCTS.PRODUCT_PRICE DESC, PRODUCTS.REG_DATE DESC
+        </when>
+        <otherwise>
+            ORDER BY PRODUCTS.REG_DATE DESC
+        </otherwise>
+    </choose>
 
 </select>
 
@@ -342,5 +375,11 @@
 
 </select>
 
+<!-- 조회수 -->
+<update id="updateViewCount" parameterType="int">
+    UPDATE PRODUCTS
+    SET VIEW_COUNT = VIEW_COUNT + 1
+    WHERE PRODUCT_NO = #{productNo}
+</update>
 
 </mapper>

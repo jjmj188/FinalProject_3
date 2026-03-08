@@ -136,11 +136,29 @@ public class ProductService_imple implements ProductService {
         return pdao.wordSearchShow(paraMap);
     }
     
-  //지역+상품검색
+  //지역+상품검색+상품필터
     @Override
-    public List<ProductDTO> selectProductListByCondition(String searchWord, String areaDong) {
-        return pdao.selectProductListByCondition(searchWord, areaDong);
+    public List<ProductDTO> selectProductListByCondition(String searchWord,
+                                                         String areaDong,
+                                                         String tradeAvailable,
+                                                         String parcelAvailable,
+                                                         Integer categoryNo,
+                                                         String sortType,
+                                                         Integer priceMin,
+                                                         Integer priceMax) {
+        return pdao.selectProductListByCondition(
+                searchWord,
+                areaDong,
+                tradeAvailable,
+                parcelAvailable,
+                categoryNo,
+                sortType,
+                priceMin,
+                priceMax
+        );
     }
+    
+  
     
     //인기검색어
     @Override
@@ -151,5 +169,13 @@ public class ProductService_imple implements ProductService {
     public List<SearchKeywordDTO> selectPopularKeywordList() {
         return pdao.selectPopularKeywordList();
     }
+
+    //조회수
+    @Override
+    public void updateViewCount(int productNo) {
+        pdao.updateViewCount(productNo);
+    }
+
+	
     
 }

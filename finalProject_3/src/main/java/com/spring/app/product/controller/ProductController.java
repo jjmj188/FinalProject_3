@@ -54,22 +54,23 @@ public class ProductController {
     public String product_list(
             @RequestParam(name = "searchWord", required = false) String searchWord,
             @RequestParam(name = "areaDong", required = false) String areaDong,
+            @RequestParam(name = "tradeAvailable", required = false) String tradeAvailable,
+            @RequestParam(name = "parcelAvailable", required = false) String parcelAvailable,
+            @RequestParam(name = "categoryNo", required = false) Integer categoryNo,
+            @RequestParam(name = "sortType", required = false) String sortType,
+            @RequestParam(name = "priceMin", required = false) Integer priceMin,
+            @RequestParam(name = "priceMax", required = false) Integer priceMax,
             Model model,
             Principal principal,
             HttpServletRequest request,
             HttpSession session) {
 
-        if (searchWord != null) {
-            searchWord = searchWord.trim();
-        }
-
-        if (areaDong != null) {
-            areaDong = areaDong.trim();
-        }
+        if (searchWord != null) searchWord = searchWord.trim();
+        if (areaDong != null) areaDong = areaDong.trim();
+        if (sortType == null || "".equals(sortType.trim())) sortType = "latest";
 
         if (searchWord != null && !"".equals(searchWord)) {
             SearchLogDTO searchLogDto = new SearchLogDTO();
-
             searchLogDto.setKeyword(searchWord);
             searchLogDto.setSearchType("PRODUCT");
             searchLogDto.setIpAddress(request.getRemoteAddr());
@@ -81,17 +82,18 @@ public class ProductController {
             else {
                 searchLogDto.setSessionId(session.getId());
             }
-            
+
             pservice.insertSearchLog(searchLogDto);
         }
 
-        List<ProductDTO> list = pservice.selectProductListByCondition(searchWord, areaDong);
+        List<ProductDTO> list = pservice.selectProductListByCondition(
+                searchWord, areaDong, tradeAvailable, parcelAvailable,
+                categoryNo, sortType, priceMin, priceMax);
+
         List<SearchKeywordDTO> popularKeywordList = pservice.selectPopularKeywordList();
 
         model.addAttribute("list", list);
         model.addAttribute("popularKeywordList", popularKeywordList);
-        model.addAttribute("searchWord", searchWord);
-        model.addAttribute("areaDong", areaDong);
 
         return "product/product_list";
     }
@@ -283,6 +285,8 @@ public class ProductController {
     //상품상세페이지
     @GetMapping("/product_detail/{productNo}")
     public String detail(@PathVariable("productNo") int productNo, Model model) {
+        pservice.updateViewCount(productNo);
+
         ProductDTO productDTO = pservice.getProductDetailFull(productNo);
         model.addAttribute("product", productDTO);
         return "product/product_detail";
