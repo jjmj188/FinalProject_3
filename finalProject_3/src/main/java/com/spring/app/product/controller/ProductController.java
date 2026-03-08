@@ -101,7 +101,16 @@ public class ProductController {
 
         List<SearchKeywordDTO> popularKeywordList = pservice.selectPopularKeywordList();
         
-        ProductPriceStatsDTO priceStats = pservice.selectRecentProductPriceStats();
+        Map<String, Object> priceParaMap = new HashMap<>();
+        priceParaMap.put("searchWord", searchWord);
+        priceParaMap.put("areaDong", areaDong);
+        priceParaMap.put("tradeAvailable", tradeAvailable);
+        priceParaMap.put("parcelAvailable", parcelAvailable);
+        priceParaMap.put("categoryNo", categoryNo);
+        priceParaMap.put("priceMin", priceMin);
+        priceParaMap.put("priceMax", priceMax);
+
+        ProductPriceStatsDTO priceStats = pservice.selectRecentProductPriceStats(priceParaMap);
         
         model.addAttribute("list", list);
         model.addAttribute("popularKeywordList", popularKeywordList);

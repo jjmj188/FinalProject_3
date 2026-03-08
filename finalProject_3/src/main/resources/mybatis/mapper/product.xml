@@ -397,6 +397,39 @@
       AND PRODUCTS.TRADE_STATUS = '판매중'
       AND PRODUCTS.REG_DATE >= SYSDATE - 7
 
+    <if test="searchWord != null and searchWord != ''">
+        AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
+    </if>
+
+    <if test="areaDong != null and areaDong != ''">
+        AND EXISTS (
+            SELECT 1
+            FROM PRODUCT_MEET_LOCATION
+            WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+              AND PRODUCT_MEET_LOCATION.FULL_ADDRESS LIKE '%' || #{areaDong} || '%'
+        )
+    </if>
+
+    <if test="tradeAvailable != null and tradeAvailable != ''">
+        AND PRODUCTS.TRADE_STATUS = '판매중'
+    </if>
+
+    <if test="parcelAvailable != null and parcelAvailable != ''">
+        AND PRODUCTS.TRADE_METHOD = '택배'
+    </if>
+
+    <if test="categoryNo != null">
+        AND PRODUCTS.CATEGORY_NO = #{categoryNo}
+    </if>
+
+    <if test="priceMin != null">
+        AND PRODUCTS.PRODUCT_PRICE &gt;= #{priceMin}
+    </if>
+
+    <if test="priceMax != null">
+        AND PRODUCTS.PRODUCT_PRICE &lt;= #{priceMax}
+    </if>
+
 </select>
 
 <!-- 상품더보기 -->

@@ -180,8 +180,8 @@ public class ProductService_imple implements ProductService {
 
     // 최근 등록 상품 가격 통계
     @Override
-    public ProductPriceStatsDTO selectRecentProductPriceStats() {
-        return pdao.selectRecentProductPriceStats();
+    public ProductPriceStatsDTO selectRecentProductPriceStats(Map<String, Object> paraMap) {
+        return pdao.selectRecentProductPriceStats(paraMap);
     }
     
     //상품더보기

@@ -60,7 +60,7 @@ public interface ProductDAO {
 	int updateViewCount(int productNo);
 	
 	// 최근 등록 상품 가격 통계
-	ProductPriceStatsDTO selectRecentProductPriceStats();
+	ProductPriceStatsDTO selectRecentProductPriceStats(Map<String, Object> paraMap);
 	
 	//상품 더보기
 	List<ProductDTO> selectProductListByConditionMore(
