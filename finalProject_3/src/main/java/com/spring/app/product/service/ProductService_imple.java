@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.product.domain.ProductImageDTO;
 import com.spring.app.product.domain.ProductMeetLocationDTO;
+import com.spring.app.product.domain.ProductPriceStatsDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.domain.SearchKeywordDTO;
 import com.spring.app.product.domain.SearchLogDTO;
+import com.spring.app.product.domain.WishlistDTO;
 import com.spring.app.product.model.ProductDAO;
 
 import lombok.RequiredArgsConstructor;
@@ -176,6 +178,56 @@ public class ProductService_imple implements ProductService {
         pdao.updateViewCount(productNo);
     }
 
-	
+    // 최근 등록 상품 가격 통계
+    @Override
+    public ProductPriceStatsDTO selectRecentProductPriceStats() {
+        return pdao.selectRecentProductPriceStats();
+    }
     
+    //상품더보기
+    @Override
+    public List<ProductDTO> selectProductListByConditionMore(String searchWord,
+                                                             String areaDong,
+                                                             String tradeAvailable,
+                                                             String parcelAvailable,
+                                                             Integer categoryNo,
+                                                             String sortType,
+                                                             Integer priceMin,
+                                                             Integer priceMax,
+                                                             int startRow,
+                                                             int endRow) {
+        return pdao.selectProductListByConditionMore(
+                searchWord,
+                areaDong,
+                tradeAvailable,
+                parcelAvailable,
+                categoryNo,
+                sortType,
+                priceMin,
+                priceMax,
+                startRow,
+                endRow
+        );
+    }
+    
+    //찜
+    @Override
+    public boolean toggleWishlist(WishlistDTO wishlistDto) {
+
+        int n = pdao.selectWishlistExists(wishlistDto);
+
+        if(n > 0) {
+            pdao.deleteWishlist(wishlistDto);
+            return false; // 찜 취소됨
+        }
+        else {
+            pdao.insertWishlist(wishlistDto);
+            return true; // 찜됨
+        }
+    }
+
+    @Override
+    public boolean isWished(WishlistDTO wishlistDto) {
+        return pdao.selectWishlistExists(wishlistDto) > 0;
+    }
 }

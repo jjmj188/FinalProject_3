@@ -55,4 +55,7 @@ public class ProductDTO {
     /* ============================= */
     private String placeName;   // 목록에서 장소명 표시
     private String imgUrl;      // 대표 이미지
+    private boolean wished;		//찜
+    
+    private String areaGu;
 }

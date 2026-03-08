@@ -9,9 +9,11 @@ import org.apache.ibatis.annotations.Param;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.product.domain.ProductImageDTO;
 import com.spring.app.product.domain.ProductMeetLocationDTO;
+import com.spring.app.product.domain.ProductPriceStatsDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.domain.SearchKeywordDTO;
 import com.spring.app.product.domain.SearchLogDTO;
+import com.spring.app.product.domain.WishlistDTO;
 
 @Mapper
 public interface ProductDAO {
@@ -56,5 +58,27 @@ public interface ProductDAO {
 	
 	//조회수
 	int updateViewCount(int productNo);
+	
+	// 최근 등록 상품 가격 통계
+	ProductPriceStatsDTO selectRecentProductPriceStats();
+	
+	//상품 더보기
+	List<ProductDTO> selectProductListByConditionMore(
+	        @Param("searchWord") String searchWord,
+	        @Param("areaDong") String areaDong,
+	        @Param("tradeAvailable") String tradeAvailable,
+	        @Param("parcelAvailable") String parcelAvailable,
+	        @Param("categoryNo") Integer categoryNo,
+	        @Param("sortType") String sortType,
+	        @Param("priceMin") Integer priceMin,
+	        @Param("priceMax") Integer priceMax,
+	        @Param("startRow") int startRow,
+	        @Param("endRow") int endRow
+	);
+	
+	//찜
+	int insertWishlist(WishlistDTO wishlistDto);
+	int deleteWishlist(WishlistDTO wishlistDto);
+	int selectWishlistExists(WishlistDTO wishlistDto);
     
 }
