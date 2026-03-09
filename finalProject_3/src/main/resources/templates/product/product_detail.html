@@ -179,51 +179,59 @@
         </div>
 
         <!-- 거래 희망장소 -->
-        <div class="pd-row">
-  <div class="pd-label">거래 희망장소</div>
-
-  <div class="pd-value">
-
-    <th:block th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
-
-      <span class="pd-location"
-            th:each="ml, stat : ${product.meetLocationList}"
-            th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
-            th:classappend="${stat.index > 0 ? ' pd-location--line' : ''}">
-      </span>
-
-    </th:block>
-
-    <span class="pd-location"
-          th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
-      장소 정보 없음
-    </span>
-
+       <div class="pd-row">
+		    <div class="pd-label">거래 희망장소</div>
+		
+		    <div class="pd-value pd-value-location">
+		
+		        <th:block th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
+		
+		            <button type="button"
+		                    class="pd-location"
+		                    th:each="ml, stat : ${product.meetLocationList}"
+		                    th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
+		                    th:attr="data-lat=${ml.latitude},
+		                             data-lng=${ml.longitude},
+		                             data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress},
+		                             data-target-id='map-place-' + ${stat.index}"
+		                    th:classappend="${stat.index > 0 ? ' pd-location--line' : ''}">
+		            </button>
+		
+		        </th:block>
+		
+		        <span class="pd-location"
+		              th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
+		            장소 정보 없음
+		        </span>
+		
+		    </div>
+		</div>
   </div>
-</div>
 
-      </div>
+     <div class="pd-cta">
+    <button class="pd-like"
+            type="button"
+            aria-label="찜하기"
+            th:classappend="${product.wished} ? ' is-active' : ''"
+            th:attr="data-product-no=${product.productNo},
+                     data-login=${isLogin}">
+        <i th:class="${product.wished} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+    </button>
 
-      <div class="pd-cta">
-        <button class="pd-like" type="button" aria-label="찜하기"
-                th:attr="data-product-no=${product.productNo}">
-          <i class="fa-regular fa-heart"></i>
+    <div class="pd-btns">
+        <button id="btnStartChat" class="pd-btn pd-btn-chat" type="button"
+                th:data-product-no="${product.productNo}"
+                th:data-seller-email="${product.sellerEmail}"
+                th:data-product-name="${product.productName}">
+            채팅하기
         </button>
 
-        <div class="pd-btns">
-          <button id="btnStartChat" class="pd-btn pd-btn-chat" type="button"
-                  th:data-product-no="${product.productNo}"
-                  th:data-seller-email="${product.sellerEmail}"
-                  th:data-product-name="${product.productName}">
-            채팅하기
-          </button>
-
-          <button class="pd-btn pd-btn-pay" type="button"
-                  th:attr="data-product-no=${product.productNo}">
+        <button class="pd-btn pd-btn-pay" type="button"
+                th:attr="data-product-no=${product.productNo}">
             안전결제
-          </button>
-        </div>
-      </div>
+        </button>
+    </div>
+</div>
 
     </div>
   </section>
@@ -234,63 +242,73 @@
 
         <!-- LEFT -->
         <section>
-            <div class="pdinfo-head">
-                <h2 class="pdinfo-title">상품정보</h2>
-            </div>
-
-            <div class="pdinfo-textbox" th:text="${product.productDesc}">
-			    상품 설명
-			</div>
-
-            <button class="pdinfo-morebtn" type="button">더보기</button>
-        </section>
+		    <div class="pdinfo-head">
+		        <h2 class="pdinfo-title">상품정보</h2>
+		    </div>
+		
+		    <div id="pdinfoTextBox" class="pdinfo-textbox is-collapsed" th:text="${product.productDesc}">
+		        상품 설명
+		    </div>
+		
+		    <button id="pdinfoMoreBtn" class="pdinfo-morebtn is-hidden" type="button">더보기</button>
+		</section>
 
         <!-- RIGHT -->
-        <section>
-            <div class="pdinfo-head">
-                <h2 class="pdinfo-title">판매자정보</h2>
-                <a th:href="@{/product/product_user_profile}"> <i class="fa-solid fa-chevron-right"></i></a>
-            </div>
+ <section>
+    <div class="pdinfo-head">
+        <h2 class="pdinfo-title">판매자정보</h2>
+        <a th:href="@{/product/product_user_profile}">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+    </div>
 
-            <div class="pdinfo-card">
-                <div class="pdinfo-cardbody">
-                    <div class="pdinfo-seller-top">
-						<div class="pdinfo-avatar">
-	
-						<img th:if="${product.sellerProfileImg != null}"
-						     th:src="@{${product.sellerProfileImg}}">
-						
-						<img th:if="${product.sellerProfileImg == null}"
-						     th:src="@{/images/default_profile.png}">
-						</div>
-						<div class="pdinfo-seller-name"
-						     th:text="${product.sellerName}">
-						</div>
-					</div>
-					<div class="pdinfo-temp-row">
-					    <div class="pdinfo-temp-label">매너온도</div>
-					    <div class="pdinfo-temp-value" th:text="${product.mannerTemp} + '°C'">36.8°C</div>
-					</div>
-                    <div class="pdinfo-temp-sub">최근 3개월 기준 · 별점으로 거래후기 반영</div>
+    <div class="pdinfo-card">
+        <div class="pdinfo-cardbody">
+            <div class="pdinfo-seller-top">
+                <div class="pdinfo-avatar">
+                    <img th:if="${product.sellerProfileImg != null and product.sellerProfileImg != ''}"
+                         th:src="@{${product.sellerProfileImg}}"
+                         alt="판매자 프로필">
 
-                    <div class="pdinfo-bar"><span></span></div>
-
-                    <div class="pdinfo-stats">
-                        <div class="pdinfo-stat">
-                            <div class="k">안심결제</div>
-                            <div class="v">9</div>
-                        </div>
-                        <div class="pdinfo-stat">
-                            <div class="k">거래후기</div>
-                            <div class="v">10</div>
-                        </div>
-                        <div class="pdinfo-stat">
-                            <div class="k">거래횟수</div>
-                            <div class="v">10</div>
-                        </div>
-                    </div>
+                    <img th:if="${product.sellerProfileImg == null or product.sellerProfileImg == ''}"
+                         th:src="@{/images/default_profile.png}"
+                         alt="기본 프로필">
                 </div>
 
+                <div class="pdinfo-seller-name" th:text="${product.sellerName}">판매자 이름</div>
+            </div>
+
+            <div class="pdinfo-temp-row">
+                <div class="pdinfo-temp-label">매너온도</div>
+                <div id="pdinfoTempValue"
+                     class="pdinfo-temp-value"
+                     th:attr="data-temp=${product.mannerTemp}"
+                     th:text="${product.mannerTemp} + '°C'">
+                    36.5°C
+                </div>
+            </div>
+
+            <div class="pdinfo-temp-sub">최근 3개월 기준 · 별점으로 거래후기 반영</div>
+
+            <div class="pdinfo-bar" id="pdinfoBar">
+                <span id="pdinfoBarFill"></span>
+            </div>
+
+            <div class="pdinfo-stats">
+                <div class="pdinfo-stat">
+                    <div class="k">안심결제</div>
+                    <div class="v">9</div>
+                </div>
+                <div class="pdinfo-stat">
+                    <div class="k">거래후기</div>
+                    <div class="v">10</div>
+                </div>
+                <div class="pdinfo-stat">
+                    <div class="k">거래횟수</div>
+                    <div class="v">10</div>
+                </div>
+            </div>
+        </div>
                 <div class="pdinfo-reviews-head">
                     <div class="pdinfo-reviews-title">최근후기</div>
                     <a class="pdinfo-reviews-link" th:href="@{/product/product_user_profile}">전체보기 <i
@@ -347,10 +365,29 @@
     </section>
 </section>
 <!--지도/다른 판매 물품-->
-<section class="loc-wrap">
+<section class="loc-wrap" id="locWrap">
     <div class="loc-map-head">
         <h2 class="loc-map-title">거래 희망 위치</h2>
-        <div class="loc-map-place">잠실역 3번출구</div>
+
+        <div class="loc-map-place-list"
+             th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
+
+            <button type="button"
+                    class="loc-map-place"
+                    th:each="ml, stat : ${product.meetLocationList}"
+                    th:id="'map-place-' + ${stat.index}"
+                    th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
+                    th:attr="data-lat=${ml.latitude},
+                             data-lng=${ml.longitude},
+                             data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress}">
+            </button>
+
+        </div>
+
+        <div class="loc-map-place-list"
+             th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
+            <span class="loc-map-place is-disabled">위치 정보 없음</span>
+        </div>
     </div>
 
     <section class="loc-map" aria-label="지도">
@@ -491,44 +528,7 @@
         .catch(error => console.error("방 생성 에러:", error));
     }
     
-    //시간
-    document.addEventListener("DOMContentLoaded", function(){
-
-        const elements = document.querySelectorAll(".time-ago");
-
-        elements.forEach(function(el){
-
-            const regDateStr = el.dataset.regdate;
-
-            if(!regDateStr) return;
-
-            const regDate = new Date(regDateStr);
-            const now = new Date();
-
-            const diff = Math.floor((now - regDate) / 1000);
-
-            if(diff < 60){
-                el.innerText = "방금전";
-            }
-            else if(diff < 3600){
-                el.innerText = Math.floor(diff/60) + "분전";
-            }
-            else if(diff < 86400){
-                el.innerText = Math.floor(diff/3600) + "시간전";
-            }
-            else if(diff < 2592000){
-                el.innerText = Math.floor(diff/86400) + "일전";
-            }
-            else if(diff < 31536000){
-                el.innerText = Math.floor(diff/2592000) + "개월전";
-            }
-            else{
-                el.innerText = Math.floor(diff/31536000) + "년전";
-            }
-
-        });
-
-    });
+   
 </script>
 </main>
 <script th:src="@{/js/product/product_detail.js}"></script>

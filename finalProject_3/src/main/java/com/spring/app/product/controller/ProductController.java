@@ -343,11 +343,22 @@ public class ProductController {
     
     //상품상세페이지
     @GetMapping("/product_detail/{productNo}")
-    public String detail(@PathVariable("productNo") int productNo, Model model) {
+    public String detail(@PathVariable("productNo") int productNo,
+                         Principal principal,
+                         Model model) {
+
         pservice.updateViewCount(productNo);
 
         ProductDTO productDTO = pservice.getProductDetailFull(productNo);
+
+        boolean isLogin = false;
+        if (principal != null && principal.getName() != null && !"".equals(principal.getName().trim())) {
+            isLogin = true;
+        }
+
         model.addAttribute("product", productDTO);
+        model.addAttribute("isLogin", isLogin);
+
         return "product/product_detail";
     }
     
