@@ -389,11 +389,7 @@ public class ProductController {
         return result;
     }
     
-    // 경매하기
-    @GetMapping("/auction")
-    public String auction() {
-        return "product/auction";
-    }
+
 
     // 시세조회
     @GetMapping("/price_check")
