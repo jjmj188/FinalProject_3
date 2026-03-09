@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping; 
 import org.springframework.messaging.simp.SimpMessagingTemplate; 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping; // ★ 추가됨
@@ -127,6 +128,29 @@ public class ChatController {
         } catch (Exception e) {
             resultMap.put("success", false);
             resultMap.put("message", "채팅방 생성 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+        return resultMap;
+    }
+    
+ // 5. 채팅방 나가기 API
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/leave/{roomId}")
+    public Map<String, Object> leaveRoom(@PathVariable("roomId") String roomId) {
+        Map<String, Object> resultMap = new HashMap<>();
+        try {
+            boolean isDeleted = chatService.leaveChatRoom(roomId);
+            
+            if (isDeleted) {
+                resultMap.put("success", true);
+                resultMap.put("message", "채팅방을 나갔습니다.");
+            } else {
+                resultMap.put("success", false);
+                resultMap.put("message", "이미 존재하지 않는 방입니다.");
+            }
+        } catch (Exception e) {
+            resultMap.put("success", false);
+            resultMap.put("message", "나가기 처리 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
         return resultMap;

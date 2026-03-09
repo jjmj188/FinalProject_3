@@ -10,4 +10,6 @@ public interface ChatService {
 
 	String getOrCreateRoom(int productNo, String sellerEmail, String buyerEmail);
     
+	// 나가기 메서드 선언
+	boolean leaveChatRoom(String roomId);
 }

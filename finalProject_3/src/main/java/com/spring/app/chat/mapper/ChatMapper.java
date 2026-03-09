@@ -18,4 +18,7 @@ public interface ChatMapper {
 
     // 새로운 채팅방 생성 (INSERT)
     void insertChatRoom(ChatRoomDTO chatRoomDTO);
+    
+    // 방 번호로 채팅방을 삭제하는 메서드 추가
+    int deleteChatRoom(@Param("roomId") String roomId);
 }
