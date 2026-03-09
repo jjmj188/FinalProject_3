@@ -49,7 +49,6 @@ public class SecurityConfig {
                     "/security/**",       // 회원가입, 로그인 관련 모두 허용
                     "/product/product_list",      // 장터
                     "/product/price_check", // 시세조회
-                    "/product/auction",   // 경매장
                     "/product/share",
                     "/product/product_detail/**", // 상품 상세
                     "/product/product_user_profile",
