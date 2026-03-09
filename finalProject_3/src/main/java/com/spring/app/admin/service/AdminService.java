@@ -1,9 +1,12 @@
 package com.spring.app.admin.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 import com.spring.app.admin.ad.domain.AdDTO;
+import com.spring.app.admin.domain.InquiryDTO;
+import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.security.domain.MemberDTO;
 
@@ -37,7 +40,19 @@ public interface AdminService {
 
 	 void rejectAd(Long adId, String reason);//광고반려하기
 
-	 boolean checkAdConflict(String startDate, String endDate);
+
+
+	 List<AdDTO> getConflictAds(LocalDate startDate, LocalDate endDate, Long adId);
+
+	 Map<String, Object> getUserRegistrationStats(String type); //신규가입자 
+
+	 List<SearchDTO> getPopularKeywords();//인기검색어 가져오기 
+
+	 List<InquiryDTO> getTop3FAQ();   // 상단고정 
+
+	 List<InquiryDTO> getAllInquiries(); //문의 모든 리스트 
+
+
 
 	 
 

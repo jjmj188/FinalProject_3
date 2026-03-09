@@ -24,8 +24,8 @@ public class AdDTO {
     
     // 2. 날짜 및 기간 정보
     // HTML date 타입과 매핑하기 위해 String으로 받거나 LocalDate로 선언
-    private String startDate;     // START_DATE (YYYY-MM-DD)
-    private String endDate;       // END_DATE (YYYY-MM-DD)
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Integer durationWeeks; // DURATION_WEEKS (1~4)
     private Long amount;          // AMOUNT (Long 사용 권장)
 

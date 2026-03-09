@@ -1,5 +1,6 @@
 package com.spring.app.admin.model;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import com.spring.app.admin.ad.domain.AdDTO;
+import com.spring.app.admin.domain.InquiryDTO;
+import com.spring.app.admin.domain.SearchDTO;
+import com.spring.app.admin.domain.StatDTO;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.security.domain.MemberDTO;
 
@@ -113,13 +117,32 @@ public class AdminDAO_imple implements AdminDAO {
 	}
 
 	@Override
-	public int checkAdConflict(String startDate, String endDate) {
+	public List<AdDTO> getConflictAds(Map<String,Object> map) {
+	    return sqlsession.selectList("admin.getConflictAds", map);
+	}
 
-	    Map<String,Object> map = new HashMap<>();
-	    map.put("startDate", startDate);
-	    map.put("endDate", endDate);
+	@Override
+	public List<StatDTO> getUserStats(String type) {
+		return sqlsession.selectList("admin.getUserStats", type);
+	}
 
-	    return sqlsession.selectOne(admin + ".checkAdConflict", map);
+	
+	@Override
+	public List<SearchDTO> getPopularKeywords() {
+		return sqlsession.selectList("admin.getPopularKeywords");
+	}
+	
+	//-----------------------------------------------------------------
+	//문의내역 상단고정
+	// AdminDAO_imple.java 139라인 근처 수정
+	public List<InquiryDTO> getTop3FAQ() {
+	   
+	    return sqlsession.selectList("admin.getTop3FAQ"); 
+	}
+
+	public List<InquiryDTO> getAllInquiries() {
+	   
+	    return sqlsession.selectList("admin.getAllInquiries");
 	}
 }
 

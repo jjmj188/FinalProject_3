@@ -137,8 +137,12 @@
     SELECT 
         p.product_no AS productNo, 
         p.product_name AS productName, 
-        p.product_price AS productPrice,
-        p.seller_email AS sellerEmail,   p.category_no AS categoryNo,      p.trade_status AS tradeStatus,    p.reg_date AS regDate,            m.nickname AS sellerNickname
+        p.product_desc AS productDesc,  p.product_price AS productPrice,
+        p.seller_email AS sellerEmail,   
+        p.category_no AS categoryNo,      
+        p.trade_status AS tradeStatus,    
+        p.reg_date AS regDate,            
+        m.nickname AS sellerNickname
     FROM products p
     JOIN member m ON p.seller_email = m.email
     ORDER BY p.reg_date DESC
@@ -190,16 +194,81 @@
 		
 		</update>
 		
+		<select id="getConflictAds" resultType="com.spring.app.admin.ad.domain.AdDTO">
+
+			SELECT *
+			FROM ADS
+			WHERE STATUS = 'CONFIRM'
+			AND START_DATE &lt;= #{endDate}
+			AND END_DATE &lt;= #{startDate}
+			AND AD_ID != #{adId}
+
+			</select>
 		
-		<select id="checkAdConflict" resultType="int">
-SELECT COUNT(*)
-FROM ADS
-WHERE STATUS = 'CONFIRM'
-AND (
-    START_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
-    AND END_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-)
+		<select id="getUserStats" parameterType="string" resultType="com.spring.app.admin.domain.StatDTO">
+    <choose>
+        <when test="type == 'week'">
+            SELECT 
+                TO_CHAR(reg_date, 'MM/DD') as label, 
+                COUNT(*) as count
+            FROM member
+            WHERE reg_date >= TRUNC(SYSDATE) - 6
+            GROUP BY TO_CHAR(reg_date, 'MM/DD')
+            ORDER BY label ASC
+        </when>
+        
+        <otherwise>
+            SELECT 
+                TO_CHAR(reg_date, 'YYYY-MM') as label, 
+                COUNT(*) as count
+            FROM member
+            WHERE reg_date >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
+            GROUP BY TO_CHAR(reg_date, 'YYYY-MM')
+            ORDER BY label ASC
+        </otherwise>
+    </choose>
 </select>
+		<select id="getPopularKeywords" resultType="com.spring.app.admin.domain.SearchDTO">
+    SELECT 
+        keyword, 
+        COUNT(*) as "count"  FROM search_log
+    WHERE searched_at >= SYSDATE - 1
+    GROUP BY keyword
+    ORDER BY "count" DESC
+    FETCH FIRST 10 ROWS ONLY
+</select>
+		
+		
+		
+		<select id="getTop3FAQ" resultType="com.spring.app.admin.domain.InquiryDTO">
+        SELECT * FROM (
+            SELECT inquiry_id as inquiryId, 
+                   title, 
+                   member_email as memberEmail, 
+                   created_at as createdAt, 
+                   inquiry_status as inquiryStatus,
+                   is_faq as isFaq,
+                   is_private as isPrivate
+            FROM inquiries
+            WHERE is_faq = 'Y'
+            ORDER BY created_at DESC
+        )
+        WHERE ROWNUM &lt;= 3
+    </select>
+
+    <select id="getAllInquiries" resultType="com.spring.app.admin.domain.InquiryDTO">
+        SELECT inquiry_id as inquiryId, 
+               title, 
+               member_email as memberEmail, 
+               created_at as createdAt, 
+               inquiry_status as inquiryStatus,
+               is_faq as isFaq,
+               is_private as isPrivate
+        FROM inquiries
+        WHERE is_faq = 'N'
+        ORDER BY created_at DESC
+    </select>
+		
 		
 		
 		
