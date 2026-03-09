@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+<!-- <link rel="stylesheet" th:href="@{/css/index.css}"> -->
+<!--  <script defer th:src="@{/js/index.js}"></script>  -->
+	<link rel="stylesheet" th:href="@{/css/mypage/mypage.css}">
+</head>
+
+<body>
+<!-- main 필수 -->
+<main>
+    <div class="mp-container">
+        <aside class="mp-sidebar">
+            <h2 class="mp-sidebar-title">마이페이지</h2>
+            <nav class="mp-nav">
+                <ul>
+                    <li><a href="#" class="active">내 정보</a></li>
+                    <li><a href="#">구매관리</a></li>
+                    <li><a href="#">계좌/배송지 관리</a></li>
+                    <li><a href="#">후기관리</a></li>
+                    <li><a href="#">찜내역</a></li>
+                    <li><a href="#">신고관리</a></li>
+                </ul>
+            </nav>
+            <div class="mp-exit-wrap">
+                <a href="#" class="mp-exit-btn">탈퇴하기</a>
+            </div>
+        </aside>
+
+        <section class="mp-content">
+            <div class="mp-profile-card">
+                <div class="mp-user-info">
+                    <div class="mp-avatar">
+                        <img th:src="${#authentication.principal != 'anonymousUser' ? '/images/default_profile.png' : '/images/default_profile.png'}" alt="프로필">
+                    </div>
+                    <div class="mp-user-text">
+                        <div class="mp-nickname">
+                            <span th:text="${#authentication.name}">유의한안전토파즈</span>
+                            <a href="#" class="mp-edit-link">프로필 수정</a>
+                        </div>
+                        <div class="mp-manner">
+                            <span class="label">매너온도</span>
+                            <span class="temp">36.8°C</span>
+                        </div>
+                        <div class="mp-temp-bar"><span style="width: 36.8%;"></span></div>
+                        <p class="mp-temp-sub">최근 3개월 기준 · 변동은 거래/후기 반영</p>
+                    </div>
+                </div>
+
+                <div class="mp-stats-card">
+                    <div class="mp-stat-item">
+                        <span class="k">안심결제</span>
+                        <span class="v">5</span>
+                    </div>
+                    <div class="mp-stat-item">
+                        <span class="k">거래횟수</span>
+                        <span class="v">5</span>
+                    </div>
+                    <div class="mp-stat-item">
+                        <span class="k">보유캐시</span>
+                        <span class="v">20,000</span>
+                    </div>
+                    <button class="mp-charge-btn">충전하기</button>
+                </div>
+            </div>
+
+            <div class="mp-tabs">
+                <div class="mp-tab-header">
+                    <button class="tab-btn active">내 판매상품</button>
+                    <button class="tab-btn">내 경매상품</button>
+                </div>
+                <div class="mp-tab-sub-header">
+                    <span class="active">전체</span>
+                    <span>판매중</span>
+                    <span>예약중</span>
+                    <span>판매완료</span>
+                </div>
+                <div class="mp-tab-content">
+                    <div class="mp-empty">
+                        <p>선택된 조건에 해당하는 상품이 없습니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+<script th:inline="javascript">
+</script>
+</body>
+</html>

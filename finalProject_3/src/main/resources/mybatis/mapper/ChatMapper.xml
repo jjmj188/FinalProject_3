@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.chat.mapper.ChatMapper">
+
+    <select id="selectMyChatRooms" parameterType="String" resultType="com.spring.app.chat.domain.ChatRoomDTO">
+        SELECT 
+            C.ROOM_ID AS roomId,
+            C.PRODUCT_NO AS productNo,
+            C.SELLER_EMAIL AS sellerEmail,
+            C.BUYER_EMAIL AS buyerEmail,
+            C.LAST_MESSAGE AS lastMessage,
+            TO_CHAR(C.LAST_MESSAGE_AT, 'YYYY-MM-DD HH24:MI') AS lastMessageAt,
+            C.MUTE_YN AS muteYn,
+            P.PRODUCT_NAME AS productName,
+            P.PRODUCT_PRICE AS productPrice, P.TRADE_STATUS AS tradeStatus,   (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = C.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
+            CASE 
+                WHEN C.SELLER_EMAIL = #{loginUserEmail} THEN C.BUYER_EMAIL
+                ELSE C.SELLER_EMAIL
+            END AS otherUserEmail
+        FROM CHAT_ROOM C
+        JOIN PRODUCTS P ON C.PRODUCT_NO = P.PRODUCT_NO  
+        WHERE C.SELLER_EMAIL = #{loginUserEmail} OR C.BUYER_EMAIL = #{loginUserEmail}
+        ORDER BY C.LAST_MESSAGE_AT DESC NULLS LAST
+    </select>
+
+    <select id="findRoomId" resultType="String">
+	    SELECT ROOM_ID 
+	    FROM CHAT_ROOM 
+	    WHERE PRODUCT_NO = #{productNo} 
+	      AND SELLER_EMAIL = #{sellerEmail}  AND BUYER_EMAIL = #{buyerEmail}
+	</select>
+
+    <insert id="insertChatRoom" parameterType="com.spring.app.chat.domain.ChatRoomDTO">
+        INSERT INTO CHAT_ROOM (
+            ROOM_ID, PRODUCT_NO, SELLER_EMAIL, BUYER_EMAIL, MUTE_YN
+        ) VALUES (
+            #{roomId}, #{productNo}, #{sellerEmail}, #{buyerEmail}, 'N'
+        )
+    </insert>
+    
+	<delete id="deleteChatRoom" parameterType="String">
+	    DELETE FROM CHAT_ROOM 
+	    WHERE ROOM_ID = #{roomId}
+	</delete>
+</mapper>

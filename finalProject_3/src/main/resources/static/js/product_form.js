@@ -958,31 +958,39 @@
       });
     }
 
-    function setMyLocation() {
-      if (!navigator.geolocation) { alert("이 브라우저는 위치 기능을 지원하지 않습니다."); return; }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
+	function setMyLocation() {
+	  if (!navigator.geolocation) {
+	    alert("이 브라우저는 위치 기능을 지원하지 않습니다.");
+	    return;
+	  }
 
-          waitForKakaoServices(() => {
-            latLngToFullAddress(lat, lng, (fullAddr) => {
-              const fa = (fullAddr || "현재 위치").trim();
-              pushRecentArea(fa);
-              addLocation("", fa, lat, lng);
-              closeModal();
-            });
-          });
-        },
-        (err) => {
-          if (err.code === 1) alert("위치 권한이 거부되었습니다.");
-          else if (err.code === 2) alert("위치 정보를 가져올 수 없습니다.");
-          else if (err.code === 3) alert("위치 조회 시간이 초과되었습니다.");
-          else alert("위치 조회 중 오류가 발생했습니다.");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }
+	  navigator.geolocation.getCurrentPosition(
+	    (pos) => {
+	      const lat = pos.coords.latitude;
+	      const lng = pos.coords.longitude;
+
+	      waitForKakaoServices(() => {
+	        latLngToFullAddress(lat, lng, (fullAddr) => {
+	          const fa = (fullAddr || "현재 위치").trim();
+
+	          pushRecentArea(fa);
+
+	          // 현재 위치는 placeName도 fullAddress와 동일하게 저장
+	          addLocation(fa, fa, lat, lng);
+
+	          closeModal();
+	        });
+	      });
+	    },
+	    (err) => {
+	      if (err.code === 1) alert("위치 권한이 거부되었습니다.");
+	      else if (err.code === 2) alert("위치 정보를 가져올 수 없습니다.");
+	      else if (err.code === 3) alert("위치 조회 시간이 초과되었습니다.");
+	      else alert("위치 조회 중 오류가 발생했습니다.");
+	    },
+	    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+	  );
+	}
 
     // ✅ 최근 리스트 클릭 시: "place / address" 형태면 placeName만 화면에 나오도록 저장
     list.addEventListener("click", (e) => {

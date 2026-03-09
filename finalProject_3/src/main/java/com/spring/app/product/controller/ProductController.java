@@ -25,9 +25,11 @@ import com.spring.app.common.FileManager;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.product.domain.ProductImageDTO;
 import com.spring.app.product.domain.ProductMeetLocationDTO;
+import com.spring.app.product.domain.ProductPriceStatsDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.domain.SearchKeywordDTO;
 import com.spring.app.product.domain.SearchLogDTO;
+import com.spring.app.product.domain.WishlistDTO;
 import com.spring.app.product.service.ProductService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,22 +56,23 @@ public class ProductController {
     public String product_list(
             @RequestParam(name = "searchWord", required = false) String searchWord,
             @RequestParam(name = "areaDong", required = false) String areaDong,
+            @RequestParam(name = "tradeAvailable", required = false) String tradeAvailable,
+            @RequestParam(name = "parcelAvailable", required = false) String parcelAvailable,
+            @RequestParam(name = "categoryNo", required = false) Integer categoryNo,
+            @RequestParam(name = "sortType", required = false) String sortType,
+            @RequestParam(name = "priceMin", required = false) Integer priceMin,
+            @RequestParam(name = "priceMax", required = false) Integer priceMax,
             Model model,
             Principal principal,
             HttpServletRequest request,
             HttpSession session) {
 
-        if (searchWord != null) {
-            searchWord = searchWord.trim();
-        }
-
-        if (areaDong != null) {
-            areaDong = areaDong.trim();
-        }
+        if (searchWord != null) searchWord = searchWord.trim();
+        if (areaDong != null) areaDong = areaDong.trim();
+        if (sortType == null || "".equals(sortType.trim())) sortType = "latest";
 
         if (searchWord != null && !"".equals(searchWord)) {
             SearchLogDTO searchLogDto = new SearchLogDTO();
-
             searchLogDto.setKeyword(searchWord);
             searchLogDto.setSearchType("PRODUCT");
             searchLogDto.setIpAddress(request.getRemoteAddr());
@@ -81,18 +84,51 @@ public class ProductController {
             else {
                 searchLogDto.setSessionId(session.getId());
             }
-            
+
             pservice.insertSearchLog(searchLogDto);
         }
 
-        List<ProductDTO> list = pservice.selectProductListByCondition(searchWord, areaDong);
-        List<SearchKeywordDTO> popularKeywordList = pservice.selectPopularKeywordList();
+        int startRow = 1;
+        int endRow = 12;
 
+        String memberEmail = null;
+        if (principal != null && principal.getName() != null && !"".equals(principal.getName().trim())) {
+            memberEmail = principal.getName().trim();
+        }
+
+        Map<String, Object> paraMap = new HashMap<>();
+        paraMap.put("searchWord", searchWord);
+        paraMap.put("areaDong", areaDong);
+        paraMap.put("tradeAvailable", tradeAvailable);
+        paraMap.put("parcelAvailable", parcelAvailable);
+        paraMap.put("categoryNo", categoryNo);
+        paraMap.put("sortType", sortType);
+        paraMap.put("priceMin", priceMin);
+        paraMap.put("priceMax", priceMax);
+        paraMap.put("startRow", startRow);
+        paraMap.put("endRow", endRow);
+        paraMap.put("memberEmail", memberEmail);
+
+        List<ProductDTO> list = pservice.selectProductListByConditionMore(paraMap);
+        
+        List<SearchKeywordDTO> popularKeywordList = pservice.selectPopularKeywordList();
+        
+        Map<String, Object> priceParaMap = new HashMap<>();
+        priceParaMap.put("searchWord", searchWord);
+        priceParaMap.put("areaDong", areaDong);
+        priceParaMap.put("tradeAvailable", tradeAvailable);
+        priceParaMap.put("parcelAvailable", parcelAvailable);
+        priceParaMap.put("categoryNo", categoryNo);
+        priceParaMap.put("priceMin", priceMin);
+        priceParaMap.put("priceMax", priceMax);
+
+        ProductPriceStatsDTO priceStats = pservice.selectRecentProductPriceStats(priceParaMap);
+        
         model.addAttribute("list", list);
         model.addAttribute("popularKeywordList", popularKeywordList);
-        model.addAttribute("searchWord", searchWord);
-        model.addAttribute("areaDong", areaDong);
-
+        model.addAttribute("priceStats", priceStats);
+        model.addAttribute("isLogin", principal != null);
+        
         return "product/product_list";
     }
     
@@ -273,6 +309,51 @@ public class ProductController {
         }
     }
     
+    
+    //상품 더보기
+    @GetMapping("/product_list_more")
+    @ResponseBody
+    public List<ProductDTO> product_list_more(
+            @RequestParam(name = "searchWord", required = false) String searchWord,
+            @RequestParam(name = "areaDong", required = false) String areaDong,
+            @RequestParam(name = "tradeAvailable", required = false) String tradeAvailable,
+            @RequestParam(name = "parcelAvailable", required = false) String parcelAvailable,
+            @RequestParam(name = "categoryNo", required = false) Integer categoryNo,
+            @RequestParam(name = "sortType", required = false) String sortType,
+            @RequestParam(name = "priceMin", required = false) Integer priceMin,
+            @RequestParam(name = "priceMax", required = false) Integer priceMax,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size,
+            Principal principal
+    ) {
+        if (searchWord != null) searchWord = searchWord.trim();
+        if (areaDong != null) areaDong = areaDong.trim();
+        if (sortType == null || "".equals(sortType.trim())) sortType = "latest";
+
+        int startRow = ((page - 1) * size) + 1;
+        int endRow = page * size;
+
+        String memberEmail = null;
+        if (principal != null && principal.getName() != null && !"".equals(principal.getName().trim())) {
+            memberEmail = principal.getName().trim();
+        }
+
+        Map<String, Object> paraMap = new HashMap<>();
+        paraMap.put("searchWord", searchWord);
+        paraMap.put("areaDong", areaDong);
+        paraMap.put("tradeAvailable", tradeAvailable);
+        paraMap.put("parcelAvailable", parcelAvailable);
+        paraMap.put("categoryNo", categoryNo);
+        paraMap.put("sortType", sortType);
+        paraMap.put("priceMin", priceMin);
+        paraMap.put("priceMax", priceMax);
+        paraMap.put("startRow", startRow);
+        paraMap.put("endRow", endRow);
+        paraMap.put("memberEmail", memberEmail);
+
+        return pservice.selectProductListByConditionMore(paraMap);
+    }
+    
     // 나눔하기
     @GetMapping("/share")
     public String share() {
@@ -282,17 +363,53 @@ public class ProductController {
     
     //상품상세페이지
     @GetMapping("/product_detail/{productNo}")
-    public String detail(@PathVariable("productNo") int productNo, Model model) {
+    public String detail(@PathVariable("productNo") int productNo,
+                         Principal principal,
+                         Model model) {
+
+        pservice.updateViewCount(productNo);
+
         ProductDTO productDTO = pservice.getProductDetailFull(productNo);
+
+        boolean isLogin = false;
+        if (principal != null && principal.getName() != null && !"".equals(principal.getName().trim())) {
+            isLogin = true;
+        }
+
         model.addAttribute("product", productDTO);
+        model.addAttribute("isLogin", isLogin);
+
         return "product/product_detail";
     }
     
-    // 경매하기
-    @GetMapping("/auction")
-    public String auction() {
-        return "product/auction";
+    
+    //찜
+    @PostMapping("/wishlist/toggle")
+    @ResponseBody
+    public Map<String, Object> toggleWishlist(@RequestParam("productNo") Integer productNo,
+                                              Principal principal) {
+
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        if(principal == null || principal.getName() == null || "".equals(principal.getName().trim())) {
+            result.put("success", false);
+            result.put("message", "로그인이 필요합니다.");
+            return result;
+        }
+
+        WishlistDTO wishlistDto = new WishlistDTO();
+        wishlistDto.setMemberEmail(principal.getName().trim());
+        wishlistDto.setProductNo(productNo);
+
+        boolean wished = pservice.toggleWishlist(wishlistDto);
+
+        result.put("success", true);
+        result.put("wished", wished);
+
+        return result;
     }
+    
+
 
     // 시세조회
     @GetMapping("/price_check")

@@ -1,156 +1,535 @@
 <!DOCTYPE html>
-<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
-      xmlns:th="http://www.thymeleaf.org"
-      lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <style>
-        /* 팝업 전체 컨테이너 */
-        .chat-modal {
-            position: fixed; top: 10%; right: 5%; width: 55%; height: 75%;
-            background: #fff; z-index: 10000; border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;
-            display: none; /* 초기 상태 숨김 */
-        }
-
-        .chat-container { display: flex; height: 100%; }
-
-        /* 좌측: 채팅방 목록 (카톡 스타일) */
-        .chat-sidebar {
-            width: 35%; background: #f2f2f2; border-right: 1px solid #ddd;
-            display: flex; flex-direction: column;
-        }
-        .sidebar-header {
-            padding: 20px; background: #222; color: #fff;
-            font-size: 18px; font-weight: bold; border-bottom: 1px solid #333;
-        }
-        .room-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-        .room-item {
-            padding: 15px; border-bottom: 1px solid #e5e5e5; cursor: pointer;
-            transition: background 0.2s; display: flex; align-items: center;
-        }
-        .room-item:hover { background: #e9e9e9; }
-        .room-item.active { background: #fff; border-left: 4px solid #222; }
-
-        /* 우측: 실제 채팅창 */
-        .chat-main { width: 65%; display: flex; flex-direction: column; background: #fff; }
-        .chat-header {
-            padding: 15px 20px; background: #222; color: #fff;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .chat-header h4 { margin: 0; font-size: 16px; }
-        .close-chat { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
-
-        #msgDisplayArea {
-            flex: 1; overflow-y: auto; padding: 20px; background: #f9f9f9;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-
-        /* 메시지 풍선 스타일 */
-        .message { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 14px; position: relative; }
-        .msg-mine { align-self: flex-end; background: #222; color: #fff; border-bottom-right-radius: 2px; }
-        .msg-other { align-self: flex-start; background: #e2e2e2; color: #222; border-bottom-left-radius: 2px; }
-
-        /* 입력 영역 */
-        .chat-input-row {
-            padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px;
-        }
-        .chat-input-row input {
-            flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px; outline: none;
-        }
-        .chat-input-row input:focus { border-color: #222; }
-        .chat-btn-send {
-            background: #222; color: #fff; border: none; padding: 0 20px;
-            border-radius: 6px; font-weight: bold; cursor: pointer;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>채팅 팝업 조각</title>
 </head>
 
 <body>
-<main>
-	<div th:fragment="chat_popup">
-    <div id="chatModal" class="chat-modal" style="display:none; position:fixed; top:10%; right:5%; width:50%; height:75%; background:white; z-index:10000; border:1px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-        <div class="chat-container" style="display:flex; height:100%;">
-            <div style="width:35%; background:#f2f2f2; border-right:1px solid #ddd; padding:15px;">
-                <h5 style="margin-top:0;">채팅 목록</h5>
-                <ul id="roomListArea" style="list-style:none; padding:0;"></ul>
+<main th:fragment="chat_popup">
+
+    <style>
+    	/* 신고 모달 전체 컨테이너 (채팅창 내부에서 꽉 차게) */
+        .report-modal { 
+            position: absolute; top: 0; right: 0; width: 100%; height: 100%; 
+            background: #fff; z-index: 10001; display: none; flex-direction: column; 
+        }
+        .report-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px 20px; border-bottom: 1px solid #ebebeb; height: 60px;
+        }
+        .report-notice { 
+            margin: 15px; padding: 15px; background: #f8f9fa; 
+            font-size: 13px; color: #666; line-height: 1.5; border-radius: 8px;
+        }
+        .report-list { list-style: none; padding: 0; margin: 0; flex: 1; }
+        .report-list li { 
+            padding: 20px; border-bottom: 1px solid #f9f9f9; 
+            display: flex; justify-content: space-between; cursor: pointer; font-size: 15px;
+        }
+        .report-list li:hover { background: #fcfcfc; }
+        .report-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .type-detail-box { 
+            padding: 15px; background: #f5f5f5; border-radius: 8px; 
+            margin-bottom: 15px; font-size: 14px; color: #333; display: flex; justify-content: space-between;
+        }
+        #reportText { 
+            width: 100%; height: 180px; border: none; background: #f2f2f2; 
+            border-radius: 8px; padding: 15px; outline: none; resize: none; font-size: 14px;
+        }
+        .char-count { text-align: right; font-size: 12px; color: #999; margin-top: 5px; }
+        .photo-upload-section { margin-top: 20px; }
+        .photo-upload-section p { font-size: 14px; font-weight: bold; margin-bottom: 10px; }
+        .photo-btn { 
+            width: 70px; height: 70px; border: 1px solid #ddd; border-radius: 8px; 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; font-size: 12px; color: #999; cursor: pointer;
+        }
+        .btn-submit-report { 
+            width: 100%; padding: 16px; background: #222; color: #fff; border: none; 
+            border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: auto;
+        }
+    	
+    	.login-required-box {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 80%;
+        }
+        .login-required-box p { font-size: 16px; color: #666; margin-bottom: 20px; }
+        .btn-go-login { 
+            background: #222; color: #fff; border: none; 
+            padding: 12px 30px; border-radius: 4px; 
+            font-weight: bold; cursor: pointer; text-decoration: none;
+            display: inline-block;
+        }
+        
+    	.chat-overlay {
+            position: fixed;
+            top: 0; 
+            left: 0;
+            width: 100vw; 
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4); /* 살짝 어두운 반투명 배경 */
+            z-index: 9999; /* 채팅창(10000)보다 딱 1단계 아래에 위치 */
+            display: none; /* 처음엔 숨김 */
+        }
+        
+        /* 팝업 전체 컨테이너 */
+        .chat-modal { position: fixed; top: 0; right: 0; width: 750px; height: 100vh; background: #fff; z-index: 10000; box-shadow: -10px 0 30px rgba(0,0,0,0.15); display: none; overflow: hidden; animation: slideInRight 0.3s ease-out; }
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .chat-container { display: flex; height: 100%; }
+        
+        /* 좌측: 채팅방 목록 */
+        .chat-sidebar { width: 35%; background: #fff; border-right: 1px solid #ebebeb; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background: #fff; color: #222; font-size: 18px; font-weight: bold; border-bottom: 1px solid #ebebeb; }
+        .room-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+        .room-item { padding: 15px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.2s; display: flex; flex-direction: column; }
+        .room-item:hover { background: #f9f9f9; }
+        
+        /* 우측: 실제 채팅창 */
+        .chat-main { width: 65%; display: flex; flex-direction: column; background: #fff; }
+        
+        /* 헤더 영역 */
+        .chat-header { padding: 10px 20px; background: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ebebeb; height: 60px; z-index: 10; }
+        .chat-header h4 { margin: 0; font-size: 18px; font-weight: bold; color: #222; flex: 1; text-align: center; }
+        .header-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #333; padding: 5px; }
+        
+        /* 가로로 나열되는 슬라이딩 메뉴 */
+        .chat-options-menu { 
+            display: flex; justify-content: space-around; align-items: center;
+            background: #fff; overflow: hidden; max-height: 0; 
+            transition: max-height 0.3s ease-out; border-bottom: 0px solid transparent;
+        }
+        .chat-options-menu.show { max-height: 100px; border-bottom: 1px solid #ebebeb; }
+        
+        /* 개별 메뉴 아이템 스타일 */
+        .menu-item { display: flex; flex-direction: column; align-items: center; padding: 15px 0; cursor: pointer; gap: 8px; width: 100%; }
+        .menu-item:hover { background: #f9f9f9; }
+        .menu-icon { font-size: 26px; }
+        .menu-text { font-size: 13px; color: #333; }
+
+        /* 상품 정보 배너 */
+        .chat-product-banner { display: flex; padding: 15px 20px; background: #fff; border-bottom: 1px solid #ebebeb; align-items: center; gap: 15px; }
+        .chat-product-banner img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; }
+        .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .price-row { font-size: 16px; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .status-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #222; color: #222; font-weight: normal; }
+        .name-row { font-size: 13px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .btn-reserve { background: #222; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
+
+        /* 메시지 영역 */
+        #msgDisplayArea { flex: 1; overflow-y: auto; padding: 20px; background: #fff; display: flex; flex-direction: column; gap: 12px; }
+        .msg-wrapper { display: flex; align-items: flex-end; gap: 5px; margin-bottom: 5px; }
+        .msg-wrapper.mine { justify-content: flex-end; }
+        .msg-wrapper.other { justify-content: flex-start; }
+        .message { max-width: 70%; padding: 10px 14px; border-radius: 20px; font-size: 14px; word-break: break-all; }
+        .msg-mine { background: #222; color: #fff; border-bottom-right-radius: 4px; }
+        .msg-other { background: #f2f2f2; color: #222; border-bottom-left-radius: 4px; }
+        .msg-time { font-size: 11px; color: #999; margin-bottom: 2px; }
+
+        /* 입력 영역 */
+        .chat-input-wrapper { display: flex; flex-direction: column; border-top: 1px solid #ebebeb; }
+        #chatInput { width: 100%; height: 80px; padding: 15px 20px; border: none; background: #e2e2e2; outline: none; font-size: 14px; resize: none; box-sizing: border-box; }
+        .chat-input-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #fff; }
+        .action-icons { display: flex; gap: 15px; color: #333; font-size: 22px; cursor: pointer; }
+        .chat-btn-send { background: #222; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;}
+    </style>
+
+    <div id="chatOverlay" class="chat-overlay" onclick="window.toggleChatPopup()"></div>
+
+    <div id="chatModal" class="chat-modal">
+        
+        <div id="loginRequiredArea" style="display: none; height: 100%; position: relative; background: #fff;">
+            <div class="login-required-box">
+                <p>로그인 후 이용 가능한 서비스입니다.</p>
+                <a href="/finalProject_3/login" class="btn-go-login">로그인하러 가기</a>
             </div>
-            <div style="width:65%; display:flex; flex-direction:column;">
-                <div style="padding:15px; background:#222; color:#fff; display:flex; justify-content:space-between;">
-                    <span>실시간 채팅</span>
-                    <button onclick="toggleChatPopup()" style="color:#fff; background:none; border:none; cursor:pointer; font-size:20px;">×</button>
+        </div>
+
+        <div id="chatFullContainer" class="chat-container">
+            <div class="chat-sidebar">
+                <div class="sidebar-header">채팅/거래방</div>
+                <ul class="room-list" id="roomListArea"></ul>
+            </div>
+
+            <div class="chat-main" id="chatMainArea" style="visibility: hidden;">
+                <div class="chat-header">
+                    <button class="header-btn" onclick="window.toggleChatPopup()">❮</button>
+                    <h4 id="currentRoomTitle">판매자 이름</h4>
+                    <button class="header-btn" onclick="toggleOptionsMenu()">⋮</button>
                 </div>
-                <div id="msgDisplayArea" style="flex:1; overflow-y:auto; padding:20px; background:#fff;"></div>
-                <div style="padding:15px; border-top:1px solid #eee; display:flex; gap:5px;">
-                    <input type="text" id="chatInput" style="flex:1; padding:10px; border:1px solid #ddd;" placeholder="메시지 입력...">
-                    <button onclick="sendChatMessage()" style="padding:10px 20px; background:#222; color:#fff; border:none; cursor:pointer;">전송</button>
+                
+                <div id="chatOptionsMenu" class="chat-options-menu">
+                    <div class="menu-item" onclick="actionMute()">
+                        <div class="menu-icon">🔔</div>
+                        <span class="menu-text">알림끄기</span>
+                    </div>
+                    <div class="menu-item" onclick="actionReport()">
+                        <div class="menu-icon">⚠️</div>
+                        <span class="menu-text">신고하기</span>
+                    </div>
+                    <div class="menu-item" onclick="actionBlock()">
+                        <div class="menu-icon">🚫</div>
+                        <span class="menu-text">차단하기</span>
+                    </div>
+                    <div class="menu-item" onclick="actionLeave()">
+                        <div class="menu-icon">🚪</div>
+                        <span class="menu-text">나가기</span>
+                    </div>
+                </div>
+
+                <div class="chat-product-banner">
+                    <img id="bannerImg" src="https://via.placeholder.com/50" alt="상품이미지">
+                    <div class="product-info">
+                        <div class="price-row">
+                            <span id="bannerPrice">가격 협의</span>
+                            <span class="status-badge" id="bannerStatus">판매중</span>
+                        </div>
+                        <div class="name-row" id="bannerTitle">상품명을 불러오는 중...</div>
+                    </div>
+                    <button class="btn-reserve" onclick="actionReserve()">예약잡기</button>
+                </div>
+
+                <div id="msgDisplayArea"></div>
+
+                <div class="chat-input-wrapper">
+                    <textarea id="chatInput" placeholder="메시지를 입력하세요..." onkeypress="handleEnterKey(event)"></textarea>
+                    
+                    <div class="chat-input-toolbar">
+                        <div class="action-icons">
+                            <span>＋</span>
+                            <span>📸</span>
+                            <span>😊</span>
+                        </div>
+                        <button class="chat-btn-send" onclick="window.sendChatMessage()">전송</button>
+                    </div>
+                </div>
+            </div>
+            <div id="reportModal" class="report-modal">
+            <div id="reportStep1" style="width:100%; height:100%; display:flex; flex-direction:column;">
+                <div class="report-header">
+                    <button class="header-btn" onclick="closeReportModal()">✕</button>
+                    <h4>신고하기</h4>
+                    <div style="width:24px;"></div>
+                </div>
+                <div class="report-notice">
+                    신고는 신중하게 진행해 주세요. 허위 신고일 경우 서비스 이용이 제한될 수 있습니다.
+                </div>
+                <ul class="report-list">
+                    <li onclick="goReportStep2('불법 행위')"><span>불법 행위</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('사기 피해')"><span>사기 피해</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('비매너 행위')"><span>비매너 행위</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('스팸성 홍보')"><span>스팸성 홍보</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('기타 사유')"><span>기타 사유</span> <span>❯</span></li>
+                </ul>
+            </div>
+
+            <div id="reportStep2" style="display: none; width:100%; height:100%; flex-direction:column;">
+                <div class="report-header">
+                    <button class="header-btn" onclick="backToReportStep1()">❮</button>
+                    <h4 id="selectedTypeName">불법 행위</h4>
+                    <button class="header-btn" onclick="closeReportModal()">✕</button>
+                </div>
+                <div class="report-content">
+                    <div class="type-detail-box">신고 유형 상세 <span>⌵</span></div>
+                    <textarea id="reportText" placeholder="신고 사유를 입력해주세요. (최대 150자)" maxlength="150" oninput="updateCharCount(this)"></textarea>
+                    <div class="char-count"><span id="currentCharCount">0</span>/150</div>
+                    
+                    <div class="photo-upload-section">
+                        <p>사진 첨부</p>
+                        <div class="photo-btn">
+                            <span style="font-size: 20px;">📷</span>
+                            <span>0/10</span>
+                        </div>
+                    </div>
+                    <button class="btn-submit-report" onclick="submitReport()">신고하기</button>
                 </div>
             </div>
         </div>
+        </div>
     </div>
-</div>
-</main>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    let stompClient = null;
-    let currentRoomId = null;
-    const currentUserEmail = /*[[${#authentication.name}]]*/ 'guest';
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let stompClient = null;
+        let currentRoomId = null;
+        const currentUserEmail = /*[[${#authentication.name}]]*/ 'guest';
+        const ctxPath = '/finalProject_3'; 
+        window.currentSubscription = null; 
 
-    // 1. 팝업 열기/닫기 (Header의 이모지 버튼에서 호출)
-    window.toggleChatPopup = function() {
-        const modal = document.getElementById('chatModal');
-        if (modal.style.display === 'none' || modal.style.display === '') {
-            modal.style.display = 'block';
-            connectWebSocket(); // 열 때 웹소켓 연결
-        } else {
-            modal.style.display = 'none';
-        }
-    }
+        // ★ 추가된 부분 2: 팝업을 열고 닫을 때, 배경막(Overlay)도 같이 켜고 끄도록 수정
+        window.toggleChatPopup = function() {
+		    const modal = document.getElementById('chatModal');
+		    const overlay = document.getElementById('chatOverlay');
+		    const fullContainer = document.getElementById('chatFullContainer');
+		    const loginArea = document.getElementById('loginRequiredArea');
+		
+		    if (modal.style.display === 'none' || modal.style.display === '') {
+		        modal.style.display = 'block';
+		        overlay.style.display = 'block';
+		
+		        // ⭐ 핵심: 여기서 먼저 guest인지 체크해서 서버 요청을 아예 막아야 합니다!
+		        if (currentUserEmail === 'anonymousUser' || currentUserEmail === 'guest' || !currentUserEmail) {
+		            if (fullContainer) fullContainer.style.display = 'none';
+		            if (loginArea) loginArea.style.display = 'block';
+		            return; // ◀ 여기서 멈춤! 아래에 있는 fetch(loadChatRoomList)를 실행 안 함
+		        } else {
+		            if (fullContainer) fullContainer.style.display = 'flex';
+		            if (loginArea) loginArea.style.display = 'none';
+		        }
+		
+		        document.getElementById('chatMainArea').style.visibility = 'hidden';
+		        window.loadChatRoomList(); // 로그인 된 사용자만 실행됨
+		        if (!stompClient || !stompClient.connected) window.connectWebSocket();
+		    } else {
+			        modal.style.display = 'none';
+			        overlay.style.display = 'none';
+			    }
+		};
 
-    // 2. 웹소켓 연결 (WebSocketConfig.java에 설정한 /ws-chat 주소)
-    function connectWebSocket() {
-        if (stompClient !== null && stompClient.connected) return;
-
-        const socket = new SockJS('/ws-chat');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-        }, function(error) {
-            console.error('WebSocket Error: ' + error);
-        });
-    }
-
-    // 3. 메시지 전송 (ChatController.java로 전송)
-    window.sendChatMessage = function() {
-        const content = document.getElementById('chatInput').value.trim();
-        if (!content || !stompClient) return;
-
-        const chatMessage = {
-            sender: currentUserEmail,
-            content: content,
-            roomId: currentRoomId || 'default_room', // 선택된 방 ID
-            timestamp: new Date().toISOString()
+        window.loadChatRoomList = function() {
+            fetch(`${ctxPath}/api/chat/roomList`)
+                .then(r => r.json())
+                .then(data => { if(data.success) window.renderRoomList(data.roomList); });
         };
 
-        // /app/chat/send는 WebSocketConfig의 setApplicationDestinationPrefixes("/")와 
-        // ChatController의 @MessageMapping("/chat/send")를 조합한 주소입니다.
-        stompClient.send("/app/chat/send", {}, JSON.stringify(chatMessage));
-        document.getElementById('chatInput').value = '';
-    }
+        window.renderRoomList = function(roomList) {
+            const ul = document.getElementById('roomListArea');
+            ul.innerHTML = ''; 
+            if(!roomList || roomList.length===0) return ul.innerHTML = '<li style="padding:15px; text-align:center;">대화가 없습니다.</li>';
+            
+            roomList.forEach(room => {
+                const li = document.createElement('li');
+                li.className = 'room-item';
+                
+                // ★ 수정됨: 클릭할 때 가격(productPrice)과 상태(tradeStatus)도 같이 넘겨줍니다!
+                li.onclick = () => window.openChatRoom(
+                    room.roomId, 
+                    room.otherUserEmail, 
+                    room.productName, 
+                    room.productImgUrl, 
+                    room.productPrice, // 추가됨
+                    room.tradeStatus   // 추가됨
+                );
+                
+                li.innerHTML = `
+                    <div style="font-weight:bold; margin-bottom:5px;">${room.otherUserEmail}</div>
+                    <div style="font-size:13px; color:#666;">[${room.productName}] ${room.lastMessage || '대화를 시작하세요.'}</div>
+                `;
+                ul.appendChild(li);
+            });
+        };
 
-    // 4. 메시지 수신 및 화면 출력
-    function showMessage(message) {
-        const area = document.getElementById('msgDisplayArea');
-        const isMine = message.sender === currentUserEmail;
+        // ★ 수정됨: 매개변수로 price, status 추가
+        window.openChatRoom = function(roomId, targetUser, productName, imgUrl, price, status) {
+            currentRoomId = roomId;
+            document.getElementById('chatMainArea').style.visibility = 'visible';
+            
+            document.getElementById('currentRoomTitle').innerText = targetUser;
+            document.getElementById('bannerTitle').innerText = productName;
+            
+            // 이미지 세팅 (방어 코드 포함)
+            const bannerImg = document.getElementById('bannerImg');
+            if(imgUrl) {
+                bannerImg.src = imgUrl.startsWith('/') ? ctxPath + imgUrl : imgUrl;
+            } else {
+                bannerImg.src = 'https://via.placeholder.com/50?text=No+Image';
+            }
+
+            // ★ 추가됨: 가격 세팅 (숫자면 3자리마다 콤마 찍고 '원' 붙이기)
+            const priceEl = document.getElementById('bannerPrice');
+            if(price !== undefined && price !== null) {
+                priceEl.innerText = price.toLocaleString() + '원';
+            } else {
+                priceEl.innerText = '가격 정보 없음';
+            }
+
+            // ★ 추가됨: 판매상태 세팅
+            const statusEl = document.getElementById('bannerStatus');
+            statusEl.innerText = status ? status : '상태 모름';
+            
+            // 상태에 따라 뱃지 색상을 바꾸고 싶다면 이런 디테일도 가능합니다!
+            if(status === '판매완료') {
+                statusEl.style.background = '#666';
+                statusEl.style.color = '#fff';
+            } else if(status === '예약중' || status === '거래중') {
+                statusEl.style.background = '#00c73c';
+                statusEl.style.color = '#fff';
+            } else {
+                statusEl.style.background = '#fff';
+                statusEl.style.color = '#222';
+            }
+
+            // 메시지 초기화
+            document.getElementById('msgDisplayArea').innerHTML = ''; 
+            document.getElementById('chatOptionsMenu').classList.remove('show'); 
+            
+            const chatInput = document.getElementById('chatInput');
+            chatInput.value = ''; 
+
+            fetch(`${ctxPath}/api/chat/messages/${roomId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.messages && data.messages.length > 0) {
+                        data.messages.forEach(msg => window.showMessage(msg));
+                    } else {
+                        chatInput.value = `[상품정보 보내기] 안녕하세요. [${productName}] 보고 문의드립니다.`;
+                    }
+                });
+
+            if (stompClient && stompClient.connected) window.subscribeToRoom(roomId);
+            else window.connectWebSocket(() => window.subscribeToRoom(roomId));
+        };
+
+        window.subscribeToRoom = function(roomId) {
+            if (window.currentSubscription) window.currentSubscription.unsubscribe();
+            window.currentSubscription = stompClient.subscribe(`/topic/room/${roomId}`, function(msg) {
+                window.showMessage(JSON.parse(msg.body));
+            });
+        };
+
+        window.connectWebSocket = function(cb) {
+            if (stompClient && stompClient.connected) { if(cb) cb(); return; }
+            stompClient = Stomp.over(new SockJS(`${ctxPath}/ws-chat`));
+            stompClient.connect({}, () => { if(cb) cb(); });
+        };
+
+        window.handleEnterKey = function(event) {
+            if (event.keyCode === 13 && !event.shiftKey) {
+                event.preventDefault(); 
+                window.sendChatMessage();
+            }
+        };
+
+        window.sendChatMessage = function() {
+            const input = document.getElementById('chatInput');
+            if (!input.value.trim() || !currentRoomId) return;
+            const msg = { sender: currentUserEmail, content: input.value.trim(), roomId: currentRoomId, timestamp: new Date().toISOString() };
+            stompClient.send("/app/chat/send", {}, JSON.stringify(msg));
+            input.value = ''; 
+        };
+
+        window.showMessage = function(message) {
+            const area = document.getElementById('msgDisplayArea');
+            const isMine = message.sender === currentUserEmail;
+            
+            const date = message.timestamp ? new Date(message.timestamp) : new Date();
+            const timeStr = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `msg-wrapper ${isMine ? 'mine' : 'other'}`;
+            
+            const bubbleHtml = `<div class="message ${isMine ? 'msg-mine' : 'msg-other'}">${message.content}</div>`;
+            const timeHtml = `<div class="msg-time">${timeStr}</div>`;
+
+            wrapper.innerHTML = isMine ? timeHtml + bubbleHtml : bubbleHtml + timeHtml;
+            area.appendChild(wrapper);
+            area.scrollTop = area.scrollHeight; 
+        };
+
+        window.toggleOptionsMenu = function() {
+            document.getElementById('chatOptionsMenu').classList.toggle('show');
+        };
+
+        window.actionMute = function() { alert("알림끄기 API 연동 필요"); toggleOptionsMenu(); };
+     // 1. 기존 신고하기 버튼 클릭 시 모달 열기
+        window.actionReport = function() {
+            if(!currentRoomId) { alert("채팅방을 먼저 선택해주세요."); return; }
+            document.getElementById('reportModal').style.display = 'flex';
+            backToReportStep1(); // 열 때마다 항상 1단계로 초기화
+            window.toggleOptionsMenu(); // 열려있는 메뉴 닫기
+        };
+
+        // 2. 2단계로 이동
+        window.goReportStep2 = function(typeName) {
+            document.getElementById('reportStep1').style.display = 'none';
+            const step2 = document.getElementById('reportStep2');
+            step2.style.display = 'flex';
+            document.getElementById('selectedTypeName').innerText = typeName;
+            document.getElementById('reportText').value = ''; // 텍스트 초기화
+            updateCharCount(document.getElementById('reportText'));
+        };
+
+        // 3. 1단계로 돌아가기
+        window.backToReportStep1 = function() {
+            document.getElementById('reportStep1').style.display = 'flex';
+            document.getElementById('reportStep2').style.display = 'none';
+        };
+
+        // 4. 모달 닫기
+        window.closeReportModal = function() {
+            document.getElementById('reportModal').style.display = 'none';
+        };
+
+        // 5. 글자 수 실시간 업데이트
+        window.updateCharCount = function(obj) {
+            document.getElementById('currentCharCount').innerText = obj.value.length;
+        };
+
+        // 6. 최종 신고 제출
+        window.submitReport = function() {
+            const content = document.getElementById('reportText').value.trim();
+            const type = document.getElementById('selectedTypeName').innerText;
+
+            if(!content) { alert("신고 사유를 입력해주세요."); return; }
+
+            // 서버 연동 로직
+            fetch(`${ctxPath}/api/chat/report`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    roomId: currentRoomId,
+                    reportType: type,
+                    reportContent: content
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert("신고가 정상적으로 접수되었습니다.");
+                    closeReportModal();
+                } else {
+                    alert("신고 접수에 실패했습니다.");
+                }
+            })
+            .catch(e => console.error("신고 에러:", e));
+        };
         
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${isMine ? 'msg-mine' : 'msg-other'}`;
-        msgDiv.innerText = message.content;
-        
-        area.appendChild(msgDiv);
-        area.scrollTop = area.scrollHeight; // 스크롤 하단 이동
-    }
-    /*]]>*/
-</script>
+        window.actionBlock = function() { alert("차단하기 API 연동 필요"); toggleOptionsMenu(); };
+        window.actionLeave = function() { 
+            if(!currentRoomId) return; 
+
+            if(confirm("정말 이 채팅방을 나가시겠습니까?\n(대화 내역이 모두 삭제됩니다.)")) {
+                fetch(`${ctxPath}/api/chat/leave/${currentRoomId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        toggleOptionsMenu(); 
+                        document.getElementById('chatMainArea').style.visibility = 'hidden';
+                        
+                        if (window.currentSubscription) {
+                            window.currentSubscription.unsubscribe();
+                            window.currentSubscription = null;
+                        }
+                        currentRoomId = null;
+                        window.loadChatRoomList(); 
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error("나가기 에러:", error));
+            } else {
+                toggleOptionsMenu(); 
+            }
+        };
+        window.actionReserve = function() { alert("예약잡기 로직 구현 필요"); };
+
+        /*]]>*/
+    </script>
+</main>
 </body>
 </html>
