@@ -1,5 +1,6 @@
 package com.spring.app.chat.controller;
 
+import org.springframework.web.bind.annotation.RequestBody;
 import com.spring.app.chat.domain.ChatMessageDTO;
 import com.spring.app.chat.domain.ChatRoomDTO;
 import com.spring.app.chat.service.ChatService;
@@ -92,17 +93,24 @@ public class ChatController {
     }
 
     // ★ 4. 새로운 채팅방 생성 (또는 기존 방 찾기) API 추가
+ // ★ 4. 새로운 채팅방 생성 (또는 기존 방 찾기) API (수정됨)
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/createRoom")
-    public Map<String, Object> createRoom(
-            @RequestParam("productNo") int productNo, 
-            @RequestParam("sellerEmail") String sellerEmail, 
-            Principal principal) {
-        
+    public Map<String, Object> createRoom(@RequestBody Map<String, Object> payload, Principal principal) {
         Map<String, Object> resultMap = new HashMap<>();
         try {
+            // 프론트에서 보낸 JSON 데이터를 안전하게 꺼내고 숫자로 변환합니다.
+            int productNo = Integer.parseInt(payload.get("productNo").toString());
+            String sellerEmail = payload.get("sellerEmail").toString();
             String buyerEmail = principal.getName(); // 현재 로그인한 내 이메일
             
+            // ★ 디버깅용 로그: 서버에 진짜 무슨 값이 도착했는지 눈으로 확인!
+            System.out.println("====== [채팅방 생성 요청 도착] ======");
+            System.out.println("넘어온 상품번호: " + productNo);
+            System.out.println("판매자: " + sellerEmail);
+            System.out.println("구매자: " + buyerEmail);
+            System.out.println("=====================================");
+
             // 내 상품에 내가 채팅을 걸 수는 없도록 방어 로직
             if (buyerEmail.equals(sellerEmail)) {
                 resultMap.put("success", false);

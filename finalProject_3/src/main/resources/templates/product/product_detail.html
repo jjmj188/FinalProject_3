@@ -474,6 +474,9 @@
     </section>
 </section>
 <script>
+	
+	let isChatLoading = false;
+	
     // 페이지가 다 로딩된 후 실행
     document.addEventListener('DOMContentLoaded', function() {
         const chatBtn = document.getElementById('btnStartChat');
@@ -492,40 +495,45 @@
     });
 
     function startChat(productNo, sellerEmail, productName) {
-        // 서버에 방 생성(또는 조회) 요청
+        if (isChatLoading) return; 
+        isChatLoading = true; 
+
         fetch('/finalProject_3/api/chat/createRoom', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                
+                'Content-Type': 'application/json' 
             },
-            body: new URLSearchParams({ 
-                productNo: productNo, 
+            // ★ URLSearchParams 대신 JSON.stringify 를 써야 합니다.
+            body: JSON.stringify({ 
+                productNo: parseInt(productNo), 
                 sellerEmail: sellerEmail 
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error("서버 에러 발생");
+            return response.json();
+        })
         .then(data => {
+            isChatLoading = false; 
             if (data.success) {
-                // 1. 팝업창 열기
                 const modal = document.getElementById('chatModal');
                 if (!modal || modal.style.display === 'none' || modal.style.display === '') {
-                    if (typeof window.toggleChatPopup === 'function') {
-                        window.toggleChatPopup();
-                    }
+                    if (typeof window.toggleChatPopup === 'function') window.toggleChatPopup();
                 }
-                
-                // 2. 0.3초 뒤 해당 방으로 입장 처리 (팝업 애니메이션 딜레이 고려)
                 setTimeout(() => {
                     if (typeof window.openChatRoom === 'function') {
                         window.openChatRoom(data.roomId, sellerEmail, productName);
                     }
                 }, 300);
-                
             } else {
                 alert(data.message); 
             }
         })
-        .catch(error => console.error("방 생성 에러:", error));
+        .catch(error => {
+            isChatLoading = false; 
+            console.error("방 생성 에러:", error);
+        });
     }
     
    

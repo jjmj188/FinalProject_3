@@ -9,44 +9,141 @@
 <main th:fragment="chat_popup">
 
     <style>
-        /* (기존 CSS 스타일 유지) */
-        .chat-modal { position: fixed; top: 10%; right: 5%; width: 55%; height: 75%; background: #fff; z-index: 10000; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; overflow: hidden; }
+        /* 팝업 전체 컨테이너 */
+        .chat-modal { position: fixed; top: 0; right: 0; width: 750px; height: 100vh; background: #fff; z-index: 10000; box-shadow: -10px 0 30px rgba(0,0,0,0.15); display: none; overflow: hidden; animation: slideInRight 0.3s ease-out; }
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .chat-container { display: flex; height: 100%; }
-        .chat-sidebar { width: 35%; background: #f2f2f2; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; background: #222; color: #fff; font-size: 18px; font-weight: bold; border-bottom: 1px solid #333; }
+        
+        /* 좌측: 채팅방 목록 */
+        .chat-sidebar { width: 35%; background: #fff; border-right: 1px solid #ebebeb; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background: #fff; color: #222; font-size: 18px; font-weight: bold; border-bottom: 1px solid #ebebeb; }
         .room-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-        .room-item { padding: 15px; border-bottom: 1px solid #e5e5e5; cursor: pointer; transition: background 0.2s; display: flex; flex-direction: column; }
-        .room-item:hover { background: #e9e9e9; }
+        .room-item { padding: 15px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.2s; display: flex; flex-direction: column; }
+        .room-item:hover { background: #f9f9f9; }
+        
+        /* 우측: 실제 채팅창 */
         .chat-main { width: 65%; display: flex; flex-direction: column; background: #fff; }
-        .chat-header { padding: 15px 20px; background: #222; color: #fff; display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h4 { margin: 0; font-size: 16px; }
-        .close-chat { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
-        #msgDisplayArea { flex: 1; overflow-y: auto; padding: 20px; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
-        .message { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 14px; position: relative; word-break: break-all; }
-        .msg-mine { align-self: flex-end; background: #222; color: #fff; border-bottom-right-radius: 2px; }
-        .msg-other { align-self: flex-start; background: #e2e2e2; color: #222; border-bottom-left-radius: 2px; }
-        .chat-input-row { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
-        .chat-input-row input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px; outline: none; }
-        .chat-input-row input:focus { border-color: #222; }
-        .chat-btn-send { background: #222; color: #fff; border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        /* 헤더 영역 */
+        .chat-header { padding: 10px 20px; background: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ebebeb; height: 60px; z-index: 10; }
+        .chat-header h4 { margin: 0; font-size: 18px; font-weight: bold; color: #222; flex: 1; text-align: center; }
+        .header-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #333; padding: 5px; }
+        
+        /* ★ 수정됨: 가로로 나열되는 슬라이딩 메뉴 */
+        .chat-options-menu { 
+            display: flex; /* 가로 나열을 위한 flex */
+            justify-content: space-around; /* 4개 항목을 같은 간격으로 배치 */
+            align-items: center;
+            background: #fff; 
+            overflow: hidden; 
+            max-height: 0; 
+            transition: max-height 0.3s ease-out; 
+            border-bottom: 0px solid transparent;
+        }
+        .chat-options-menu.show { 
+            max-height: 100px; /* 높이를 알맞게 지정 */
+            border-bottom: 1px solid #ebebeb;
+        }
+        
+        /* 개별 메뉴 아이템 스타일 */
+        .menu-item { display: flex; flex-direction: column; align-items: center; padding: 15px 0; cursor: pointer; gap: 8px; width: 100%; }
+        .menu-item:hover { background: #f9f9f9; }
+        .menu-icon { font-size: 26px; }
+        .menu-text { font-size: 13px; color: #333; }
+
+        /* 상품 정보 배너 */
+        .chat-product-banner { display: flex; padding: 15px 20px; background: #fff; border-bottom: 1px solid #ebebeb; align-items: center; gap: 15px; }
+        .chat-product-banner img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; }
+        .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .price-row { font-size: 16px; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .status-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #222; color: #222; font-weight: normal; }
+        .name-row { font-size: 13px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .btn-reserve { background: #222; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
+
+        /* 메시지 영역 */
+        #msgDisplayArea { flex: 1; overflow-y: auto; padding: 20px; background: #fff; display: flex; flex-direction: column; gap: 12px; }
+        .msg-wrapper { display: flex; align-items: flex-end; gap: 5px; margin-bottom: 5px; }
+        .msg-wrapper.mine { justify-content: flex-end; }
+        .msg-wrapper.other { justify-content: flex-start; }
+        .message { max-width: 70%; padding: 10px 14px; border-radius: 20px; font-size: 14px; word-break: break-all; }
+        .msg-mine { background: #222; color: #fff; border-bottom-right-radius: 4px; }
+        .msg-other { background: #f2f2f2; color: #222; border-bottom-left-radius: 4px; }
+        .msg-time { font-size: 11px; color: #999; margin-bottom: 2px; }
+
+        /* ★ 수정됨: 입력 영역 (회색 텍스트영역 + 하단 툴바) */
+        .chat-input-wrapper { display: flex; flex-direction: column; border-top: 1px solid #ebebeb; }
+        
+        /* 텍스트 입력창을 여러 줄 입력 가능한 textarea로 변경하고 회색 배경 적용 */
+        #chatInput { 
+            width: 100%; height: 80px; padding: 15px 20px; border: none; 
+            background: #e2e2e2; outline: none; font-size: 14px; resize: none; 
+            box-sizing: border-box;
+        }
+        
+        /* 아이콘과 전송 버튼이 있는 하단 툴바 */
+        .chat-input-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #fff; }
+        .action-icons { display: flex; gap: 15px; color: #333; font-size: 22px; cursor: pointer; }
+        .chat-btn-send { background: #222; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;}
     </style>
 
     <div id="chatModal" class="chat-modal">
         <div class="chat-container">
             <div class="chat-sidebar">
-                <div class="sidebar-header">채팅 목록</div>
+                <div class="sidebar-header">채팅/거래방</div>
                 <ul class="room-list" id="roomListArea"></ul>
             </div>
 
-            <div class="chat-main">
+            <div class="chat-main" id="chatMainArea" style="visibility: hidden;">
                 <div class="chat-header">
-                    <h4 id="currentRoomTitle">대화방을 선택해 주세요</h4>
-                    <button class="close-chat" onclick="window.toggleChatPopup()">×</button>
+                    <button class="header-btn" onclick="window.toggleChatPopup()">❮</button>
+                    <h4 id="currentRoomTitle">판매자 이름</h4>
+                    <button class="header-btn" onclick="toggleOptionsMenu()">⋮</button>
                 </div>
+                
+                <div id="chatOptionsMenu" class="chat-options-menu">
+                    <div class="menu-item" onclick="actionMute()">
+                        <div class="menu-icon">🔔</div>
+                        <span class="menu-text">알림끄기</span>
+                    </div>
+                    <div class="menu-item" onclick="actionReport()">
+                        <div class="menu-icon">⚠️</div>
+                        <span class="menu-text">신고하기</span>
+                    </div>
+                    <div class="menu-item" onclick="actionBlock()">
+                        <div class="menu-icon">🚫</div>
+                        <span class="menu-text">차단하기</span>
+                    </div>
+                    <div class="menu-item" onclick="actionLeave()">
+                        <div class="menu-icon">🚪</div>
+                        <span class="menu-text">나가기</span>
+                    </div>
+                </div>
+
+                <div class="chat-product-banner">
+                    <img id="bannerImg" src="https://via.placeholder.com/50" alt="상품이미지">
+                    <div class="product-info">
+                        <div class="price-row">
+                            <span id="bannerPrice">가격 협의</span>
+                            <span class="status-badge" id="bannerStatus">판매중</span>
+                        </div>
+                        <div class="name-row" id="bannerTitle">상품명을 불러오는 중...</div>
+                    </div>
+                    <button class="btn-reserve" onclick="actionReserve()">예약잡기</button>
+                </div>
+
                 <div id="msgDisplayArea"></div>
-                <div class="chat-input-row">
-                    <input type="text" id="chatInput" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) window.sendChatMessage()">
-                    <button class="chat-btn-send" onclick="window.sendChatMessage()">전송</button>
+
+                <div class="chat-input-wrapper">
+                    <textarea id="chatInput" placeholder="메시지를 입력하세요..." onkeypress="handleEnterKey(event)"></textarea>
+                    
+                    <div class="chat-input-toolbar">
+                        <div class="action-icons">
+                            <span>＋</span>
+                            <span>📸</span>
+                            <span>😊</span>
+                        </div>
+                        <button class="chat-btn-send" onclick="window.sendChatMessage()">전송</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,161 +154,139 @@
         let stompClient = null;
         let currentRoomId = null;
         const currentUserEmail = /*[[${#authentication.name}]]*/ 'guest';
-        const ctxPath = '/finalProject_3'; // 공통 경로
-        
+        const ctxPath = '/finalProject_3'; 
         window.currentSubscription = null; 
 
-        // 팝업 열기/닫기
         window.toggleChatPopup = function() {
             const modal = document.getElementById('chatModal');
-            if (modal) {
-                if (modal.style.display === 'none' || modal.style.display === '') {
-                    modal.style.display = 'block';
-                    window.loadChatRoomList(); 
-                    // 웹소켓 연결 시작 (비동기로 진행됨)
-                    if (!stompClient || !stompClient.connected) {
-                        window.connectWebSocket();
-                    }
-                } else {
-                    modal.style.display = 'none';
-                }
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                modal.style.display = 'block';
+                document.getElementById('chatMainArea').style.visibility = 'hidden';
+                window.loadChatRoomList(); 
+                if (!stompClient || !stompClient.connected) window.connectWebSocket();
+            } else {
+                modal.style.display = 'none';
             }
         };
 
-        // 방 목록 불러오기
         window.loadChatRoomList = function() {
             fetch(`${ctxPath}/api/chat/roomList`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.renderRoomList(data.roomList);
-                    } else {
-                        console.error("목록 불러오기 실패:", data.message);
-                    }
-                })
-                .catch(error => console.error("방 목록 로드 에러:", error));
+                .then(r => r.json())
+                .then(data => { if(data.success) window.renderRoomList(data.roomList); });
         };
 
-        // 방 목록 그리기
         window.renderRoomList = function(roomList) {
-            const ulArea = document.getElementById('roomListArea');
-            ulArea.innerHTML = ''; 
-
-            if (!roomList || roomList.length === 0) {
-                ulArea.innerHTML = '<li style="padding:15px; text-align:center; color:#888;">참여 중인 대화가 없습니다.</li>';
-                return;
-            }
-
+            const ul = document.getElementById('roomListArea');
+            ul.innerHTML = ''; 
+            if(!roomList || roomList.length===0) return ul.innerHTML = '<li style="padding:15px; text-align:center;">대화가 없습니다.</li>';
+            
             roomList.forEach(room => {
-                const previewMsg = room.lastMessage ? room.lastMessage : '새로운 대화를 시작해보세요.';
-                const timeStr = room.lastMessageAt ? room.lastMessageAt : '';
-                const targetUser = room.otherUserEmail;
-
                 const li = document.createElement('li');
                 li.className = 'room-item';
-                li.onclick = function() { window.openChatRoom(room.roomId, targetUser, room.productName); };
-
+                li.onclick = () => window.openChatRoom(room.roomId, room.otherUserEmail, room.productName, room.productImgUrl);
                 li.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <strong style="font-size:14px;">${targetUser}</strong>
-                        <span style="font-size:12px; color:#999;">${timeStr}</span>
-                    </div>
-                    <div style="font-size:13px; color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        [${room.productName}] ${previewMsg}
-                    </div>
+                    <div style="font-weight:bold; margin-bottom:5px;">${room.otherUserEmail}</div>
+                    <div style="font-size:13px; color:#666;">[${room.productName}] ${room.lastMessage || '대화를 시작하세요.'}</div>
                 `;
-                ulArea.appendChild(li);
+                ul.appendChild(li);
             });
         };
 
-        // 특정 방 열기 (클릭 시)
-        window.openChatRoom = function(roomId, targetUser, productName) {
+        window.openChatRoom = function(roomId, targetUser, productName, imgUrl) {
             currentRoomId = roomId;
-            document.getElementById('currentRoomTitle').innerText = `${targetUser}님과의 대화 (${productName})`;
+            document.getElementById('chatMainArea').style.visibility = 'visible';
+            
+            document.getElementById('currentRoomTitle').innerText = targetUser;
+            document.getElementById('bannerTitle').innerText = productName;
+            if(imgUrl) document.getElementById('bannerImg').src = imgUrl;
+
             document.getElementById('msgDisplayArea').innerHTML = ''; 
+            document.getElementById('chatOptionsMenu').classList.remove('show'); 
+            
+            const chatInput = document.getElementById('chatInput');
+            chatInput.value = ''; 
 
-            // 1. 과거 메시지 불러오기 ★ (경로에 ctxPath 추가)
+            // 과거 메시지 로드 및 자동 입력 처리 (내역이 없으면 입력창에 미리 적어두기)
             fetch(`${ctxPath}/api/chat/messages/${roomId}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("네트워크 응답이 정상이 아닙니다.");
-                    return response.json();
-                })
+                .then(r => r.json())
                 .then(data => {
-                    if (data.success && data.messages) {
+                    if (data.success && data.messages && data.messages.length > 0) {
                         data.messages.forEach(msg => window.showMessage(msg));
+                    } else {
+                        // 대화 내역이 없으면 textarea에 사진과 동일한 문구를 채워 넣습니다.
+                        chatInput.value = `[상품정보 보내기] 안녕하세요. [${productName}] 보고 문의드립니다.`;
                     }
-                })
-                .catch(error => console.error("과거 메시지 로드 에러:", error));
-
-            // 2. 실시간 웹소켓 구독 ★ (웹소켓 연결이 완료된 상태인지 반드시 확인)
-            if (stompClient && stompClient.connected) {
-                window.subscribeToRoom(roomId);
-            } else {
-                // 아직 연결이 안 되었다면 연결 후 구독하도록 핑을 날립니다.
-                window.connectWebSocket(() => {
-                    window.subscribeToRoom(roomId);
                 });
-            }
+
+            if (stompClient && stompClient.connected) window.subscribeToRoom(roomId);
+            else window.connectWebSocket(() => window.subscribeToRoom(roomId));
         };
 
-        // 방 구독 전담 함수 분리 (재사용성 향상)
         window.subscribeToRoom = function(roomId) {
-            if (window.currentSubscription) {
-                window.currentSubscription.unsubscribe();
-            }
-            window.currentSubscription = stompClient.subscribe(`/topic/room/${roomId}`, function(messageOutput) {
-                const receivedMsg = JSON.parse(messageOutput.body);
-                window.showMessage(receivedMsg);
+            if (window.currentSubscription) window.currentSubscription.unsubscribe();
+            window.currentSubscription = stompClient.subscribe(`/topic/room/${roomId}`, function(msg) {
+                window.showMessage(JSON.parse(msg.body));
             });
         };
 
-        // 웹소켓 연결 (콜백 함수를 받아 연결 완료 시 즉시 실행)
-        window.connectWebSocket = function(onConnectedCallback) {
-            if (stompClient !== null && stompClient.connected) {
-                if(onConnectedCallback) onConnectedCallback();
-                return;
-            }
-            const socket = new SockJS(`${ctxPath}/ws-chat`);
-            stompClient = Stomp.over(socket);
-            stompClient.connect({}, function (frame) {
-                console.log('웹소켓 연결 성공: ' + frame);
-                if(onConnectedCallback) onConnectedCallback();
-            }, function(error) { 
-                console.error('웹소켓 연결 에러:', error); 
-            });
+        window.connectWebSocket = function(cb) {
+            if (stompClient && stompClient.connected) { if(cb) cb(); return; }
+            stompClient = Stomp.over(new SockJS(`${ctxPath}/ws-chat`));
+            stompClient.connect({}, () => { if(cb) cb(); });
         };
 
-        // 메시지 전송
+        // ★ textarea용 엔터키 처리 함수 (Shift+Enter는 줄바꿈, 그냥 Enter는 전송)
+        window.handleEnterKey = function(event) {
+            if (event.keyCode === 13 && !event.shiftKey) {
+                event.preventDefault(); // 줄바꿈 방지
+                window.sendChatMessage();
+            }
+        };
+
         window.sendChatMessage = function() {
             const input = document.getElementById('chatInput');
-            const content = input.value.trim();
-            if (!content || !stompClient || !currentRoomId) return;
-
-            const chatMessage = {
-                sender: currentUserEmail,
-                content: content,
-                roomId: currentRoomId,
-                timestamp: new Date().toISOString()
-            };
-
-            // 서버의 ChatController로 발송
-            stompClient.send("/app/chat/send", {}, JSON.stringify(chatMessage));
-            input.value = '';
+            if (!input.value.trim() || !currentRoomId) return;
+            const msg = { sender: currentUserEmail, content: input.value.trim(), roomId: currentRoomId, timestamp: new Date().toISOString() };
+            stompClient.send("/app/chat/send", {}, JSON.stringify(msg));
+            input.value = ''; // 전송 후 비우기
         };
 
-        // 말풍선 화면에 그리기
         window.showMessage = function(message) {
             const area = document.getElementById('msgDisplayArea');
             const isMine = message.sender === currentUserEmail;
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${isMine ? 'msg-mine' : 'msg-other'}`;
-            msgDiv.innerText = message.content;
-            area.appendChild(msgDiv);
-            area.scrollTop = area.scrollHeight; // 스크롤 맨 아래로
+            
+            const date = message.timestamp ? new Date(message.timestamp) : new Date();
+            const timeStr = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `msg-wrapper ${isMine ? 'mine' : 'other'}`;
+            
+            const bubbleHtml = `<div class="message ${isMine ? 'msg-mine' : 'msg-other'}">${message.content}</div>`;
+            const timeHtml = `<div class="msg-time">${timeStr}</div>`;
+
+            wrapper.innerHTML = isMine ? timeHtml + bubbleHtml : bubbleHtml + timeHtml;
+            area.appendChild(wrapper);
+            area.scrollTop = area.scrollHeight; 
         };
+
+        // 점 3개 메뉴 토글
+        window.toggleOptionsMenu = function() {
+            document.getElementById('chatOptionsMenu').classList.toggle('show');
+        };
+
+        window.actionMute = function() { alert("알림끄기 API 연동 필요"); toggleOptionsMenu(); };
+        window.actionReport = function() { alert("신고하기 API 연동 필요"); toggleOptionsMenu(); };
+        window.actionBlock = function() { alert("차단하기 API 연동 필요"); toggleOptionsMenu(); };
+        window.actionLeave = function() { 
+            if(confirm("정말 이 채팅방을 나가시겠습니까?")) {
+                document.getElementById('chatMainArea').style.visibility = 'hidden';
+            }
+            toggleOptionsMenu(); 
+        };
+        window.actionReserve = function() { alert("예약잡기 로직 구현 필요"); };
+
         /*]]>*/
     </script>
-
 </main>
 </body>
 </html>
