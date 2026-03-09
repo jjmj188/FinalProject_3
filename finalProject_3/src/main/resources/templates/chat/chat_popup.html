@@ -9,6 +9,47 @@
 <main th:fragment="chat_popup">
 
     <style>
+    	/* 신고 모달 전체 컨테이너 (채팅창 내부에서 꽉 차게) */
+        .report-modal { 
+            position: absolute; top: 0; right: 0; width: 100%; height: 100%; 
+            background: #fff; z-index: 10001; display: none; flex-direction: column; 
+        }
+        .report-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px 20px; border-bottom: 1px solid #ebebeb; height: 60px;
+        }
+        .report-notice { 
+            margin: 15px; padding: 15px; background: #f8f9fa; 
+            font-size: 13px; color: #666; line-height: 1.5; border-radius: 8px;
+        }
+        .report-list { list-style: none; padding: 0; margin: 0; flex: 1; }
+        .report-list li { 
+            padding: 20px; border-bottom: 1px solid #f9f9f9; 
+            display: flex; justify-content: space-between; cursor: pointer; font-size: 15px;
+        }
+        .report-list li:hover { background: #fcfcfc; }
+        .report-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .type-detail-box { 
+            padding: 15px; background: #f5f5f5; border-radius: 8px; 
+            margin-bottom: 15px; font-size: 14px; color: #333; display: flex; justify-content: space-between;
+        }
+        #reportText { 
+            width: 100%; height: 180px; border: none; background: #f2f2f2; 
+            border-radius: 8px; padding: 15px; outline: none; resize: none; font-size: 14px;
+        }
+        .char-count { text-align: right; font-size: 12px; color: #999; margin-top: 5px; }
+        .photo-upload-section { margin-top: 20px; }
+        .photo-upload-section p { font-size: 14px; font-weight: bold; margin-bottom: 10px; }
+        .photo-btn { 
+            width: 70px; height: 70px; border: 1px solid #ddd; border-radius: 8px; 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; font-size: 12px; color: #999; cursor: pointer;
+        }
+        .btn-submit-report { 
+            width: 100%; padding: 16px; background: #222; color: #fff; border: none; 
+            border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: auto;
+        }
+    	
     	.login-required-box {
             position: absolute;
             top: 50%; left: 50%;
@@ -166,6 +207,47 @@
                     </div>
                 </div>
             </div>
+            <div id="reportModal" class="report-modal">
+            <div id="reportStep1" style="width:100%; height:100%; display:flex; flex-direction:column;">
+                <div class="report-header">
+                    <button class="header-btn" onclick="closeReportModal()">✕</button>
+                    <h4>신고하기</h4>
+                    <div style="width:24px;"></div>
+                </div>
+                <div class="report-notice">
+                    신고는 신중하게 진행해 주세요. 허위 신고일 경우 서비스 이용이 제한될 수 있습니다.
+                </div>
+                <ul class="report-list">
+                    <li onclick="goReportStep2('불법 행위')"><span>불법 행위</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('사기 피해')"><span>사기 피해</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('비매너 행위')"><span>비매너 행위</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('스팸성 홍보')"><span>스팸성 홍보</span> <span>❯</span></li>
+                    <li onclick="goReportStep2('기타 사유')"><span>기타 사유</span> <span>❯</span></li>
+                </ul>
+            </div>
+
+            <div id="reportStep2" style="display: none; width:100%; height:100%; flex-direction:column;">
+                <div class="report-header">
+                    <button class="header-btn" onclick="backToReportStep1()">❮</button>
+                    <h4 id="selectedTypeName">불법 행위</h4>
+                    <button class="header-btn" onclick="closeReportModal()">✕</button>
+                </div>
+                <div class="report-content">
+                    <div class="type-detail-box">신고 유형 상세 <span>⌵</span></div>
+                    <textarea id="reportText" placeholder="신고 사유를 입력해주세요. (최대 150자)" maxlength="150" oninput="updateCharCount(this)"></textarea>
+                    <div class="char-count"><span id="currentCharCount">0</span>/150</div>
+                    
+                    <div class="photo-upload-section">
+                        <p>사진 첨부</p>
+                        <div class="photo-btn">
+                            <span style="font-size: 20px;">📷</span>
+                            <span>0/10</span>
+                        </div>
+                    </div>
+                    <button class="btn-submit-report" onclick="submitReport()">신고하기</button>
+                </div>
+            </div>
+        </div>
         </div>
     </div>
 
@@ -352,7 +434,69 @@
         };
 
         window.actionMute = function() { alert("알림끄기 API 연동 필요"); toggleOptionsMenu(); };
-        window.actionReport = function() { alert("신고하기 API 연동 필요"); toggleOptionsMenu(); };
+     // 1. 기존 신고하기 버튼 클릭 시 모달 열기
+        window.actionReport = function() {
+            if(!currentRoomId) { alert("채팅방을 먼저 선택해주세요."); return; }
+            document.getElementById('reportModal').style.display = 'flex';
+            backToReportStep1(); // 열 때마다 항상 1단계로 초기화
+            window.toggleOptionsMenu(); // 열려있는 메뉴 닫기
+        };
+
+        // 2. 2단계로 이동
+        window.goReportStep2 = function(typeName) {
+            document.getElementById('reportStep1').style.display = 'none';
+            const step2 = document.getElementById('reportStep2');
+            step2.style.display = 'flex';
+            document.getElementById('selectedTypeName').innerText = typeName;
+            document.getElementById('reportText').value = ''; // 텍스트 초기화
+            updateCharCount(document.getElementById('reportText'));
+        };
+
+        // 3. 1단계로 돌아가기
+        window.backToReportStep1 = function() {
+            document.getElementById('reportStep1').style.display = 'flex';
+            document.getElementById('reportStep2').style.display = 'none';
+        };
+
+        // 4. 모달 닫기
+        window.closeReportModal = function() {
+            document.getElementById('reportModal').style.display = 'none';
+        };
+
+        // 5. 글자 수 실시간 업데이트
+        window.updateCharCount = function(obj) {
+            document.getElementById('currentCharCount').innerText = obj.value.length;
+        };
+
+        // 6. 최종 신고 제출
+        window.submitReport = function() {
+            const content = document.getElementById('reportText').value.trim();
+            const type = document.getElementById('selectedTypeName').innerText;
+
+            if(!content) { alert("신고 사유를 입력해주세요."); return; }
+
+            // 서버 연동 로직
+            fetch(`${ctxPath}/api/chat/report`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    roomId: currentRoomId,
+                    reportType: type,
+                    reportContent: content
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert("신고가 정상적으로 접수되었습니다.");
+                    closeReportModal();
+                } else {
+                    alert("신고 접수에 실패했습니다.");
+                }
+            })
+            .catch(e => console.error("신고 에러:", e));
+        };
+        
         window.actionBlock = function() { alert("차단하기 API 연동 필요"); toggleOptionsMenu(); };
         window.actionLeave = function() { 
             if(!currentRoomId) return; 
