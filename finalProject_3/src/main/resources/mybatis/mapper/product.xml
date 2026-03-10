@@ -246,6 +246,161 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
 		ORDER BY PRODUCT_MEET_LOCATION.SORT_NO
 
 	</select>
+	
+	<!-- 비슷한 거래물품 -->
+	<select id="selectSimilarProducts"
+        parameterType="hashMap"
+        resultType="com.spring.app.product.domain.ProductDTO">
+
+    SELECT
+        productNo,
+        categoryNo,
+        productName,
+        productPrice,
+        tradeStatus,
+        tradeMethod,
+        regDate,
+        placeName,
+        imgUrl
+    FROM
+    (
+        SELECT
+            PRODUCTS.PRODUCT_NO AS productNo,
+            PRODUCTS.CATEGORY_NO AS categoryNo,
+            PRODUCTS.PRODUCT_NAME AS productName,
+            PRODUCTS.PRODUCT_PRICE AS productPrice,
+            PRODUCTS.TRADE_STATUS AS tradeStatus,
+            PRODUCTS.TRADE_METHOD AS tradeMethod,
+            PRODUCTS.REG_DATE AS regDate,
+
+            (
+                SELECT PRODUCT_MEET_LOCATION.PLACE_NAME
+                FROM PRODUCT_MEET_LOCATION
+                WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+                AND ROWNUM = 1
+            ) AS placeName,
+
+            (
+                SELECT PRODUCT_IMAGE.IMG_URL
+                FROM PRODUCT_IMAGE
+                WHERE PRODUCT_IMAGE.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+                AND PRODUCT_IMAGE.IS_MAIN = 'Y'
+                AND ROWNUM = 1
+            ) AS imgUrl,
+
+            (
+                (
+                    CASE
+                        WHEN #{keyword1} IS NOT NULL
+                         AND #{keyword1} != ''
+                         AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{keyword1}) || '%'
+                        THEN 1 ELSE 0
+                    END
+                    +
+                    CASE
+                        WHEN #{keyword2} IS NOT NULL
+                         AND #{keyword2} != ''
+                         AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{keyword2}) || '%'
+                        THEN 1 ELSE 0
+                    END
+                    +
+                    CASE
+                        WHEN #{keyword3} IS NOT NULL
+                         AND #{keyword3} != ''
+                         AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{keyword3}) || '%'
+                        THEN 1 ELSE 0
+                    END
+                ) * 10
+                +
+                CASE
+                    WHEN #{productPrice} IS NULL OR #{productPrice} = 0 THEN 0
+                    WHEN ABS(NVL(PRODUCTS.PRODUCT_PRICE, 0) - #{productPrice}) / #{productPrice} &lt;= 0.1 THEN 25
+                    WHEN ABS(NVL(PRODUCTS.PRODUCT_PRICE, 0) - #{productPrice}) / #{productPrice} &lt;= 0.2 THEN 15
+                    WHEN ABS(NVL(PRODUCTS.PRODUCT_PRICE, 0) - #{productPrice}) / #{productPrice} &lt;= 0.3 THEN 8
+                    ELSE 0
+                END
+                +
+                CASE
+                    WHEN PRODUCTS.REG_DATE &gt;= SYSDATE - 3 THEN 10
+                    WHEN PRODUCTS.REG_DATE &gt;= SYSDATE - 7 THEN 5
+                    ELSE 0
+                END
+            ) AS similarityScore,
+
+            ABS(NVL(PRODUCTS.PRODUCT_PRICE, 0) - NVL(#{productPrice}, 0)) AS priceGap
+
+        FROM PRODUCTS
+        WHERE PRODUCTS.CATEGORY_NO = #{categoryNo}
+          AND PRODUCTS.TRADE_STATUS = '판매중'
+          AND PRODUCTS.PRODUCT_NO != #{productNo}
+          AND
+          (
+              1 = 0
+              <if test="keyword1 != null and keyword1 != ''">
+                  OR LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{keyword1}) || '%'
+              </if>
+              <if test="keyword2 != null and keyword2 != ''">
+                  OR LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{keyword2}) || '%'
+              </if>
+              <if test="keyword3 != null and keyword3 != ''">
+                  OR LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{keyword3}) || '%'
+              </if>
+          )
+    )
+    ORDER BY similarityScore DESC, priceGap ASC, regDate DESC
+    FETCH FIRST 12 ROWS ONLY
+
+</select>
+
+<select id="selectSimilarProductsFallback"
+        parameterType="hashMap"
+        resultType="com.spring.app.product.domain.ProductDTO">
+
+    SELECT
+        PRODUCTS.PRODUCT_NO AS productNo,
+        PRODUCTS.CATEGORY_NO AS categoryNo,
+        PRODUCTS.PRODUCT_NAME AS productName,
+        PRODUCTS.PRODUCT_PRICE AS productPrice,
+        PRODUCTS.TRADE_STATUS AS tradeStatus,
+        PRODUCTS.TRADE_METHOD AS tradeMethod,
+        PRODUCTS.REG_DATE AS regDate,
+
+        (
+            SELECT PRODUCT_MEET_LOCATION.PLACE_NAME
+            FROM PRODUCT_MEET_LOCATION
+            WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+            AND ROWNUM = 1
+        ) AS placeName,
+
+        (
+            SELECT PRODUCT_IMAGE.IMG_URL
+            FROM PRODUCT_IMAGE
+            WHERE PRODUCT_IMAGE.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+            AND PRODUCT_IMAGE.IS_MAIN = 'Y'
+            AND ROWNUM = 1
+        ) AS imgUrl
+
+    FROM PRODUCTS
+    WHERE PRODUCTS.CATEGORY_NO = #{categoryNo}
+      AND PRODUCTS.TRADE_STATUS = '판매중'
+
+      <if test="excludeProductNoList != null and excludeProductNoList.size() > 0">
+          AND PRODUCTS.PRODUCT_NO NOT IN
+          <foreach collection="excludeProductNoList"
+                   item="excludeProductNo"
+                   open="("
+                   separator=","
+                   close=")">
+              #{excludeProductNo}
+          </foreach>
+      </if>
+
+    ORDER BY
+        ABS(NVL(PRODUCTS.PRODUCT_PRICE, 0) - NVL(#{productPrice}, 0)) ASC,
+        PRODUCTS.REG_DATE DESC
+    FETCH FIRST 12 ROWS ONLY
+
+</select>
 
 
 	<!-- 검색어 자동완성 -->

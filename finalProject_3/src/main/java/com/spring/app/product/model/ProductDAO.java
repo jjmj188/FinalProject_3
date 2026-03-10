@@ -38,6 +38,11 @@ public interface ProductDAO {
     List<ProductShippingOptionDTO> selectShippingOption(int productNo);
 
     List<ProductMeetLocationDTO> selectMeetLocation(int productNo);
+    
+    
+ // 비슷한 거래물품
+    List<ProductDTO> selectSimilarProducts(Map<String, Object> paraMap);
+    List<ProductDTO> selectSimilarProductsFallback(Map<String, Object> paraMap);
 
     //검색
 	List<String> wordSearchShow(Map<String, String> paraMap);

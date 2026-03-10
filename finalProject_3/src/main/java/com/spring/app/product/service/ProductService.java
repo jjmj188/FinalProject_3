@@ -26,6 +26,9 @@ public interface ProductService {
 	//상품상세페이지
 	ProductDTO getProductDetailFull(int productNo);
 	
+	// 비슷한 거래물품
+	List<ProductDTO> selectSimilarProducts(ProductDTO productDto);
+	
 	//검색
 	List<String> wordSearchShow(Map<String, String> paraMap);
 
@@ -57,6 +60,8 @@ public interface ProductService {
 	//찜
 	boolean toggleWishlist(WishlistDTO wishlistDto);
 	boolean isWished(WishlistDTO wishlistDto);
+
+	
 	
 	}
 	

@@ -780,27 +780,42 @@ img {
 	overflow: hidden;
 	background: #fff;
 	display: grid;
-	grid-template-columns: 96px 1fr;
-	min-height: 86px;
+	grid-template-columns: 76px 1fr;
+	
 }
 
 .loc-thumb {
 	background: #dcdcdc;
 	border-right: 1px solid #ededed;
+	overflow: hidden;
+}
+
+.loc-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 
 .loc-card-body {
 	padding: 12px 14px;
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
+	
 	gap: 6px;
 }
 
 .loc-name {
 	font-size: 14px;
 	font-weight: bold;
-	line-height: 1.2;
+	line-height: 1.3;
+
+	display: -webkit-box;
+	-webkit-line-clamp: 1;      /* 최대 2줄 */
+	-webkit-box-orient: vertical;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .loc-price {

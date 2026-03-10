@@ -361,7 +361,7 @@ public class ProductController {
     }
 
     
-    //상품상세페이지
+ // 상품상세페이지
     @GetMapping("/product_detail/{productNo}")
     public String detail(@PathVariable("productNo") int productNo,
                          Principal principal,
@@ -369,14 +369,17 @@ public class ProductController {
 
         pservice.updateViewCount(productNo);
 
-        ProductDTO productDTO = pservice.getProductDetailFull(productNo);
+        ProductDTO productDto = pservice.getProductDetailFull(productNo);
 
         boolean isLogin = false;
         if (principal != null && principal.getName() != null && !"".equals(principal.getName().trim())) {
             isLogin = true;
         }
 
-        model.addAttribute("product", productDTO);
+        List<ProductDTO> similarProductList = pservice.selectSimilarProducts(productDto);
+
+        model.addAttribute("product", productDto);
+        model.addAttribute("similarProductList", similarProductList);
         model.addAttribute("isLogin", isLogin);
 
         return "product/product_detail";
