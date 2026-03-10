@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.spring.app.admin.ad.domain.AdDTO;
+import com.spring.app.admin.domain.AdDTO;
 import com.spring.app.admin.domain.InquiryDTO;
 import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.admin.domain.StatDTO;
@@ -30,10 +30,19 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AdminService_imple implements AdminService {
-
+	
 	private final AdminDAO dao;
-	@Value("${file.upload-dir}")
-	private String uploadDir;
+	
+	//광고 페이지 회원정보 가져오기
+		@Override
+		public MemberDTO getMemberById(String loginId) {
+		
+		return dao.getMemberById(loginId);
+		}
+		
+    //광고 insert하기 
+	@Value("${file.adminupload-dir}")
+	private String adminuploadDir;
 
 	@Override
 	public int registerAd(AdDTO adDto) {
@@ -44,22 +53,21 @@ public class AdminService_imple implements AdminService {
 
 	        try {
 
-	            Path uploadPath = Paths.get(uploadDir, "ad");
+			        	Path uploadPath = Paths.get(adminuploadDir);
+		
+			        	if (!Files.exists(uploadPath)) {
+			        	    Files.createDirectories(uploadPath);
+			        	}
+			        	String savedName =
+			        	        UUID.randomUUID() + "_" + attachment.getOriginalFilename();
 
-	            if (!Files.exists(uploadPath)) {
-	                Files.createDirectories(uploadPath);
-	            }
+			        	Files.copy(
+			        	        attachment.getInputStream(),
+			        	        uploadPath.resolve(savedName),
+			        	        StandardCopyOption.REPLACE_EXISTING
+			        	);
 
-	            String savedName =
-	                    UUID.randomUUID().toString() + "_" + attachment.getOriginalFilename();
-
-	            Files.copy(
-	                    attachment.getInputStream(),
-	                    uploadPath.resolve(savedName),
-	                    StandardCopyOption.REPLACE_EXISTING
-	            );
-
-	            adDto.setFilePath("ad/" + savedName);
+			        	adDto.setFilePath("/adminupload/" + savedName);
 
 	        } catch (IOException e) {
 	            throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e);
@@ -69,6 +77,8 @@ public class AdminService_imple implements AdminService {
 	    return dao.insertAd(adDto);
 	
 	}
+	
+	
   //====================================================================================//
         //회원 전체 리스트 
 	    @Override
@@ -238,6 +248,7 @@ public class AdminService_imple implements AdminService {
 	        
 	        return resultMap;
 	    }
+	   
 	
 
 

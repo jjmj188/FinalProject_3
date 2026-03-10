@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import com.spring.app.admin.ad.domain.AdDTO;
+import com.spring.app.admin.domain.AdDTO;
 import com.spring.app.admin.domain.InquiryDTO;
 import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.admin.domain.StatDTO;
@@ -36,6 +36,8 @@ public interface AdminDAO {
 	List<AdDTO> selectAdList();//상품리스트 가져오기
 	
 	int getOnsaleProductCount(); //판매중인 상품만 가져오기
+	
+	List<Map<String, Object>> getCategoryProductStats();
 	  //-------------------------------------------------------------------------
 	
 	AdDTO getAd(Long adId);
@@ -54,7 +56,9 @@ public interface AdminDAO {
 	List<InquiryDTO> getAllInquiries(); //모든 질문 
 	int getReportedProductCount();
 	List<Map<String, Object>> getDailyProductStats();
-	List<Map<String, Object>> getCategoryProductStats();
+	List<Map<String, Object>> getCategoryProdusctStats();
+	MemberDTO getMemberById(String loginId);
+	
 
 	
 

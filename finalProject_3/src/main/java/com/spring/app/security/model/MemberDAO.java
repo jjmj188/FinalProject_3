@@ -1,5 +1,6 @@
 package com.spring.app.security.model;
 
+import java.util.List;
 import java.util.Map;
 
 import com.spring.app.security.domain.MemberDTO;
@@ -23,4 +24,13 @@ public interface MemberDAO {
     
     String findEmailByPhone(String phone);
     void updatePasswordByPhone(Map<String, String> paramMap);
+
+    // AUTHORITIES 테이블에서 권한 목록 조회
+    List<String> findAuthoritiesByEmail(String email);
+
+    // RefreshToken CRUD
+    void saveRefreshToken(@org.apache.ibatis.annotations.Param("email") String email,
+                          @org.apache.ibatis.annotations.Param("rtValue") String rtValue);
+    String findRefreshTokenByEmail(String email);
+    void deleteRefreshToken(String email);
 }

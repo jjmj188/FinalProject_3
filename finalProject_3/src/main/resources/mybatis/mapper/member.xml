@@ -63,8 +63,31 @@
 	</select>
 	
 	<update id="updatePasswordByPhone" parameterType="java.util.Map">
-	    UPDATE member 
-	    SET password = #{password} 
+	    UPDATE member
+	    SET password = #{password}
 	    WHERE phone = #{phone}
 	</update>
+
+    <!-- AUTHORITIES 테이블에서 권한 목록 조회 -->
+    <select id="findAuthoritiesByEmail" parameterType="String" resultType="String">
+        SELECT AUTHORITY FROM AUTHORITIES WHERE EMAIL = #{email}
+    </select>
+
+    <!-- RefreshToken 저장/업데이트 (MERGE) -->
+    <insert id="saveRefreshToken">
+        MERGE INTO TBL_REFRESHTOKEN USING DUAL ON (EMAIL = #{email})
+        WHEN MATCHED THEN UPDATE SET RT_VALUE = #{rtValue}
+        WHEN NOT MATCHED THEN INSERT (EMAIL, RT_VALUE) VALUES (#{email}, #{rtValue})
+    </insert>
+
+    <!-- RefreshToken 조회 -->
+    <select id="findRefreshTokenByEmail" parameterType="String" resultType="String">
+        SELECT RT_VALUE FROM TBL_REFRESHTOKEN WHERE EMAIL = #{email}
+    </select>
+
+    <!-- RefreshToken 삭제 (로그아웃) -->
+    <delete id="deleteRefreshToken" parameterType="String">
+        DELETE FROM TBL_REFRESHTOKEN WHERE EMAIL = #{email}
+    </delete>
+
 </mapper>

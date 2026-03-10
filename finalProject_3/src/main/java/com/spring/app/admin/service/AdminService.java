@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import com.spring.app.admin.ad.domain.AdDTO;
+import com.spring.app.admin.domain.AdDTO;
 import com.spring.app.admin.domain.InquiryDTO;
 import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.product.domain.ProductDTO;
@@ -13,7 +13,10 @@ import com.spring.app.security.domain.MemberDTO;
 public interface AdminService {
 
 	int registerAd(AdDTO adDto); //광고 신청 insert하기 
-
+	
+    MemberDTO getMemberById(String loginId);// 회원 정보 조회 (아이디로 조회)
+    
+    //----------------------------------------------------------------------------------
 	 List<MemberDTO> getMemberList();//
 
 	 int getNewMembersCount();  //신규가입자 가져오기
@@ -58,6 +61,8 @@ public interface AdminService {
 	 List<InquiryDTO> getTop3FAQ();   // 상단고정 
 
 	 List<InquiryDTO> getAllInquiries(); //문의 모든 리스트 
+	
+
 
 	 
 	

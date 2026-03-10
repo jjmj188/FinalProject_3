@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.spring.app.admin.ad.domain.AdDTO;
+import com.spring.app.admin.domain.AdDTO;
 import com.spring.app.admin.domain.InquiryDTO;
 import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.admin.service.AdminService;
@@ -18,9 +18,11 @@ import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.security.domain.MemberDTO;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import java.io.File;
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -143,21 +145,49 @@ public class AdminController {
     public String adPage() {
     	return "admin/ad";
     }
-     //광고 등록하기
+    
+ 	// 현재 로그인한 사용자의 ID(username) 가져오기
+    @GetMapping("ad/select")
+    public String memberSelect(Model model, Principal principal){
+   
+        String loginId = principal.getName(); 
+        
+     
+        MemberDTO loginUser = adminService.getMemberById(loginId);
+        
+        //  뷰 레이어로 전달
+        model.addAttribute("loginUser", loginUser);
+        
+        return "ad/register"; 
+    }
+    
+    
+    //광고 등록하기
     @PostMapping("/ad/register")
     @ResponseBody
-    public Map<String,Object>registerAd(AdDTO adDto){
-    	Map<String,Object>map=new HashMap<>();
-    	try {
-    		adminService.registerAd(adDto); 
-            map.put("success", true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            map.put("success", false);
-            map.put("error", e.getMessage());
+    public Map<String,Object> registerAd(AdDTO adDto,
+                                         HttpSession session) {
+
+        Map<String,Object> result = new HashMap<>();
+
+        try {
+
+            MemberDTO loginUser = (MemberDTO) session.getAttribute("loginUser");
+
+            adDto.setUserNo(loginUser.getUserNo());
+
+            int n = adminService.registerAd(adDto);
+
+            result.put("success", n > 0);
+
+        } catch(Exception e) {
+
+            result.put("success", false);
         }
-        return map;
+
+        return result;
     }
+
     //=====================================================================================//
     	
     //컨텐츠 관리페이지  

@@ -1,5 +1,7 @@
 package com.spring.app.security.domain;
 
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Getter;
@@ -30,4 +32,7 @@ public class MemberDTO {
     private double mannerTemp;
     private String profileImg;
     private MultipartFile attach;
+
+    // 권한 목록 (jwt_jpa_board 방식: AUTHORITIES 테이블에서 로드)
+    private List<String> authorities;
 }

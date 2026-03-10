@@ -1,5 +1,7 @@
 package com.spring.app.security.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -10,6 +12,11 @@ import com.spring.app.security.domain.CustomUserDetails;
 import com.spring.app.security.domain.MemberDTO;
 import com.spring.app.security.model.MemberDAO;
 
+/*
+    Spring Security 가 로그인 시 호출하는 UserDetailsService 구현체.
+    jwt_jpa_board 패턴: MemberDTO 에 authorities(List<String>) 를 세팅한 뒤
+    CustomUserDetails(memberDTO) 단일 생성자로 전달한다.
+*/
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -18,15 +25,29 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // 1. 폼에서 입력한 이메일로 DB 조회 (DAO에 만들어두신 findByEmail 사용!)
+        // 1. 이메일로 회원 조회
         MemberDTO member = dao.findByEmail(email);
-
-        // 2. 일치하는 회원이 없으면 예외 발생 (로그인 실패 처리됨)
         if (member == null) {
             throw new UsernameNotFoundException("해당 이메일을 가진 사용자가 없습니다.");
         }
 
-        // 3. 회원이 있으면 시큐리티 전용 객체인 CustomUserDetails 에 담아서 리턴
+        // 2. AUTHORITIES 테이블에서 권한 목록 조회
+        List<String> authorities = dao.findAuthoritiesByEmail(email);
+
+        // 3. 권한이 없으면 기본 ROLE_USER 부여
+        if (authorities.isEmpty()) {
+            authorities.add("ROLE_USER");
+        }
+
+        // 4. MemberDTO 에 권한 목록 세팅 (jwt_jpa_board 방식)
+        member.setAuthorities(authorities);
+
+        System.out.println("====== [loadUserByUsername] ======");
+        System.out.println("### email      : " + email);
+        System.out.println("### authorities: " + authorities);
+        System.out.println("==================================");
+
+        // 5. CustomUserDetails 에 담아서 리턴
         return new CustomUserDetails(member);
     }
 }

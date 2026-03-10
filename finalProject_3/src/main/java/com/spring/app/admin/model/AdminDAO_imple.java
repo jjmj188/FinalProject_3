@@ -9,7 +9,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
-import com.spring.app.admin.ad.domain.AdDTO;
+import com.spring.app.admin.domain.AdDTO;
 import com.spring.app.admin.domain.InquiryDTO;
 import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.admin.domain.StatDTO;
@@ -165,6 +165,18 @@ public class AdminDAO_imple implements AdminDAO {
         // 결과 예시: [{CATEGORY_NAME: '패션', CNT: 20}, {CATEGORY_NAME: '가전', CNT: 15}]
         return sqlsession.selectList("admin.getCategoryProductStats");
     }
+
+    @Override
+    public MemberDTO getMemberById(String loginid) {
+        return sqlsession.selectOne(admin + ".getMemberById", loginid);
+    }
+
+	@Override
+	public List<Map<String, Object>> getCategoryProdusctStats() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
 
 

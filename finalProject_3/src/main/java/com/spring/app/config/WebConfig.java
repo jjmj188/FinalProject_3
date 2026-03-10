@@ -20,7 +20,10 @@ public class WebConfig implements WebMvcConfigurer{
    
     @Value("${file.images-dir}") 
     private String imagesDir; // 이메일 작성시 첨부파일의 경로를 잡아주는 것이다.
-
+    
+    @Value("${file.adminupload-dir}")
+    private String adminuploadDir; //admin 전용 upload
+    
     @Override
     public void  addResourceHandlers(ResourceHandlerRegistry registry) {
     	registry.addResourceHandler("/upload/**")
@@ -43,6 +46,8 @@ public class WebConfig implements WebMvcConfigurer{
 		// 제일먼저, 외부 업로드 폴더를 먼저 검색하고(file_images/쉐보레.jpg) 있으면 이것을 사용하고,
 		// 만약에 없으면 static 을 검색한다.(static/images/쉐보레.jpg)
 		// 그리고 스프링시큐리티 설정파일인 com.spring.app.security.config.SecurityConfig 에서 excludeUri 에 "/images/**" 을 추가해 주어야 한다. 
-    
+    	
+    	registry.addResourceHandler("/adminupload/**")
+        .addResourceLocations("file:" + adminuploadDir + "/");
     }
 }

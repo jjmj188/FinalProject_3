@@ -127,5 +127,8 @@ file:
   photoupload-dir: file_photoupload
   emailattachfile-dir: file_emailattachfile
   images-dir: file_images
+  adminupload-dir: file_adminupload
 
+jwt:
+  secret: e37ea07e222779c4066309ce10e47004a9718bbbc8e1062b7b4bca9b5d89a83d
 

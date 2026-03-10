@@ -1,5 +1,6 @@
 package com.spring.app.security.model;
 
+import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
@@ -51,5 +52,32 @@ public class MemberDAO_imple implements MemberDAO {
     @Override
     public void updatePasswordByPhone(Map<String, String> paramMap) {
         sqlsession.update("member.updatePasswordByPhone", paramMap);
+    }
+
+    // AUTHORITIES 테이블에서 권한 목록 조회
+    @Override
+    public List<String> findAuthoritiesByEmail(String email) {
+        return sqlsession.selectList("member.findAuthoritiesByEmail", email);
+    }
+
+    // RefreshToken 저장/업데이트
+    @Override
+    public void saveRefreshToken(String email, String rtValue) {
+        java.util.Map<String, String> paramMap = new java.util.HashMap<>();
+        paramMap.put("email", email);
+        paramMap.put("rtValue", rtValue);
+        sqlsession.insert("member.saveRefreshToken", paramMap);
+    }
+
+    // RefreshToken 조회
+    @Override
+    public String findRefreshTokenByEmail(String email) {
+        return sqlsession.selectOne("member.findRefreshTokenByEmail", email);
+    }
+
+    // RefreshToken 삭제
+    @Override
+    public void deleteRefreshToken(String email) {
+        sqlsession.delete("member.deleteRefreshToken", email);
     }
 }

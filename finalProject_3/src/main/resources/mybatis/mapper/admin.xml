@@ -3,7 +3,7 @@
 
 <mapper namespace="admin">
 	 <!-- 광고 insert해주기  -->
-    <insert id="insertAd" parameterType="com.spring.app.admin.ad.domain.AdDTO">
+    <insert id="insertAd" parameterType="com.spring.app.admin.domain.AdDTO">
     INSERT INTO ADS (
         AD_ID,
         BRAND_NAME,
@@ -38,7 +38,7 @@
     
     
     <!-- AdList가져오기 -->
- <select id="selectAdList" resultType="com.spring.app.admin.ad.domain.AdDTO">
+ <select id="selectAdList" resultType="com.spring.app.admin.domain.AdDTO">
     SELECT 
         AD_ID           as adId, 
         BRAND_NAME      as brandName,
@@ -57,7 +57,15 @@
     ORDER BY CREATED_AT DESC
 </select>
     
-    
+    <select id="getMemberById" parameterType="String" resultType="com.spring.app.security.domain.MemberDTO">
+        SELECT 
+            USER_NO as userNo, 
+            NAME as name, 
+            EMAIL as email, 
+            PHONE as phone
+        FROM MEMBER
+        WHERE LOGINID = #{loginid}
+    </select>
     
     <!--  회원 전체 목록 -->
     <select id="selectMemberList"
@@ -158,7 +166,7 @@
     WHERE TRADE_STATUS = '판매중'
 </select>
             <!-- 컨텐츠 -->
-   <select id="getAd" resultType="com.spring.app.admin.ad.domain.AdDTO">
+   <select id="getAd" resultType="com.spring.app.admin.domain.AdDTO">
     SELECT
         AD_ID AS adId,
         BRAND_NAME AS brandName,
@@ -194,7 +202,7 @@
 		
 		</update>
 		
-		<select id="getConflictAds" resultType="com.spring.app.admin.ad.domain.AdDTO">
+		<select id="getConflictAds" resultType="com.spring.app.admin.domain.AdDTO">
 
 			SELECT *
 			FROM ADS
