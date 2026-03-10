@@ -123,7 +123,7 @@ management:
         include: health,metrics
 
 file:
-  upload-dir: C:/git/finalProject_3/finalProject_3/upload
+  upload-dir: file_upload
   photoupload-dir: file_photoupload
   emailattachfile-dir: file_emailattachfile
   images-dir: file_images
