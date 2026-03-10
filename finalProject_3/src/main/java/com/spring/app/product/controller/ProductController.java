@@ -50,7 +50,7 @@ public class ProductController {
     @Value("${file.images-dir}")
     private String imagesDir;
 
-    private static final String IMAGE_WEB_PREFIX = "/upload/";
+    private static final String IMAGE_WEB_PREFIX = "/images/";
 
     @GetMapping("/product_list")
     public String product_list(
