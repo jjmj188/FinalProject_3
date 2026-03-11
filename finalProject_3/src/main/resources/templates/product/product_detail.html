@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
-      xmlns:th="http://www.thymeleaf.org"
-      lang="ko">
+<html
+	th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+	xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
 
 <link rel="stylesheet" th:href="@{/css/product/product_detail.css}">
@@ -10,474 +10,445 @@
 </head>
 
 <body>
-<!-- 상품 상세페이지 -->
-<main>
-<!--상품정보-->
-<section class="pd-page">
-  <section class="pd-grid">
+	<!-- 상품 상세페이지 -->
+	<main>
+		<!--상품정보-->
+		<section class="pd-page">
+			<section class="pd-grid">
 
-    <!-- LEFT: 이미지 영역 -->
-<div class="pd-gallery">
+				<!-- LEFT: 이미지 영역 -->
+				<div class="pd-gallery">
 
-  <div class="pd-main-img">
-    <img id="pdMainImage"
-         th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}"
-         th:src="@{${product.imageList[0].imgUrl}}"
-         alt="상품 대표 이미지">
+					<div class="pd-main-img">
+						<img id="pdMainImage"
+							th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}"
+							th:src="@{${product.imageList[0].imgUrl}}" alt="상품 대표 이미지">
 
-    <img id="pdMainImage"
-         th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}"
-         th:src="@{/images/no_image.png}"
-         alt="상품 이미지">
-  </div>
+						<img id="pdMainImage"
+							th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}"
+							th:src="@{/images/no_image.png}" alt="상품 이미지">
+					</div>
 
-  <!-- 썸네일(0번=대표 제외) -->
-  <div class="pd-thumbs" aria-label="썸네일">
+					<!-- 썸네일(0번=대표 제외) -->
+					<div class="pd-thumbs" aria-label="썸네일">
 
-  <th:block th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}">
+						<th:block
+							th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}">
 
-    <th:block th:each="img, stat : ${product.imageList}">
-      <div class="pd-thumb"
-           th:if="${stat.index < 3}">
-        <img th:src="@{${img.imgUrl}}"
-             th:alt="'썸네일 ' + ${stat.index + 1}"
-             th:attr="data-full=@{${img.imgUrl}}">
-      </div>
-    </th:block>
+							<th:block th:each="img, stat : ${product.imageList}">
+								<div class="pd-thumb" th:if="${stat.index < 3}">
+									<img th:src="@{${img.imgUrl}}"
+										th:alt="'썸네일 ' + ${stat.index + 1}"
+										th:attr="data-full=@{${img.imgUrl}}">
+								</div>
+							</th:block>
 
-  </th:block>
+						</th:block>
 
-  <!-- 이미지 부족할 때 -->
-  <div class="pd-thumb"
-       th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}">
-    <img th:src="@{/images/no_image.png}" alt="썸네일">
-  </div>
+						<!-- 이미지 부족할 때 -->
+						<div class="pd-thumb"
+							th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}">
+							<img th:src="@{/images/no_image.png}" alt="썸네일">
+						</div>
 
-</div>
-</div>
+					</div>
+				</div>
 
 
 
-    <!-- RIGHT: 정보 영역 -->
-    <div class="pd-info">
-      <div class="pd-topline">
-        <div>
-	        <div class="pd-breadcrumb">
-				<span th:text="${product.categoryName}"></span>
-				<span class="pd-dot">|</span>
-				<span class="time-ago"
-				      th:data-regdate="${#dates.format(product.regDate,'yyyy-MM-dd HH:mm:ss')}">
-				</span>
-				<span class="pd-dot">|</span>
-				조회 <span th:text="${product.viewCount}"></span>
-				<span class="pd-dot">|</span>
-				찜 <span id="wishCountText" th:text="${product.wishCount}">0</span>
-			</div>
-        </div>
+				<!-- RIGHT: 정보 영역 -->
+				<div class="pd-info">
+					<div class="pd-topline">
+						<div>
+							<div class="pd-breadcrumb">
+								<span th:text="${product.categoryName}"></span> <span
+									class="pd-dot">|</span> <span class="time-ago"
+									th:data-regdate="${#dates.format(product.regDate,'yyyy-MM-dd HH:mm:ss')}">
+								</span> <span class="pd-dot">|</span> 조회 <span
+									th:text="${product.viewCount}"></span> <span class="pd-dot">|</span>
+								찜 <span id="wishCountText" th:text="${product.wishCount}">0</span>
+							</div>
+						</div>
 
-        <div class="pd-actions-top">
-          <div class="pd-user-icon" aria-hidden="true">
-            <img th:src="@{/images/siren.png}" alt="신고">
-          </div>
-          <a class="pd-report"
-             th:href="@{/product/report(productNo=${product.productNo})}">
-            신고하기
-          </a>
-        </div>
-      </div>
+						<div class="pd-actions-top">
+							<div class="pd-user-icon" aria-hidden="true">
+								<img th:src="@{/images/siren.png}" alt="신고">
+							</div>
+							<a class="pd-report"
+								th:href="@{/product/report(productNo=${product.productNo})}">
+								신고하기 </a>
+						</div>
+					</div>
 
-      <h1 class="pd-title" th:text="${product.productName}">상품이름</h1>
+					<h1 class="pd-title" th:text="${product.productName}">상품이름</h1>
 
-      <div class="pd-price"
-           th:text="${#numbers.formatInteger(product.productPrice, 3, 'COMMA')} + '원'">
-        60,000원
-      </div>
+					<div class="pd-price"
+						th:text="${#numbers.formatInteger(product.productPrice, 3, 'COMMA')} + '원'">
+						60,000원</div>
 
-      <div class="pd-subline">
-        <a th:href="@{/product/price_check(productNo=${product.productNo})}" aria-label="시세조회">시세조회</a>
-      </div>
+					<div class="pd-subline">
+						<a th:href="@{/product/price_check(searchWord=${product.productName})}"
+						    aria-label="시세조회">시세조회</a>
+					</div>
 
-      <div class="pd-card" aria-label="상품 정보">
+					<div class="pd-card" aria-label="상품 정보">
 
-        <!-- 배송비 -->
-        <div class="pd-row pd-row-fee">
-          <div class="pd-label">배송비</div>
-          <div class="pd-value pd-value-fee">
+						<!-- 배송비 -->
+						<div class="pd-row pd-row-fee">
+							<div class="pd-label">배송비</div>
+							<div class="pd-value pd-value-fee">
 
-            <!-- 배송옵션이 있을 때 -->
-            <ul class="pd-fee-simple"
-    th:if="${product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)}">
-  <li th:each="opt : ${product.shippingOptionList}">
-    <span class="pd-fee-name" th:text="${opt.parcelType}">일반택배</span>
-    <span class="pd-fee-amount"
-          th:text="${#numbers.formatInteger(opt.shippingFee, 3, 'COMMA')} + '원'">4,000원</span>
-  </li>
-</ul>
+								<!-- 배송옵션이 있을 때 -->
+								<ul class="pd-fee-simple"
+									th:if="${product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)}">
+									<li th:each="opt : ${product.shippingOptionList}"><span
+										class="pd-fee-name" th:text="${opt.parcelType}">일반택배</span> <span
+										class="pd-fee-amount"
+										th:text="${#numbers.formatInteger(opt.shippingFee, 3, 'COMMA')} + '원'">4,000원</span>
+									</li>
+								</ul>
 
-            <!-- 배송옵션이 없을 때 -->
-            <ul class="pd-fee-simple"
-                th:if="${product.shippingOptionList == null or #lists.isEmpty(product.shippingOptionList)}">
-              <li>
-                <span class="pd-fee-name">배송비 정보 없음</span>
-                <span class="pd-fee-amount">-</span>
-              </li>
-            </ul>
+								<!-- 배송옵션이 없을 때 -->
+								<ul class="pd-fee-simple"
+									th:if="${product.shippingOptionList == null or #lists.isEmpty(product.shippingOptionList)}">
+									<li><span class="pd-fee-name">배송비 정보 없음</span> <span
+										class="pd-fee-amount">-</span></li>
+								</ul>
 
-          </div>
-        </div>
+							</div>
+						</div>
 
-		<!-- 상품상태 -->
-		<div class="pd-row">
-		  <div class="pd-label">상품상태</div>
-		  <div class="pd-value">
-		    <span class="pd-chip chip-grade-top"
-		          th:if="${product.productCondition == '상'}">상</span>
-		
-		    <span class="pd-chip chip-grade-mid"
-		          th:if="${product.productCondition == '중'}">중</span>
-		
-		    <span class="pd-chip chip-grade-low"
-		          th:if="${product.productCondition == '하'}">하</span>
-		
-		    <span class="pd-chip"
-		          th:if="${product.productCondition != '상' and product.productCondition != '중' and product.productCondition != '하'}"
-		          th:text="${product.productCondition}">상품상태</span>
-		  </div>
-		</div>
-		
-		<!-- 거래상태 -->
-		<div class="pd-row">
-		  <div class="pd-label">거래상태</div>
-		  <div class="pd-value">
-		    <span class="pd-chip chip-sale-ing"
-		          th:if="${product.tradeStatus == '판매중'}">판매중</span>
-		
-		    <span class="pd-chip chip-sale-deal"
-		          th:if="${product.tradeStatus == '거래중'}">거래중</span>
-		
-		    <span class="pd-chip chip-sale-done"
-		          th:if="${product.tradeStatus == '판매완료'}">판매완료</span>
-		
-		    <span class="pd-chip"
-		          th:if="${product.tradeStatus != '판매중' and product.tradeStatus != '거래중' and product.tradeStatus != '판매완료'}"
-		          th:text="${product.tradeStatus}">거래상태</span>
-		  </div>
-		</div>
+						<!-- 상품상태 -->
+						<div class="pd-row">
+							<div class="pd-label">상품상태</div>
+							<div class="pd-value">
+								<span class="pd-chip chip-grade-top"
+									th:if="${product.productCondition == '상'}">상</span> <span
+									class="pd-chip chip-grade-mid"
+									th:if="${product.productCondition == '중'}">중</span> <span
+									class="pd-chip chip-grade-low"
+									th:if="${product.productCondition == '하'}">하</span> <span
+									class="pd-chip"
+									th:if="${product.productCondition != '상' and product.productCondition != '중' and product.productCondition != '하'}"
+									th:text="${product.productCondition}">상품상태</span>
+							</div>
+						</div>
 
-        <!-- 거래방법 -->
-        <div class="pd-row">
-          <div class="pd-label">거래방법</div>
-          <div class="pd-value">
-            <span class="pd-chip chip-method-meet"
-                  th:if="${product.tradeMethod == '직거래'}">직거래</span>
+						<!-- 거래상태 -->
+						<div class="pd-row">
+							<div class="pd-label">거래상태</div>
+							<div class="pd-value">
+								<span class="pd-chip chip-sale-ing"
+									th:if="${product.tradeStatus == '판매중'}">판매중</span> <span
+									class="pd-chip chip-sale-deal"
+									th:if="${product.tradeStatus == '거래중'}">거래중</span> <span
+									class="pd-chip chip-sale-done"
+									th:if="${product.tradeStatus == '판매완료'}">판매완료</span> <span
+									class="pd-chip"
+									th:if="${product.tradeStatus != '판매중' and product.tradeStatus != '거래중' and product.tradeStatus != '판매완료'}"
+									th:text="${product.tradeStatus}">거래상태</span>
+							</div>
+						</div>
 
-            <span class="pd-chip chip-method-ship"
-                  th:if="${product.tradeMethod == '택배거래'}">택배거래</span>
+						<!-- 거래방법 -->
+						<div class="pd-row">
+							<div class="pd-label">거래방법</div>
+							<div class="pd-value">
+								<span class="pd-chip chip-method-meet"
+									th:if="${product.tradeMethod == '직거래'}">직거래</span> <span
+									class="pd-chip chip-method-ship"
+									th:if="${product.tradeMethod == '택배거래'}">택배거래</span> <span
+									class="pd-chip"
+									th:if="${product.tradeMethod != '직거래' and product.tradeMethod != '택배거래'}"
+									th:text="${product.tradeMethod}">거래방법</span>
+							</div>
+						</div>
 
-            <span class="pd-chip"
-                  th:if="${product.tradeMethod != '직거래' and product.tradeMethod != '택배거래'}"
-                  th:text="${product.tradeMethod}">거래방법</span>
-          </div>
-        </div>
+						<!-- 거래 희망장소 -->
+						<div class="pd-row">
+							<div class="pd-label">거래 희망장소</div>
 
-        <!-- 거래 희망장소 -->
-       <div class="pd-row">
-		    <div class="pd-label">거래 희망장소</div>
-		
-		    <div class="pd-value pd-value-location">
-		
-		        <th:block th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
-		
-		            <button type="button"
-		                    class="pd-location"
-		                    th:each="ml, stat : ${product.meetLocationList}"
-		                    th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
-		                    th:attr="data-lat=${ml.latitude},
+							<div class="pd-value pd-value-location">
+
+								<th:block
+									th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
+
+									<button type="button" class="pd-location"
+										th:each="ml, stat : ${product.meetLocationList}"
+										th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
+										th:attr="data-lat=${ml.latitude},
 		                             data-lng=${ml.longitude},
 		                             data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress},
 		                             data-target-id='map-place-' + ${stat.index}"
-		                    th:classappend="${stat.index > 0 ? ' pd-location--line' : ''}">
-		            </button>
-		
-		        </th:block>
-		
-		        <span class="pd-location"
-		              th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
-		            장소 정보 없음
-		        </span>
-		
-		    </div>
-		</div>
-  </div>
+										th:classappend="${stat.index > 0 ? ' pd-location--line' : ''}">
+									</button>
 
-     <div class="pd-cta">
-     
-<button class="pd-like"
-    type="button"
-    aria-label="찜하기"
-    th:classappend="${product.wished} ? ' is-active' : ''"
-    th:attr="data-product-no=${product.productNo},
+								</th:block>
+
+								<span class="pd-location"
+									th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
+									장소 정보 없음 </span>
+
+							</div>
+						</div>
+					</div>
+
+					<div class="pd-cta">
+
+						<button class="pd-like" type="button" aria-label="찜하기"
+							th:classappend="${product.wished} ? ' is-active' : ''"
+							th:attr="data-product-no=${product.productNo},
              data-login=${isLogin}">
-    <i th:class="${product.wished ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
-</button>
+							<i
+								th:class="${product.wished ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
+						</button>
 
-    <div class="pd-btns">
-        <button id="btnStartChat" class="pd-btn pd-btn-chat" type="button"
-                th:data-product-no="${product.productNo}"
-                th:data-seller-email="${product.sellerEmail}"
-                th:data-product-name="${product.productName}">
-            채팅하기
-        </button>
+						<div class="pd-btns">
+							<button id="btnStartChat" class="pd-btn pd-btn-chat"
+								type="button" th:data-product-no="${product.productNo}"
+								th:data-seller-email="${product.sellerEmail}"
+								th:data-product-name="${product.productName}">채팅하기</button>
 
-        <button class="pd-btn pd-btn-pay" type="button"
-                th:attr="data-product-no=${product.productNo}">
-            안전결제
-        </button>
-    </div>
-</div>
+							<button class="pd-btn pd-btn-pay" type="button"
+								th:attr="data-product-no=${product.productNo}">안전결제</button>
+						</div>
+					</div>
 
-    </div>
-  </section>
-</section>
-<!--상품글/판매자 정보-->
-<section class="pdinfo-wrap">
-    <section class="pdinfo-grid">
-
-        <!-- LEFT -->
-        <section>
-		    <div class="pdinfo-head">
-		        <h2 class="pdinfo-title">상품정보</h2>
-		    </div>
-		
-		    <div id="pdinfoTextBox" class="pdinfo-textbox is-collapsed" th:text="${product.productDesc}">
-		        상품 설명
-		    </div>
-		
-		    <button id="pdinfoMoreBtn" class="pdinfo-morebtn is-hidden" type="button">더보기</button>
+				</div>
+			</section>
 		</section>
+		<!--상품글/판매자 정보-->
+		<section class="pdinfo-wrap">
+			<section class="pdinfo-grid">
 
-        <!-- RIGHT -->
- <section>
-    <div class="pdinfo-head">
-        <h2 class="pdinfo-title">판매자정보</h2>
-        <a th:href="@{/product/product_user_profile}">
-            <i class="fa-solid fa-chevron-right"></i>
-        </a>
-    </div>
+				<!-- LEFT -->
+				<section>
+					<div class="pdinfo-head">
+						<h2 class="pdinfo-title">상품정보</h2>
+					</div>
 
-    <div class="pdinfo-card">
-        <div class="pdinfo-cardbody">
-            <div class="pdinfo-seller-top">
-                <div class="pdinfo-avatar">
-                    <img th:if="${product.sellerProfileImg != null and product.sellerProfileImg != ''}"
-                         th:src="@{${product.sellerProfileImg}}"
-                         alt="판매자 프로필">
+					<div id="pdinfoTextBox" class="pdinfo-textbox is-collapsed"
+						th:text="${product.productDesc}">상품 설명</div>
 
-                    <img th:if="${product.sellerProfileImg == null or product.sellerProfileImg == ''}"
-                         th:src="@{/images/default_profile.png}"
-                         alt="기본 프로필">
-                </div>
+					<button id="pdinfoMoreBtn" class="pdinfo-morebtn is-hidden"
+						type="button">더보기</button>
+				</section>
 
-                <div class="pdinfo-seller-name" th:text="${product.sellerName}">판매자 이름</div>
-            </div>
+				<!-- RIGHT -->
+				<section>
+					<div class="pdinfo-head">
+						<h2 class="pdinfo-title">판매자정보</h2>
+						<a th:href="@{/product/product_user_profile}"> <i
+							class="fa-solid fa-chevron-right"></i>
+						</a>
+					</div>
 
-            <div class="pdinfo-temp-row">
-                <div class="pdinfo-temp-label">매너온도</div>
-                <div id="pdinfoTempValue"
-                     class="pdinfo-temp-value"
-                     th:attr="data-temp=${product.mannerTemp}"
-                     th:text="${product.mannerTemp} + '°C'">
-                    36.5°C
-                </div>
-            </div>
+					<div class="pdinfo-card">
+						<div class="pdinfo-cardbody">
+							<div class="pdinfo-seller-top">
+								<div class="pdinfo-avatar">
+									<img
+										th:if="${product.sellerProfileImg != null and product.sellerProfileImg != ''}"
+										th:src="@{${product.sellerProfileImg}}" alt="판매자 프로필"> <img
+										th:if="${product.sellerProfileImg == null or product.sellerProfileImg == ''}"
+										th:src="@{/images/default_profile.png}" alt="기본 프로필">
+								</div>
 
-            <div class="pdinfo-temp-sub">최근 3개월 기준 · 별점으로 거래후기 반영</div>
+								<div class="pdinfo-seller-name" th:text="${product.sellerName}">판매자
+									이름</div>
+							</div>
 
-            <div class="pdinfo-bar" id="pdinfoBar">
-                <span id="pdinfoBarFill"></span>
-            </div>
+							<div class="pdinfo-temp-row">
+								<div class="pdinfo-temp-label">매너온도</div>
+								<div id="pdinfoTempValue" class="pdinfo-temp-value"
+									th:attr="data-temp=${product.mannerTemp}"
+									th:text="${product.mannerTemp} + '°C'">36.5°C</div>
+							</div>
 
-            <div class="pdinfo-stats">
-                <div class="pdinfo-stat">
-                    <div class="k">안심결제</div>
-                    <div class="v">9</div>
-                </div>
-                <div class="pdinfo-stat">
-                    <div class="k">거래후기</div>
-                    <div class="v">10</div>
-                </div>
-                <div class="pdinfo-stat">
-                    <div class="k">거래횟수</div>
-                    <div class="v">10</div>
-                </div>
-            </div>
-        </div>
-                <div class="pdinfo-reviews-head">
-                    <div class="pdinfo-reviews-title">최근후기</div>
-                    <a class="pdinfo-reviews-link" th:href="@{/product/product_user_profile}">전체보기 <i
-                            class="fa-solid fa-chevron-right"></i></a>
-                </div>
+							<div class="pdinfo-temp-sub">최근 3개월 기준 · 별점으로 거래후기 반영</div>
 
-                <div class="pdinfo-reviews">
-                    <div class="pdinfo-review">
-                        <div>
-                            <div class="pdinfo-user">사용자 아이디</div>
-                            <div class="pdinfo-desc">설명 그대로 상태 좋아요. 응답도 빠릅니다.</div>
-                        </div>
-                        <div class="pdinfo-stars">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-                    </div>
+							<div class="pdinfo-bar" id="pdinfoBar">
+								<span id="pdinfoBarFill"></span>
+							</div>
 
-                    <div class="pdinfo-review">
-                        <div>
-                            <div class="pdinfo-user">사용자 아이디</div>
-                            <div class="pdinfo-desc">친절하고 거래 매너가 좋아요.</div>
-                        </div>
-                        <div class="pdinfo-stars">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-                    </div>
+							<div class="pdinfo-stats">
+								<div class="pdinfo-stat">
+									<div class="k">안심결제</div>
+									<div class="v">9</div>
+								</div>
+								<div class="pdinfo-stat">
+									<div class="k">거래후기</div>
+									<div class="v">10</div>
+								</div>
+								<div class="pdinfo-stat">
+									<div class="k">거래횟수</div>
+									<div class="v">10</div>
+								</div>
+							</div>
+						</div>
+						<div class="pdinfo-reviews-head">
+							<div class="pdinfo-reviews-title">최근후기</div>
+							<a class="pdinfo-reviews-link"
+								th:href="@{/product/product_user_profile}">전체보기 <i
+								class="fa-solid fa-chevron-right"></i></a>
+						</div>
 
-                    <div class="pdinfo-review">
-                        <div>
-                            <div class="pdinfo-user">사용자 아이디</div>
-                            <div class="pdinfo-desc">포장 꼼꼼하고 제품 상태 만족합니다.</div>
-                        </div>
-                        <div class="pdinfo-stars">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-                    </div>
-                </div>
+						<div class="pdinfo-reviews">
+							<div class="pdinfo-review">
+								<div>
+									<div class="pdinfo-user">사용자 아이디</div>
+									<div class="pdinfo-desc">설명 그대로 상태 좋아요. 응답도 빠릅니다.</div>
+								</div>
+								<div class="pdinfo-stars">
+									<i class="fa-solid fa-star"></i> <i class="fa-solid fa-star"></i>
+									<i class="fa-solid fa-star"></i> <i class="fa-solid fa-star"></i>
+									<i class="fa-solid fa-star"></i>
+								</div>
+							</div>
 
-            </div>
-        </section>
+							<div class="pdinfo-review">
+								<div>
+									<div class="pdinfo-user">사용자 아이디</div>
+									<div class="pdinfo-desc">친절하고 거래 매너가 좋아요.</div>
+								</div>
+								<div class="pdinfo-stars">
+									<i class="fa-solid fa-star"></i> <i class="fa-solid fa-star"></i>
+									<i class="fa-solid fa-star"></i> <i class="fa-solid fa-star"></i>
+									<i class="fa-solid fa-star"></i>
+								</div>
+							</div>
 
-    </section>
-</section>
-<!--지도/다른 판매 물품-->
-<section class="loc-wrap" id="locWrap">
-    <div class="loc-map-head">
-        <h2 class="loc-map-title">거래 희망 위치</h2>
+							<div class="pdinfo-review">
+								<div>
+									<div class="pdinfo-user">사용자 아이디</div>
+									<div class="pdinfo-desc">포장 꼼꼼하고 제품 상태 만족합니다.</div>
+								</div>
+								<div class="pdinfo-stars">
+									<i class="fa-solid fa-star"></i> <i class="fa-solid fa-star"></i>
+									<i class="fa-solid fa-star"></i> <i class="fa-solid fa-star"></i>
+									<i class="fa-solid fa-star"></i>
+								</div>
+							</div>
+						</div>
 
-        <div class="loc-map-place-list"
-             th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
+					</div>
+				</section>
 
-            <button type="button"
-                    class="loc-map-place"
-                    th:each="ml, stat : ${product.meetLocationList}"
-                    th:id="'map-place-' + ${stat.index}"
-                    th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
-                    th:attr="data-lat=${ml.latitude},
+			</section>
+		</section>
+		<!--지도/다른 판매 물품-->
+		<section class="loc-wrap" id="locWrap">
+			<div class="loc-map-head">
+				<h2 class="loc-map-title">거래 희망 위치</h2>
+
+				<div class="loc-map-place-list"
+					th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
+
+					<button type="button" class="loc-map-place"
+						th:each="ml, stat : ${product.meetLocationList}"
+						th:id="'map-place-' + ${stat.index}"
+						th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
+						th:attr="data-lat=${ml.latitude},
                              data-lng=${ml.longitude},
                              data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress}">
-            </button>
+					</button>
 
-        </div>
+				</div>
 
-        <div class="loc-map-place-list"
-             th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
-            <span class="loc-map-place is-disabled">위치 정보 없음</span>
-        </div>
-    </div>
+				<div class="loc-map-place-list"
+					th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
+					<span class="loc-map-place is-disabled">위치 정보 없음</span>
+				</div>
+			</div>
 
-    <section class="loc-map" aria-label="지도">
-        <div id="locMapKakao" aria-label="카카오 지도"></div>
-    </section>
+			<section class="loc-map" aria-label="지도">
+				<div id="locMapKakao" aria-label="카카오 지도"></div>
+			</section>
 
-   <div class="loc-sell-head">
-    <h3 class="loc-sell-title">이런 상품은 어때요?</h3>
-    <a class="loc-sell-more" th:href="@{/product/product_list(categoryNo=${product.categoryNo})}">
-        더보기 <i class="fa-solid fa-chevron-right"></i>
-    </a>
-</div>
+			<div class="loc-sell-head">
+				<h3 class="loc-sell-title">이런 상품은 어때요?</h3>
+				<a class="loc-sell-more"
+					th:href="@{/product/product_list(categoryNo=${product.categoryNo})}">
+					더보기 <i class="fa-solid fa-chevron-right"></i>
+				</a>
+			</div>
 
-<section class="loc-carousel" aria-label="비슷한 거래물품">
-    <button class="loc-arrow" id="locPrevBtn" type="button" aria-label="이전">
-        <i class="fa-solid fa-angle-left"></i>
-    </button>
+			<section class="loc-carousel" aria-label="비슷한 거래물품">
+				<button class="loc-arrow" id="locPrevBtn" type="button"
+					aria-label="이전">
+					<i class="fa-solid fa-angle-left"></i>
+				</button>
 
-    <div class="loc-viewport" id="locViewport">
-        <div class="loc-track" id="locTrack">
+				<div class="loc-viewport" id="locViewport">
+					<div class="loc-track" id="locTrack">
 
-            <th:block th:if="${similarProductList != null and !#lists.isEmpty(similarProductList)}">
+						<th:block
+							th:if="${similarProductList != null and !#lists.isEmpty(similarProductList)}">
 
-                <div class="loc-page"
-                     th:each="pageStart : ${#numbers.sequence(0, similarProductList.size() - 1, 3)}">
+							<div class="loc-page"
+								th:each="pageStart : ${#numbers.sequence(0, similarProductList.size() - 1, 3)}">
 
-                    <th:block th:each="similarProduct, stat : ${similarProductList}">
-                        <th:block th:if="${stat.index >= pageStart and stat.index < pageStart + 3}">
+								<th:block th:each="similarProduct, stat : ${similarProductList}">
+									<th:block
+										th:if="${stat.index >= pageStart and stat.index < pageStart + 3}">
 
-                            <article class="loc-card"
-                                     th:onclick="|location.href='@{/product/product_detail/{productNo}(productNo=${similarProduct.productNo})}'|">
+										<article class="loc-card"
+											th:onclick="|location.href='@{/product/product_detail/{productNo}(productNo=${similarProduct.productNo})}'|">
 
-                                <div class="loc-thumb">
-                                    <img th:if="${similarProduct.imgUrl != null and similarProduct.imgUrl != ''}"
-                                         th:src="@{${similarProduct.imgUrl}}"
-                                         alt="비슷한 상품 이미지">
+											<div class="loc-thumb">
+												<img
+													th:if="${similarProduct.imgUrl != null and similarProduct.imgUrl != ''}"
+													th:src="@{${similarProduct.imgUrl}}" alt="비슷한 상품 이미지">
 
-                                    <img th:if="${similarProduct.imgUrl == null or similarProduct.imgUrl == ''}"
-                                         th:src="@{/images/no_image.png}"
-                                         alt="기본 이미지">
-                                </div>
+												<img
+													th:if="${similarProduct.imgUrl == null or similarProduct.imgUrl == ''}"
+													th:src="@{/images/no_image.png}" alt="기본 이미지">
+											</div>
 
-                                <div class="loc-card-body">
-                                    <div class="loc-name" th:text="${similarProduct.productName}">상품이름</div>
+											<div class="loc-card-body">
+												<div class="loc-name"
+													th:text="${similarProduct.productName}">상품이름</div>
 
-                                    <div class="loc-price"
-                                         th:text="${#numbers.formatInteger(similarProduct.productPrice, 3, 'COMMA')} + '원'">
-                                        60,000원
-                                    </div>
+												<div class="loc-price"
+													th:text="${#numbers.formatInteger(similarProduct.productPrice, 3, 'COMMA')} + '원'">
+													60,000원</div>
 
-                                    <div class="loc-meta">
-                                        <span th:text="${similarProduct.placeName != null and similarProduct.placeName != '' ? similarProduct.placeName : similarProduct.tradeMethod}">
-                                            직거래
-                                        </span>
-                                        <span> | </span>
-                                        <span class="time-ago"
-                                              th:data-regdate="${#dates.format(similarProduct.regDate,'yyyy-MM-dd HH:mm:ss')}">
-                                        </span>
-                                    </div>
-                                </div>
+												<div class="loc-meta">
+													<span
+														th:text="${similarProduct.placeName != null and similarProduct.placeName != '' ? similarProduct.placeName : similarProduct.tradeMethod}">
+														직거래 </span> <span> | </span> <span class="time-ago"
+														th:data-regdate="${#dates.format(similarProduct.regDate,'yyyy-MM-dd HH:mm:ss')}">
+													</span>
+												</div>
+											</div>
 
-                            </article>
+										</article>
 
-                        </th:block>
-                    </th:block>
+									</th:block>
+								</th:block>
 
-                </div>
-            </th:block>
+							</div>
+						</th:block>
 
-            <div class="loc-page"
-                 th:if="${similarProductList == null or #lists.isEmpty(similarProductList)}">
-                <article class="loc-card">
-                    <div class="loc-card-body">
-                        <div class="loc-name">비슷한 거래물품이 없습니다.</div>
-                    </div>
-                </article>
-            </div>
+						<div class="loc-page"
+							th:if="${similarProductList == null or #lists.isEmpty(similarProductList)}">
+							<article class="loc-card">
+								<div class="loc-card-body">
+									<div class="loc-name">비슷한 거래물품이 없습니다.</div>
+								</div>
+							</article>
+						</div>
 
-        </div>
-    </div>
+					</div>
+				</div>
 
-    <button class="loc-arrow" id="locNextBtn" type="button" aria-label="다음">
-        <i class="fa-solid fa-chevron-right"></i>
-    </button>
-</section>
-</section>
-<script>
+				<button class="loc-arrow" id="locNextBtn" type="button"
+					aria-label="다음">
+					<i class="fa-solid fa-chevron-right"></i>
+				</button>
+			</section>
+		</section>
+		<script>
 	
 	let isChatLoading = false;
 	
@@ -542,7 +513,7 @@
     
    
 </script>
-</main>
-<script th:src="@{/js/product/product_detail.js}"></script>
+	</main>
+	<script th:src="@{/js/product/product_detail.js}"></script>
 </body>
 </html>
