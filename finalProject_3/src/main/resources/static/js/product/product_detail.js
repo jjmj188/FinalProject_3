@@ -1,17 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    function getJwt() {
-        try {
-            return JSON.parse(localStorage.getItem("JWT")) || {};
-        } catch (e) {
-            return {};
-        }
-    }
-
-    function getAccessToken() {
-        const jwt = getJwt();
-        return jwt.accessToken ? jwt.accessToken : "";
-    }
+    
 
     function moveLogin() {
         alert("로그인이 필요합니다.");
@@ -189,82 +178,79 @@ document.addEventListener("DOMContentLoaded", function () {
     /* =========================
        4. 찜 하트 기능
     ========================= */
-    $(document).on("click", ".pd-like", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
+	/* =========================
+	   4. 찜 하트 기능
+	========================= */
+	$(document).on("click", ".pd-like", function (e) {
+	    e.preventDefault();
+	    e.stopPropagation();
 
-        const $btn = $(this);
-        const isLogin = String($btn.attr("data-login")) === "true";
-        const accessToken = getAccessToken();
+	    const $btn = $(this);
+	    const isLogin = String($btn.attr("data-login")) === "true";
 
-        if (!isLogin || !accessToken) {
-            moveLogin();
-            return;
-        }
+	    if (!isLogin) {
+	        moveLogin();
+	        return;
+	    }
 
-        const productNo = $btn.attr("data-product-no");
+	    const productNo = $btn.attr("data-product-no");
 
-        $.ajax({
-            url: "/finalProject_3/product/wishlist/toggle",
-            type: "post",
-            headers: {
-                "Authorization": "Bearer " + accessToken
-            },
-            data: { productNo: productNo },
-            dataType: "json",
-            success: function (json) {
-                if (!json.success) {
-                    alert(json.message || "찜 처리에 실패했습니다.");
-                    return;
-                }
+	    $.ajax({
+	        url: "/finalProject_3/product/wishlist/toggle",
+	        type: "post",
+	        data: { productNo: productNo },
+	        dataType: "json",
+	        success: function (json) {
+	            if (!json.success) {
+	                alert(json.message || "찜 처리에 실패했습니다.");
+	                return;
+	            }
 
-                const $icon = $btn.find("i");
-                const $wishCountText = $("#wishCountText");
-                let currentCount = parseInt($wishCountText.text(), 10);
+	            const $icon = $btn.find("i");
+	            const $wishCountText = $("#wishCountText");
+	            let currentCount = parseInt($wishCountText.text(), 10);
 
-                if (isNaN(currentCount)) {
-                    currentCount = 0;
-                }
+	            if (isNaN(currentCount)) {
+	                currentCount = 0;
+	            }
 
-                if (json.wished) {
-                    $btn.addClass("is-active");
-                    $icon.removeClass("fa-regular").addClass("fa-solid");
-                    $wishCountText.text(currentCount + 1);
-                    alert("찜 성공");
-                }
-                else {
-                    $btn.removeClass("is-active");
-                    $icon.removeClass("fa-solid").addClass("fa-regular");
+	            if (json.wished) {
+	                $btn.addClass("is-active");
+	                $icon.removeClass("fa-regular").addClass("fa-solid");
+	                $wishCountText.text(currentCount + 1);
+	                alert("찜 성공");
+	            } else {
+	                $btn.removeClass("is-active");
+	                $icon.removeClass("fa-solid").addClass("fa-regular");
 
-                    if (currentCount > 0) {
-                        $wishCountText.text(currentCount - 1);
-                    }
+	                if (currentCount > 0) {
+	                    $wishCountText.text(currentCount - 1);
+	                }
 
-                    alert("찜 취소");
-                }
-            },
-            error: function (request, status, error) {
-                console.log("찜 AJAX ERROR");
-                console.log("status =", request.status);
-                console.log("responseText =", request.responseText);
-                console.log("error =", error);
+	                alert("찜 취소");
+	            }
+	        },
+	        error: function (request, status, error) {
+	            console.log("찜 AJAX ERROR");
+	            console.log("status =", request.status);
+	            console.log("responseText =", request.responseText);
+	            console.log("error =", error);
 
-                if (request.status === 401) {
-                    localStorage.removeItem("JWT");
-                    alert("로그인이 필요하거나 인증이 만료되었습니다.");
-                    moveLogin();
-                    return;
-                }
+	            if (request.status === 401) {
+	                alert("로그인이 필요하거나 인증이 만료되었습니다.");
+	                moveLogin();
+	                return;
+	            }
 
-                if (request.status === 403) {
-                    alert("접근 권한이 없습니다.");
-                    return;
-                }
+	            if (request.status === 403) {
+	                alert("접근 권한이 없습니다.");
+	                return;
+	            }
 
-                alert("찜 처리 중 오류가 발생했습니다.");
-            }
-        });
-    });
+	            alert("찜 처리 중 오류가 발생했습니다.");
+	        }
+	    });
+	});
 
     /* =========================
        5. 등록시간 표시

@@ -212,13 +212,13 @@
 
      <div class="pd-cta">
     <button class="pd-like"
-            type="button"
-            aria-label="찜하기"
-            th:classappend="${product.wished} ? ' is-active' : ''"
-            th:attr="data-product-no=${product.productNo},
-                     data-login=${isLogin}">
-        <i th:class="${product.wished} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
-    </button>
+        type="button"
+        aria-label="찜하기"
+        th:classappend="${product.wished} ? ' is-active' : ''"
+        th:attr="data-product-no=${product.productNo},
+                 data-login=${isLogin}">
+    <i th:class="${product.wished} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+</button>
 
     <div class="pd-btns">
         <button id="btnStartChat" class="pd-btn pd-btn-chat" type="button"

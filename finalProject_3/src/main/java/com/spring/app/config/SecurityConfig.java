@@ -8,9 +8,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -49,6 +49,12 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // JwtAuthenticationFilter 빈 등록
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtTokenProvider);
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -56,51 +62,54 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions.sameOrigin())
             )
-            // 401, 403 예외 처리 핸들러 등록
-            // HTTP Basic 인증 비활성화 (jwt_jpa_board 방식)
             .httpBasic(httpBasic -> httpBasic.disable())
-            // 세션 정책: IF_REQUIRED — Thymeleaf SSR 세션 유지 + JWT 병행 (jwt_jpa_board 동일)
+
+            // 세션 + JWT 병행 유지
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
+
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401 미인증
-                .accessDeniedHandler(jwtAccessDeniedHandler)            // 403 권한없음
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
             )
+
             .authorizeHttpRequests(auth -> auth
-            	    .requestMatchers("/api/chat/**").permitAll()
-            	    .requestMatchers("/ws-chat/**").permitAll()
-            	    .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+                .requestMatchers("/api/chat/**").permitAll()
+                .requestMatchers("/ws-chat/**").permitAll()
+                .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
 
-            	    .requestMatchers("/admin/**").hasRole("ADMIN")
+                // 관리자
+                .requestMatchers("/admin/**").hasRole("ADMIN")
 
-            	    // 로그인 필요
-            	    .requestMatchers(
-            	        "/mypage/**",
-            	        "/product/sell",
-            	        "/product/sellRegister",
-            	        "/product/wishlist/**"
-            	    ).authenticated()
+                // 로그인 필요
+                .requestMatchers(
+                    "/mypage/**",
+                    "/product/sell",
+                    "/product/sellRegister",
+                    "/product/wishlist/**"
+                ).authenticated()
 
-            	    // 공개
-            	    .requestMatchers(
-            	        "/",
-            	        "/member/**",
-            	        "/index.up",
-            	        "/security/**",
-            	        "/product/product_list",
-            	        "/product/product_list_more",
-            	        "/product/price_check",
-            	        "/product/share",
-            	        "/product/product_detail/**",
-            	        "/product/product_user_profile",
-            	        "/product/wordSearchShow",
-            	        "/actuator/**",
-            	        "/adminupload/**"
-            	    ).permitAll()
+                // 공개 페이지
+                .requestMatchers(
+                    "/",
+                    "/member/**",
+                    "/index.up",
+                    "/security/**",
+                    "/product/product_list",
+                    "/product/product_list_more",
+                    "/product/price_check",
+                    "/product/share",
+                    "/product/product_detail/**",
+                    "/product/product_user_profile",
+                    "/product/wordSearchShow",
+                    "/actuator/**",
+                    "/adminupload/**"
+                ).permitAll()
 
-            	    .anyRequest().authenticated()
-            	)
+                .anyRequest().authenticated()
+            )
+
             .formLogin(form -> form
                 .loginPage("/security/login")
                 .loginProcessingUrl("/security/login/process")
@@ -110,11 +119,12 @@ public class SecurityConfig {
                 .failureUrl("/security/login?error=true")
                 .permitAll()
             )
+
             .logout(logout -> logout
                 .logoutUrl("/security/logout")
                 .addLogoutHandler((request, response, authentication) -> {
-                    // DB에서 RefreshToken 삭제
                     Cookie[] cookies = request.getCookies();
+
                     if (cookies != null) {
                         for (Cookie cookie : cookies) {
                             if ("refreshToken".equals(cookie.getName())) {
@@ -126,11 +136,19 @@ public class SecurityConfig {
                             }
                         }
                     }
-                    // accessToken, refreshToken 쿠키 삭제
+
                     ResponseCookie deletedAccess = ResponseCookie.from("accessToken", "")
-                            .httpOnly(true).path("/").maxAge(0).build();
+                            .httpOnly(true)
+                            .path("/")
+                            .maxAge(0)
+                            .build();
+
                     ResponseCookie deletedRefresh = ResponseCookie.from("refreshToken", "")
-                            .httpOnly(true).path("/").maxAge(0).build();
+                            .httpOnly(true)
+                            .path("/")
+                            .maxAge(0)
+                            .build();
+
                     response.addHeader("Set-Cookie", deletedAccess.toString());
                     response.addHeader("Set-Cookie", deletedRefresh.toString());
                 })
@@ -139,8 +157,9 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
-            // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+
+            // JWT 필터 추가
+            .addFilterBefore(jwtAuthenticationFilter(),
                              UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
