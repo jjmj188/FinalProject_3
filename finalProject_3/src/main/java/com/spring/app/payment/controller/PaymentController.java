@@ -1,5 +1,6 @@
 package com.spring.app.payment.controller;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -58,7 +59,12 @@ public class PaymentController {
             return "redirect:/security/login";
         }
 
-        ProductDTO product = productService.getProductDetailFull(productNo);
+        // 상품 상세 조회 (Map 파라미터 사용)
+        Map<String, Object> paraMap = new HashMap<>();
+        paraMap.put("productNo", productNo);
+        paraMap.put("memberEmail", buyerEmail);
+
+        ProductDTO product = productService.getProductDetailFull(paraMap);
         if (product == null) {
             return "redirect:/product/product_list";
         }

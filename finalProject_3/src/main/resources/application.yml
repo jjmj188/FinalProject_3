@@ -134,6 +134,6 @@ jwt:
 
 toss:
   payments:
-    client-key:
-    secret-key:
-    api-url: https://api.tosspayments.com/v2
+    client-key: test_ck_4yKeq5bgrpzZ5k20qP1p3GX0lzW6
+    secret-key: test_sk_Gv6LjeKD8aXjoNN5QYQkrwYxAdXy
+    api-url: https://api.tosspayments.com/v1

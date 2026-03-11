@@ -4,8 +4,8 @@
       lang="ko">
 <head>
     <link rel="stylesheet" th:href="@{/css/payment/checkout.css}">
-    <!-- 토스페이먼츠 SDK -->
-    <script src="https://js.tosspayments.com/v1/payment"></script>
+    <!-- 토스페이먼츠 SDK v2 -->
+    <script src="https://js.tosspayments.com/v2/standard"></script>
 </head>
 
 <body>
@@ -164,8 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const amount     = parseInt(document.getElementById('productPrice').value);
     const buyerEmail = document.getElementById('buyerEmail').value;
 
-    // 토스 결제 위젯 초기화
+    // 토스 SDK v2 초기화
     const tossPayments = TossPayments(clientKey);
+    // v2: payment() 메서드로 결제창 인스턴스 생성 (customerKey 필수)
+    const payment = tossPayments.payment({ customerKey: buyerEmail });
 
     // 결제 수단 라디오 버튼 이벤트
     const methodItems = document.querySelectorAll('.pay-method-item');
@@ -212,9 +214,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // 2) 토스 결제창 호출
-            tossPayments.requestPayment(tossMethod, {
-                amount: amount,
+            // 2) 토스 결제창 호출 (v2 방식: method를 파라미터 안에 포함)
+            payment.requestPayment({
+                method: tossMethod,
+                amount: {
+                    currency: 'KRW',
+                    value: amount
+                },
                 orderId: data.orderId,
                 orderName: productName,
                 customerEmail: buyerEmail,
