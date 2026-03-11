@@ -149,13 +149,13 @@ public class ProductController {
         return "product/product_list";
     }
 
-    @PreAuthorize("isAuthenticated()")
+    
     @GetMapping("/sell")
     public String sellPage() {
         return "product/sell";
     }
 
-    @PreAuthorize("isAuthenticated()")
+    
     @PostMapping("/sellRegister")
     @ResponseBody
     public Map<String, Object> sellRegister(
@@ -375,7 +375,7 @@ public class ProductController {
         return "product/product_detail";
     }
 
-    @PreAuthorize("isAuthenticated()")
+    
     @PostMapping("/wishlist/toggle")
     @ResponseBody
     public Map<String, Object> toggleWishlist(@RequestParam("productNo") Integer productNo,

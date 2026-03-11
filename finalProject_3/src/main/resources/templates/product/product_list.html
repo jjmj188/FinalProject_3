@@ -335,83 +335,77 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
 $(function () {
-	
-	const ctxPath = /*[[@{/}]]*/ "";
 
 	const $searchInput = $("#searchWord");
 	const $searchBtn = $("#searchBtn");
 	const $displayList = $("#displayList");
 
-	function moveLogin() {
-		alert("로그인이 필요합니다.");
-		location.href = /*[[@{/security/login}]]*/ "" + "?redirect=" + encodeURIComponent(location.pathname + location.search);
-	}
 
 	// ===============================
 	// 검색
 	// ===============================
 	window.searchBtnClick = function () {
-		const searchWord = $("#searchWord").val().trim();
-		const areaDong = $("#areaDong").val().trim();
-		const tradeAvailable = $("#tradeAvailable").is(":checked");
-		const parcelAvailable = $("#parcelAvailable").is(":checked");
-		const categoryNo = $("#categoryNo").val();
-		const sortType = $("#sortType").val();
-		const priceMin = $("#priceMin").val().trim();
-		const priceMax = $("#priceMax").val().trim();
-		const url = /*[[@{/product/product_list}]]*/ "";
+	const searchWord = $("#searchWord").val().trim();
+	const areaDong = $("#areaDong").val().trim();
+	const tradeAvailable = $("#tradeAvailable").is(":checked");
+	const parcelAvailable = $("#parcelAvailable").is(":checked");
+	const categoryNo = $("#categoryNo").val();
+	const sortType = $("#sortType").val();
+	const priceMin = $("#priceMin").val().trim();
+	const priceMax = $("#priceMax").val().trim();
+	const url = /*[[@{/product/product_list}]]*/ "";
 
-		const isSortChanged = sortType !== "" && sortType !== "latest";
+	const isSortChanged = sortType !== "" && sortType !== "latest";
 
-		if (searchWord === "" &&
-			areaDong === "" &&
-			!tradeAvailable &&
-			!parcelAvailable &&
-			categoryNo === "" &&
-			priceMin === "" &&
-			priceMax === "" &&
-			!isSortChanged) {
-			alert("검색어, 지역 또는 필터 조건을 선택하세요.");
-			$("#searchWord").focus();
-			return;
-		}
+	if (searchWord === "" &&
+		areaDong === "" &&
+		!tradeAvailable &&
+		!parcelAvailable &&
+		categoryNo === "" &&
+		priceMin === "" &&
+		priceMax === "" &&
+		!isSortChanged) {
+		alert("검색어, 지역 또는 필터 조건을 선택하세요.");
+		$("#searchWord").focus();
+		return;
+	}
 
-		const params = new URLSearchParams();
+	const params = new URLSearchParams();
 
-		if (searchWord !== "") params.append("searchWord", searchWord);
-		if (areaDong !== "") params.append("areaDong", areaDong);
-		if (tradeAvailable) params.append("tradeAvailable", "Y");
-		if (parcelAvailable) params.append("parcelAvailable", "Y");
-		if (categoryNo !== "") params.append("categoryNo", categoryNo);
-		if (sortType !== "") params.append("sortType", sortType);
-		if (priceMin !== "") params.append("priceMin", priceMin);
-		if (priceMax !== "") params.append("priceMax", priceMax);
+	if (searchWord !== "") params.append("searchWord", searchWord);
+	if (areaDong !== "") params.append("areaDong", areaDong);
+	if (tradeAvailable) params.append("tradeAvailable", "Y");
+	if (parcelAvailable) params.append("parcelAvailable", "Y");
+	if (categoryNo !== "") params.append("categoryNo", categoryNo);
+	if (sortType !== "") params.append("sortType", sortType);
+	if (priceMin !== "") params.append("priceMin", priceMin);
+	if (priceMax !== "") params.append("priceMax", priceMax);
 
-		location.href = url + "?" + params.toString();
-	};
+	location.href = url + "?" + params.toString();
+};
 
-	$("#applyFilterBtn").on("click", function () {
-		window.searchBtnClick();
-	});
+$("#applyFilterBtn").on("click", function () {
+	window.searchBtnClick();
+});
 
-	$("#resetFilterBtn").on("click", function () {
-		$("#tradeAvailable").prop("checked", false);
-		$("#parcelAvailable").prop("checked", false);
-		$("#categoryNo").val("");
-		$("#sortType").val("latest");
-		$("#priceMin").val("");
-		$("#priceMax").val("");
+$("#resetFilterBtn").on("click", function () {
+	$("#tradeAvailable").prop("checked", false);
+	$("#parcelAvailable").prop("checked", false);
+	$("#categoryNo").val("");
+	$("#sortType").val("latest");
+	$("#priceMin").val("");
+	$("#priceMax").val("");
 
-		const url = /*[[@{/product/product_list}]]*/ "";
-		const searchWord = $("#searchWord").val().trim();
-		const areaDong = $("#areaDong").val().trim();
+	const url = /*[[@{/product/product_list}]]*/ "";
+	const searchWord = $("#searchWord").val().trim();
+	const areaDong = $("#areaDong").val().trim();
 
-		const params = new URLSearchParams();
-		if (searchWord !== "") params.append("searchWord", searchWord);
-		if (areaDong !== "") params.append("areaDong", areaDong);
+	const params = new URLSearchParams();
+	if (searchWord !== "") params.append("searchWord", searchWord);
+	if (areaDong !== "") params.append("areaDong", areaDong);
 
-		location.href = params.toString() ? url + "?" + params.toString() : url;
-	});
+	location.href = params.toString() ? url + "?" + params.toString() : url;
+});
 
 	$displayList.hide();
 
@@ -564,6 +558,8 @@ $(function () {
 
 		minEl.addEventListener("blur", syncRangeActive);
 		maxEl.addEventListener("blur", syncRangeActive);
+
+		
 	}
 
 	// ===============================
@@ -1115,89 +1111,52 @@ $(function () {
 	// 하트 버튼
 	// ===============================
 	$(document).on("click", ".heart", function (e) {
-		e.preventDefault();
-		e.stopPropagation();
+	e.preventDefault();
+	e.stopPropagation();
 
-		const $btn = $(this);
+	const $btn = $(this);
+	const isLogin = String($btn.data("login")) === "true";
 
-		// 중복 클릭 방지
-		if ($btn.data("loading") === true) {
-			return;
-		}
+	if (!isLogin) {
+		alert("로그인이 필요합니다.");
+		location.href = "/finalProject_3/login/login";
+		return;
+	}
 
-		const isLoginRaw = $btn.attr("data-login");
-		const isLogin = String(isLoginRaw) === "true";
-		const productNo = $btn.attr("data-product-no");
+	const productNo = $btn.data("product-no");
 
-		console.log("찜 클릭");
-		console.log("isLogin =", isLoginRaw);
-		console.log("productNo =", productNo);
-
-		if (!isLogin) {
-			moveLogin();
-			return;
-		}
-
-		if (!productNo) {
-			alert("상품 번호를 찾을 수 없습니다.");
-			return;
-		}
-
-		$btn.data("loading", true);
-
-		$.ajax({
-			url: /*[[@{/product/wishlist/toggle}]]*/ "",
-			type: "post",
-			headers: {
-				"X-Requested-With": "XMLHttpRequest"
-			},
-			data: {
-				productNo: productNo
-			},
-			dataType: "json",
-			success: function (json) {
-				console.log("찜 성공 응답 =", json);
-
-				if (!json || !json.success) {
-					alert((json && json.message) ? json.message : "찜 처리에 실패했습니다.");
-					return;
-				}
-
-				const $icon = $btn.find("i");
-
-				if (json.wished) {
-					$btn.addClass("on");
-					$icon.removeClass("fa-regular").addClass("fa-solid");
-				}
-				else {
-					$btn.removeClass("on");
-					$icon.removeClass("fa-solid").addClass("fa-regular");
-				}
-			},
-			error: function (xhr, status, error) {
-				console.log("찜 AJAX ERROR");
-				console.log("status =", xhr.status);
-				console.log("responseText =", xhr.responseText);
-				console.log("error =", error);
-
-				if (xhr.status === 401) {
-					alert("로그인이 필요합니다.");
-					moveLogin();
-					return;
-				}
-
-				if (xhr.status === 403) {
-					alert("접근 권한이 없습니다.");
-					return;
-				}
-
-				alert("찜 처리 중 오류가 발생했습니다.");
-			},
-			complete: function () {
-				$btn.data("loading", false);
+	$.ajax({
+		url: /*[[@{/product/wishlist/toggle}]]*/ "",
+		type: "post",
+		data: { productNo: productNo },
+		dataType: "json",
+		success: function (json) {
+			if (!json.success) {
+				alert(json.message || "찜 처리에 실패했습니다.");
+				return;
 			}
-		});
+
+			const $icon = $btn.find("i");
+
+			if (json.wished) {
+				$btn.addClass("on");
+				$icon.removeClass("fa-regular").addClass("fa-solid");
+				alert("찜 성공");
+			} else {
+				$btn.removeClass("on");
+				$icon.removeClass("fa-solid").addClass("fa-regular");
+				alert("찜 취소");
+			}
+		},
+		error: function (request, status, error) {
+			console.log("찜 AJAX ERROR");
+			console.log("status =", request.status);
+			console.log("responseText =", request.responseText);
+			console.log("error =", error);
+			alert("찜 처리 중 오류가 발생했습니다.");
+		}
 	});
+});
 
 	// ===============================
 	// 초기 지역 라벨 복원
@@ -1209,7 +1168,7 @@ $(function () {
 			labelSpan.textContent = initialAreaDong;
 		}
 	}
-
+	
 	// ===============================
 	// 더보기
 	// ===============================
@@ -1246,10 +1205,9 @@ $(function () {
 		const regDate = p.regDate ? p.regDate : "";
 		const isLogin = /*[[${isLogin}]]*/ false;
 		const wished = !!p.wished;
-		const detailUrl = ctxPath + "product/product_detail/" + p.productNo;
 
 		return `
-			<a class="card" href="${detailUrl}">
+			<a class="card" href="/finalProject_3/product/product_detail/${p.productNo}">
 				<div class="thumb">
 					<span class="thumb-badge selling">판매중</span>
 					<button class="heart ${wished ? "on" : ""}"
@@ -1348,6 +1306,7 @@ $(function () {
 		loadMoreProducts();
 	});
 
+	// 첫 화면 상품 수가 12개 미만이면 더보기 숨김
 	if ($("#productGrid .card").length < pageSize) {
 		$loadMoreWrap.hide();
 	}
