@@ -88,6 +88,9 @@ public class MyAuthenticationSuccessHandler extends SavedRequestAwareAuthenticat
         response.addHeader("Set-Cookie", refreshCookie.toString());
         memberDAO.saveRefreshToken(userDetails.getUsername(), jwtToken.getRefreshToken());
 
+        // 마지막 로그인 일자 갱신
+        memberDAO.updateLastLoginDate(userDetails.getUsername());
+
         super.onAuthenticationSuccess(request, response, authentication);
     }
 }

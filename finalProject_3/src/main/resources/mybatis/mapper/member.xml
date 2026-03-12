@@ -23,39 +23,43 @@
 
     <insert id="insertMember" parameterType="com.spring.app.security.domain.MemberDTO">
 	    INSERT INTO MEMBER (
-	        EMAIL, USER_NO, PASSWORD, USER_NAME, NICKNAME, 
-	        PHONE, GENDER, BIRTH_DATE, 
+	        EMAIL, USER_NO, PASSWORD, USER_NAME, NICKNAME,
+	        PHONE, GENDER, BIRTH_DATE,
 	        POSTCODE, ADDRESS, DETAILADDRESS, EXTRAADDRESS,
-	        REG_DATE, STATUS, IDLE, SUSPENDED, 
+	        REG_DATE, LAST_PW_DATE,
+	        STATUS, IDLE, SUSPENDED,
 	        CASH_BALANCE, MANNER_TEMP, PROFILE_IMG
 	    ) VALUES (
-	        #{email}, 
-	        SEQ_MEMBER_NO.NEXTVAL, 
-	        #{password}, 
-	        #{userName}, 
-	        #{nickname}, 
-	        #{phone, jdbcType=VARCHAR}, 
-	        #{gender, jdbcType=VARCHAR}, 
-	        #{birthDate, jdbcType=VARCHAR}, 
-	        #{postcode},           #{address},            #{detailaddress},      #{extraaddress, jdbcType=VARCHAR},
-	        SYSDATE,               DEFAULT,                     DEFAULT,                     DEFAULT,                     DEFAULT,                     DEFAULT,                  #{profileImg, jdbcType=VARCHAR}
+	        #{email},
+	        SEQ_MEMBER_NO.NEXTVAL,
+	        #{password},
+	        #{userName},
+	        #{nickname},
+	        #{phone, jdbcType=VARCHAR},
+	        #{gender, jdbcType=VARCHAR},
+	        #{birthDate, jdbcType=VARCHAR},
+	        #{postcode}, #{address}, #{detailaddress}, #{extraaddress, jdbcType=VARCHAR},
+	        SYSDATE, SYSDATE,
+	        DEFAULT, DEFAULT, DEFAULT,
+	        DEFAULT, DEFAULT, #{profileImg, jdbcType=VARCHAR}
 	    )
 	</insert>
 
 	<select id="findByEmail" parameterType="String" resultType="com.spring.app.security.domain.MemberDTO">
-        SELECT 
-            EMAIL AS email, 
-            USER_NO AS userNo, 
-            PASSWORD AS password, 
-            USER_NAME AS userName, 
-            PHONE AS phone, 
-            GENDER AS gender, 
-            BIRTH_DATE AS birthDate, 
-            NICKNAME AS nickname, 
-            ADDRESS AS address, 
-            PROFILE_IMG AS profileImg
+        SELECT
+            EMAIL AS email,
+            USER_NO AS userNo,
+            PASSWORD AS password,
+            USER_NAME AS userName,
+            PHONE AS phone,
+            GENDER AS gender,
+            BIRTH_DATE AS birthDate,
+            NICKNAME AS nickname,
+            ADDRESS AS address,
+            PROFILE_IMG AS profileImg,
+            IDLE AS idle
         FROM MEMBER
-        WHERE EMAIL = #{email} AND STATUS = 0
+        WHERE EMAIL = #{email} AND STATUS = 1
     </select>
     
     <select id="findEmailByPhone" parameterType="String" resultType="String">
@@ -64,9 +68,67 @@
 	
 	<update id="updatePasswordByPhone" parameterType="java.util.Map">
 	    UPDATE member
-	    SET password = #{password}
+	    SET password = #{password},
+	        LAST_PW_DATE = SYSDATE
 	    WHERE phone = #{phone}
 	</update>
+
+	<update id="updateLastLoginDate" parameterType="String">
+	    UPDATE MEMBER
+	    SET LAST_LOGIN_DATE = SYSDATE
+	    WHERE EMAIL = #{email}
+	</update>
+
+	<!-- 휴면 대상 회원 → USER_DORMANT에 스냅샷 INSERT (중복 제외) -->
+	<insert id="moveMembersToUserDormant">
+	    INSERT INTO USER_DORMANT (
+	        EMAIL, DORMANT_DATE, PHONE, BIRTH_DATE, GENDER,
+	        USER_NAME, NICKNAME, ORIGINAL_REG_DATE, CASH_BALANCE, LAST_LOGIN_DATE
+	    )
+	    SELECT
+	        EMAIL, SYSDATE, PHONE, BIRTH_DATE, GENDER,
+	        USER_NAME, NICKNAME, REG_DATE, CASH_BALANCE, LAST_LOGIN_DATE
+	    FROM MEMBER
+	    WHERE IDLE = 0 AND STATUS = 1
+	    AND (
+	        (LAST_LOGIN_DATE IS NOT NULL AND LAST_LOGIN_DATE &lt; ADD_MONTHS(SYSDATE, -12))
+	        OR
+	        (LAST_LOGIN_DATE IS NULL AND REG_DATE &lt; ADD_MONTHS(SYSDATE, -12))
+	    )
+	    AND EMAIL NOT IN (SELECT EMAIL FROM USER_DORMANT)
+	</insert>
+
+	<!-- 휴면 대상 회원 IDLE = 1 로 업데이트 -->
+	<update id="setIdleForDormantMembers">
+	    UPDATE MEMBER
+	    SET IDLE = 1
+	    WHERE IDLE = 0 AND STATUS = 1
+	    AND (
+	        (LAST_LOGIN_DATE IS NOT NULL AND LAST_LOGIN_DATE &lt; ADD_MONTHS(SYSDATE, -12))
+	        OR
+	        (LAST_LOGIN_DATE IS NULL AND REG_DATE &lt; ADD_MONTHS(SYSDATE, -12))
+	    )
+	</update>
+
+	<!-- 휴면 여부 확인 (암호화된 전화번호로 조회) -->
+	<select id="checkIdlePhone" parameterType="String" resultType="int">
+	    SELECT COUNT(*)
+	    FROM MEMBER
+	    WHERE PHONE = #{phone} AND IDLE = 1
+	</select>
+
+	<!-- 휴면 해제: MEMBER.IDLE = 0 -->
+	<update id="reactivateMember" parameterType="String">
+	    UPDATE MEMBER
+	    SET IDLE = 0
+	    WHERE EMAIL = #{email}
+	</update>
+
+	<!-- 휴면 해제: USER_DORMANT 스냅샷 삭제 -->
+	<delete id="deleteFromUserDormant" parameterType="String">
+	    DELETE FROM USER_DORMANT
+	    WHERE EMAIL = #{email}
+	</delete>
 
     <!-- AUTHORITIES 테이블에서 권한 목록 조회 -->
     <select id="findAuthoritiesByEmail" parameterType="String" resultType="String">
