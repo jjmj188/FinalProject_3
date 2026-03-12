@@ -66,6 +66,34 @@ public class MemberDAO_imple implements MemberDAO {
         sqlsession.update("member.updateLastLoginDate", email);
     }
 
+    // 휴면 처리 배치
+    @Override
+    public void moveMembersToUserDormant() {
+        sqlsession.insert("member.moveMembersToUserDormant");
+    }
+
+    @Override
+    public void setIdleForDormantMembers() {
+        sqlsession.update("member.setIdleForDormantMembers");
+    }
+
+    // 휴면 계정 전화번호 확인
+    @Override
+    public int checkIdlePhone(String phone) {
+        return sqlsession.selectOne("member.checkIdlePhone", phone);
+    }
+
+    // 휴면 해제
+    @Override
+    public void reactivateMember(String email) {
+        sqlsession.update("member.reactivateMember", email);
+    }
+
+    @Override
+    public void deleteFromUserDormant(String email) {
+        sqlsession.delete("member.deleteFromUserDormant", email);
+    }
+
     // RefreshToken 저장/업데이트
     @Override
     public void saveRefreshToken(String email, String rtValue) {
