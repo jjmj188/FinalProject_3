@@ -87,6 +87,76 @@ public class MemberFindController {
         return map;
     }
 
+    // 4. 휴면 계정 해제용 SMS 발송
+    @ResponseBody
+    @PostMapping("/sendSmsForIdle")
+    public Map<String, Object> sendSmsForIdle(@RequestParam("phone") String phone, HttpSession session) {
+        Map<String, Object> map = new HashMap<>();
+
+        if (!memberService.isIdlePhone(phone)) {
+            map.put("success", false);
+            map.put("msg", "해당 번호로 등록된 휴면 계정이 없습니다.");
+            return map;
+        }
+
+        try {
+            Random rand = new Random();
+            StringBuilder numStr = new StringBuilder();
+            for (int i = 0; i < 6; i++) numStr.append(rand.nextInt(10));
+            String verificationCode = numStr.toString();
+
+            smsService.sendSms(phone, verificationCode);
+
+            session.setAttribute("smsIdleCode", verificationCode);
+            session.setAttribute("smsIdlePhone", phone);
+            session.setMaxInactiveInterval(3 * 60);
+
+            map.put("success", true);
+            map.put("msg", "인증번호가 발송되었습니다.");
+        } catch (Exception e) {
+            map.put("success", false);
+            map.put("msg", "문자 발송에 실패했습니다.");
+        }
+        return map;
+    }
+
+    // 5. 휴면 해제 처리 (인증번호 확인 후 IDLE=0, USER_DORMANT 삭제)
+    @ResponseBody
+    @PostMapping("/reactivateMember")
+    public Map<String, Object> reactivateMember(@RequestParam("phone") String phone,
+                                                 @RequestParam("code") String code,
+                                                 HttpSession session) {
+        Map<String, Object> map = new HashMap<>();
+        String sessionCode  = (String) session.getAttribute("smsIdleCode");
+        String sessionPhone = (String) session.getAttribute("smsIdlePhone");
+
+        if (sessionCode == null || !sessionCode.equals(code) || !phone.equals(sessionPhone)) {
+            map.put("success", false);
+            map.put("msg", "인증번호가 일치하지 않습니다.");
+            return map;
+        }
+
+        try {
+            String email = memberService.findEmailByPhone(phone);
+            if (email == null) {
+                map.put("success", false);
+                map.put("msg", "계정 정보를 찾을 수 없습니다.");
+                return map;
+            }
+
+            memberService.reactivateMember(email);
+            session.removeAttribute("smsIdleCode");
+            session.removeAttribute("smsIdlePhone");
+
+            map.put("success", true);
+            map.put("msg", "휴면 해제가 완료되었습니다. 다시 로그인해주세요.");
+        } catch (Exception e) {
+            map.put("success", false);
+            map.put("msg", "휴면 해제 중 오류가 발생했습니다.");
+        }
+        return map;
+    }
+
     // 3. 비밀번호 재설정 (새 비밀번호로 DB 업데이트)
     @ResponseBody
     @PostMapping("/resetPassword")

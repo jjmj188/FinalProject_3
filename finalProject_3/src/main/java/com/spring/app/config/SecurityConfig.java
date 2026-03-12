@@ -18,6 +18,7 @@ import com.spring.app.security.jwt.JwtAccessDeniedHandler;
 import com.spring.app.security.jwt.JwtAuthenticationEntryPoint;
 import com.spring.app.security.jwt.JwtAuthenticationFilter;
 import com.spring.app.security.jwt.JwtTokenProvider;
+import com.spring.app.security.loginfail.MyAuthenticationFailureHandler;
 import com.spring.app.security.loginsuccess.MyAuthenticationSuccessHandler;
 import com.spring.app.security.model.MemberDAO;
 
@@ -31,6 +32,9 @@ public class SecurityConfig {
 
     @Autowired
     private MyAuthenticationSuccessHandler successHandler;
+
+    @Autowired
+    private MyAuthenticationFailureHandler failureHandler;
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -108,7 +112,7 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .passwordParameter("password")
                 .successHandler(successHandler)
-                .failureUrl("/security/login?error=true")
+                .failureHandler(failureHandler)
                 .permitAll()
             )
             .logout(logout -> logout
