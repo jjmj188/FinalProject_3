@@ -60,6 +60,12 @@ public class MemberDAO_imple implements MemberDAO {
         return sqlsession.selectList("member.findAuthoritiesByEmail", email);
     }
 
+    // 마지막 로그인 일자 갱신
+    @Override
+    public void updateLastLoginDate(String email) {
+        sqlsession.update("member.updateLastLoginDate", email);
+    }
+
     // RefreshToken 저장/업데이트
     @Override
     public void saveRefreshToken(String email, String rtValue) {

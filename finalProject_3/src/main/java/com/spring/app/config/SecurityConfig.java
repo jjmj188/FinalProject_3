@@ -155,6 +155,7 @@ public class SecurityConfig {
                                  "/Highcharts-10.3.1/**",
                                  "/images/**",
                                  "/upload/**",
+                                 "/profile/**",
                                  "/jquery-ui-1.13.1.custom/**",
                                  "/js/**",
                                  "/smarteditor/**");

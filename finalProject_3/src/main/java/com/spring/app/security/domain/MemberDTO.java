@@ -32,6 +32,7 @@ public class MemberDTO {
     private double mannerTemp;
     private String profileImg;
     private MultipartFile attach;
+    private String defaultProfile; // 일러스트 선택 시 dicebear API URL
 
     // 권한 목록 (jwt_jpa_board 방식: AUTHORITIES 테이블에서 로드)
     private List<String> authorities;

@@ -28,6 +28,9 @@ public interface MemberDAO {
     // AUTHORITIES 테이블에서 권한 목록 조회
     List<String> findAuthoritiesByEmail(String email);
 
+    // 마지막 로그인 일자 갱신
+    void updateLastLoginDate(String email);
+
     // RefreshToken CRUD
     void saveRefreshToken(@org.apache.ibatis.annotations.Param("email") String email,
                           @org.apache.ibatis.annotations.Param("rtValue") String rtValue);
