@@ -146,23 +146,25 @@
 		</div>
 		
 		<!-- 거래상태 -->
-		<div class="pd-row">
-		  <div class="pd-label">거래상태</div>
-		  <div class="pd-value">
-		    <span class="pd-chip chip-sale-ing"
-		          th:if="${product.tradeStatus == '판매중'}">판매중</span>
-		
-		    <span class="pd-chip chip-sale-deal"
-		          th:if="${product.tradeStatus == '거래중'}">거래중</span>
-		
-		    <span class="pd-chip chip-sale-done"
-		          th:if="${product.tradeStatus == '판매완료'}">판매완료</span>
-		
-		    <span class="pd-chip"
-		          th:if="${product.tradeStatus != '판매중' and product.tradeStatus != '거래중' and product.tradeStatus != '판매완료'}"
-		          th:text="${product.tradeStatus}">거래상태</span>
-		  </div>
-		</div>
+<div class="pd-row">
+  <div class="pd-label">거래상태</div>
+  <div class="pd-value">
+
+    <span class="pd-chip chip-sale-ing"
+          th:if="${product.tradeStatus == '판매중'}">판매중</span>
+
+    <span class="pd-chip chip-sale-deal"
+          th:if="${product.tradeStatus == '예약중'}">예약중</span>
+
+    <span class="pd-chip chip-sale-done"
+          th:if="${product.tradeStatus == '판매완료'}">판매완료</span>
+
+    <span class="pd-chip"
+          th:if="${product.tradeStatus != '판매중' and product.tradeStatus != '예약중' and product.tradeStatus != '판매완료'}"
+          th:text="${product.tradeStatus}">거래상태</span>
+
+  </div>
+</div>
 
         <!-- 거래방법 -->
         <div class="pd-row">
