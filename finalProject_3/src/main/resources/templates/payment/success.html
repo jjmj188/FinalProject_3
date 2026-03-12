@@ -101,10 +101,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ transactionId: txnId })
             })
             .then(function(res) { return res.json(); })
-            .then(function(data) {
+			.then(function(data) {
                 if (data.success) {
                     alert('구매확인이 완료되었습니다!\n판매자에게 대금이 전달됩니다.');
-                    location.reload();
+                    // 🌟 새로고침 대신 상품 목록 페이지로 안전하게 이동시킵니다!
+                    location.href = contextPath + '/product/product_list'; 
                 } else {
                     alert(data.message || '구매확인 처리에 실패했습니다.');
                 }
