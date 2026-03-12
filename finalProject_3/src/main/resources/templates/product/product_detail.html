@@ -88,10 +88,12 @@
 
       <h1 class="pd-title" th:text="${product.productName}">상품이름</h1>
 
-      <div class="pd-price"
-           th:text="${#numbers.formatInteger(product.productPrice, 3, 'COMMA')} + '원'">
-        60,000원
-      </div>
+     <div class="pd-price"
+     th:text="${product.productPrice != null and product.productPrice > 0 
+               ? #numbers.formatInteger(product.productPrice, 1, 'COMMA') + '원' 
+               : '가격없음'}">
+  60,000원
+</div>
 
       <div class="pd-subline">
        <a th:href="@{/product/price_check(searchWord=${product.productName})}" aria-label="시세조회">시세조회</a>
@@ -166,21 +168,21 @@
   </div>
 </div>
 
-        <!-- 거래방법 -->
-        <div class="pd-row">
-          <div class="pd-label">거래방법</div>
-          <div class="pd-value">
-            <span class="pd-chip chip-method-meet"
-                  th:if="${product.tradeMethod == '직거래'}">직거래</span>
+       <!-- 거래방법 -->
+<div class="pd-row">
+  <div class="pd-label">거래방법</div>
+  <div class="pd-value">
+    <span class="pd-chip chip-method-meet"
+          th:if="${product.tradeMethod == '직거래'}">직거래</span>
 
-            <span class="pd-chip chip-method-ship"
-                  th:if="${product.tradeMethod == '택배거래'}">택배거래</span>
+    <span class="pd-chip chip-method-ship"
+          th:if="${product.tradeMethod == '택배'}">택배</span>
 
-            <span class="pd-chip"
-                  th:if="${product.tradeMethod != '직거래' and product.tradeMethod != '택배거래'}"
-                  th:text="${product.tradeMethod}">거래방법</span>
-          </div>
-        </div>
+    <span class="pd-chip"
+          th:if="${product.tradeMethod != '직거래' and product.tradeMethod != '택배'}"
+          th:text="${product.tradeMethod}">거래방법</span>
+  </div>
+</div>
 
         <!-- 거래 희망장소 -->
        <div class="pd-row">

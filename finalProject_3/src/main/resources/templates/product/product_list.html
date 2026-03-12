@@ -321,8 +321,7 @@
 
 							<div class="meta">
 
-								<span> <i class="fa-solid fa-location-dot"></i> <span
-									th:text="${p.placeName != null and !#strings.isEmpty(p.placeName) ? p.placeName : '택배거래'}">장소명</span>
+								<span th:text="${p.placeName != null and !#strings.isEmpty(p.placeName) ? p.placeName : '택배'}">장소명</span>
 								</span> <span> <i class="fa-regular fa-clock"></i> <span
 									class="time-ago"
 									th:attr="data-time=${#dates.format(p.regDate,'yyyy-MM-dd''T''HH:mm:ss')}">
