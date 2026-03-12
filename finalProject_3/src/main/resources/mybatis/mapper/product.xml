@@ -570,15 +570,16 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
 
 <!-- 최근 등록 상품 가격 통계 -->
 <select id="selectRecentProductPriceStats"
+        parameterType="hashMap"
         resultType="com.spring.app.product.domain.ProductPriceStatsDTO">
 
     SELECT
-        NVL(ROUND(AVG(NVL(PRODUCTS.PRODUCT_PRICE, 0))), 0) AS avgPrice,
-        NVL(MAX(NVL(PRODUCTS.PRODUCT_PRICE, 0)), 0) AS maxPrice,
-        NVL(MIN(NVL(PRODUCTS.PRODUCT_PRICE, 0)), 0) AS minPrice
+        COUNT(*) AS sampleCount,
+        NVL(ROUND(AVG(PRODUCTS.PRODUCT_PRICE)), 0) AS avgPrice,
+        NVL(MAX(PRODUCTS.PRODUCT_PRICE), 0) AS maxPrice,
+        NVL(MIN(PRODUCTS.PRODUCT_PRICE), 0) AS minPrice
     FROM PRODUCTS
-    WHERE PRODUCTS.TRADE_STATUS = '판매중'
-      AND PRODUCTS.REG_DATE >= SYSDATE - 7
+    WHERE 1 = 1
 
     <if test="searchWord != null and searchWord != ''">
         AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
@@ -603,6 +604,7 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
 
     <if test="freeOnly != null and freeOnly != ''">
         AND PRODUCTS.SALE_TYPE = '나눔'
+        AND NVL(PRODUCTS.PRODUCT_PRICE, 0) = 0
     </if>
 
     <if test="freeOnly == null or freeOnly == ''">
