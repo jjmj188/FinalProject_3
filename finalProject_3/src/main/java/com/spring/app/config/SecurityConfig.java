@@ -75,7 +75,9 @@ public class SecurityConfig {
                         "/mypage/**",
                         "/product/sell",
                         "/product/sellRegister",
-                        "/product/wishlist/**"
+                        "/product/wishlist/**",
+                        "/product/product_user_profile",
+                        "/payment/**"
                     ).authenticated()
                 
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
@@ -93,7 +95,6 @@ public class SecurityConfig {
                     "/product/price_check",
                     "/product/share",
                     "/product/product_detail/**",
-                    "/product/product_user_profile",
                     "/product/wordSearchShow",
                     "/actuator/**",
                     "/adminupload/**"
@@ -154,6 +155,7 @@ public class SecurityConfig {
                                  "/Highcharts-10.3.1/**",
                                  "/images/**",
                                  "/upload/**",
+                                 "/profile/**",
                                  "/jquery-ui-1.13.1.custom/**",
                                  "/js/**",
                                  "/smarteditor/**");

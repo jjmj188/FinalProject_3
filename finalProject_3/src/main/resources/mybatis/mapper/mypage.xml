@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mypage">
+
+    <!-- 로그인한 사용자의 알림 메시지 목록 조회 (email 기준) -->
+    <select id="getNotifications" parameterType="String" resultType="com.spring.app.mypage.domain.NotificationDTO">
+        SELECT
+            n.NOTI_NO    AS notiNo,
+            n.USER_NO    AS userNo,
+            n.NOTI_TYPE  AS notiType,
+            n.TITLE      AS title,
+            n.MESSAGE    AS message,
+            TO_CHAR(n.REG_DATE, 'YYYY-MM-DD HH24:MI') AS regDate,
+            n.READ_STATUS AS readStatus
+        FROM WEB_NOTIFICATION n
+        JOIN MEMBER m ON n.USER_NO = m.USER_NO
+        WHERE m.EMAIL = #{email}
+        ORDER BY n.REG_DATE DESC
+    </select>
+
+    <!-- 미읽음 알림 개수 -->
+    <select id="getUnreadCount" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM WEB_NOTIFICATION n
+        JOIN MEMBER m ON n.USER_NO = m.USER_NO
+        WHERE m.EMAIL = #{email} AND n.READ_STATUS = 0
+    </select>
+
+    <!-- 미읽음 알림 미리보기 (최대 3개) -->
+    <select id="getUnreadPreview" parameterType="String" resultType="com.spring.app.mypage.domain.NotificationDTO">
+        SELECT *
+        FROM (
+            SELECT
+                n.NOTI_NO    AS notiNo,
+                n.USER_NO    AS userNo,
+                n.NOTI_TYPE  AS notiType,
+                n.TITLE      AS title,
+                n.MESSAGE    AS message,
+                TO_CHAR(n.REG_DATE, 'YYYY-MM-DD HH24:MI') AS regDate,
+                n.READ_STATUS AS readStatus
+            FROM WEB_NOTIFICATION n
+            JOIN MEMBER m ON n.USER_NO = m.USER_NO
+            WHERE m.EMAIL = #{email} AND n.READ_STATUS = 0
+            ORDER BY n.REG_DATE DESC
+        )
+        WHERE ROWNUM &lt;= 3
+    </select>
+
+</mapper>

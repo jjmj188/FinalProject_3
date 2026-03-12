@@ -9,6 +9,7 @@ import lombok.ToString;
 @ToString
 public class ChatRoomDTO {
     private String roomId;          // 채팅방 고유 ID
+    private String nickname;
     private int productNo;          // 상품 번호
     private String sellerEmail;     // 판매자 이메일
     private String buyerEmail;      // 구매자 이메일

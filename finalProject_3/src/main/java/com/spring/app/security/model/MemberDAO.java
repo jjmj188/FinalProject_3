@@ -28,6 +28,20 @@ public interface MemberDAO {
     // AUTHORITIES 테이블에서 권한 목록 조회
     List<String> findAuthoritiesByEmail(String email);
 
+    // 마지막 로그인 일자 갱신
+    void updateLastLoginDate(String email);
+
+    // 휴면 처리 배치
+    void moveMembersToUserDormant();
+    void setIdleForDormantMembers();
+
+    // 휴면 계정 여부 확인 (암호화된 전화번호)
+    int checkIdlePhone(String phone);
+
+    // 휴면 해제
+    void reactivateMember(String email);
+    void deleteFromUserDormant(String email);
+
     // RefreshToken CRUD
     void saveRefreshToken(@org.apache.ibatis.annotations.Param("email") String email,
                           @org.apache.ibatis.annotations.Param("rtValue") String rtValue);

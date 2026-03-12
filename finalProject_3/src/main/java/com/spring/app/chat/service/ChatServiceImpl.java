@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -46,4 +48,15 @@ public class ChatServiceImpl implements ChatService {
         int result = chatMapper.deleteChatRoom(roomId);
         return result > 0;
     }
+    
+
+	 // 매퍼(DAO)를 호출하여 상품 상태를 업데이트하는 메서드 추가
+	 public void updateTradeStatus(int productNo, String status) {
+	     Map<String, Object> map = new HashMap<>();
+	     map.put("productNo", productNo);
+	     map.put("status", status);
+	     
+	     // 이전에 Mapper XML에 추가했던 updateTradeStatus 쿼리를 실행합니다.
+	     chatMapper.updateTradeStatus(map); 
+	 }
 }

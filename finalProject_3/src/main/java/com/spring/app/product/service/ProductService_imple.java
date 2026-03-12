@@ -113,25 +113,24 @@ public class ProductService_imple implements ProductService {
     
    // 상품상세페이지 (전체 조회: 기본 + 이미지 + 옵션 + 위치)
     @Override
-    @Transactional(readOnly = true)
-    public ProductDTO getProductDetailFull(int productNo) {
+    public ProductDTO getProductDetailFull(Map<String, Object> paraMap) {
+        ProductDTO productDto = pdao.selectProductDetail(paraMap);
 
-        // 1) 기본정보
-        ProductDTO productDTO = pdao.selectProductDetail(productNo);  
-        if (productDTO == null) {
+        if (productDto == null) {
             return null;
         }
 
-        // 2) 이미지
-        productDTO.setImageList(pdao.selectProductImages(productNo)); 
+        int productNo = productDto.getProductNo();
 
-        // 3) 배송옵션
-        productDTO.setShippingOptionList(pdao.selectShippingOption(productNo)); 
+        List<ProductImageDTO> imageList = pdao.selectProductImages(productNo);
+        List<ProductShippingOptionDTO> shippingOptionList = pdao.selectShippingOption(productNo);
+        List<ProductMeetLocationDTO> meetLocationList = pdao.selectMeetLocation(productNo);
 
-        // 4) 거래위치
-        productDTO.setMeetLocationList(pdao.selectMeetLocation(productNo)); 
+        productDto.setImageList(imageList);
+        productDto.setShippingOptionList(shippingOptionList);
+        productDto.setMeetLocationList(meetLocationList);
 
-        return productDTO;
+        return productDto;
     }
     
     // 비슷한 거래물품
@@ -327,6 +326,22 @@ public class ProductService_imple implements ProductService {
     @Override
     public List<ProductDTO> selectPriceCheckProductList(Map<String, Object> paraMap) {
         return pdao.selectPriceCheckProductList(paraMap);
+    }
+
+	//판매자정보
+    @Override
+    public ProductDTO selectSellerProfileByProductNo(int productNo) {
+        return pdao.selectSellerProfileByProductNo(productNo);
+    }
+
+    @Override
+    public List<ProductDTO> selectSellerProductsByProductNo(Map<String, Object> paraMap) {
+        return pdao.selectSellerProductsByProductNo(paraMap);
+    }
+
+    @Override
+    public int selectSellerProductCountByProductNo(int productNo) {
+        return pdao.selectSellerProductCountByProductNo(productNo);
     }
     
     

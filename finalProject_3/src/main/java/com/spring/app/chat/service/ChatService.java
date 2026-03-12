@@ -12,4 +12,6 @@ public interface ChatService {
     
 	// 나가기 메서드 선언
 	boolean leaveChatRoom(String roomId);
+
+	void updateTradeStatus(int productNo, String string);
 }

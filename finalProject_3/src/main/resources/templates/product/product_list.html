@@ -173,16 +173,22 @@
 							<div class="fg-title">가격</div>
 
 							<div class="price-pills" id="pricePills" aria-label="가격 빠른선택">
-								<button class="pill" type="button" data-max="5000">
-									<span>5,000원 이하</span><span class="chev">›</span>
-								</button>
-								<button class="pill" type="button" data-max="10000">
-									<span>10,000원 이하</span><span class="chev">›</span>
-								</button>
-								<button class="pill" type="button" data-max="20000">
-									<span>20,000원 이하</span><span class="chev">›</span>
-								</button>
-							</div>
+	<button class="pill" type="button" data-max="5000">
+		<span>5,000원 이하</span><span class="chev">›</span>
+	</button>
+	<button class="pill" type="button" data-max="10000">
+		<span>10,000원 이하</span><span class="chev">›</span>
+	</button>
+	<button class="pill" type="button" data-max="20000">
+		<span>20,000원 이하</span><span class="chev">›</span>
+	</button>
+	<button class="pill" type="button" data-free="Y">
+		<span>무료나눔</span><span class="chev">›</span>
+	</button>
+</div>
+
+<input type="hidden" id="freeOnly" name="freeOnly"
+       th:value="${param.freeOnly != null ? param.freeOnly[0] : ''}" />
 
 							<div class="range-row" aria-label="가격 범위">
 								<div class="price-input">
@@ -331,7 +337,6 @@
 			</section>
 		</section>
 	</main>
-
 <script th:inline="javascript">
 /*<![CDATA[*/
 $(function () {
@@ -340,72 +345,81 @@ $(function () {
 	const $searchBtn = $("#searchBtn");
 	const $displayList = $("#displayList");
 
-
 	// ===============================
 	// 검색
 	// ===============================
 	window.searchBtnClick = function () {
-	const searchWord = $("#searchWord").val().trim();
-	const areaDong = $("#areaDong").val().trim();
-	const tradeAvailable = $("#tradeAvailable").is(":checked");
-	const parcelAvailable = $("#parcelAvailable").is(":checked");
-	const categoryNo = $("#categoryNo").val();
-	const sortType = $("#sortType").val();
-	const priceMin = $("#priceMin").val().trim();
-	const priceMax = $("#priceMax").val().trim();
-	const url = /*[[@{/product/product_list}]]*/ "";
+		const searchWord = $("#searchWord").val().trim();
+		const areaDong = $("#areaDong").val().trim();
+		const tradeAvailable = $("#tradeAvailable").is(":checked");
+		const parcelAvailable = $("#parcelAvailable").is(":checked");
+		const categoryNo = $("#categoryNo").val();
+		const sortType = $("#sortType").val();
+		const priceMin = $("#priceMin").val().trim();
+		const priceMax = $("#priceMax").val().trim();
+		const freeOnly = $("#freeOnly").val().trim();
+		const url = /*[[@{/product/product_list}]]*/ "";
 
-	const isSortChanged = sortType !== "" && sortType !== "latest";
+		const isSortChanged = sortType !== "" && sortType !== "latest";
 
-	if (searchWord === "" &&
-		areaDong === "" &&
-		!tradeAvailable &&
-		!parcelAvailable &&
-		categoryNo === "" &&
-		priceMin === "" &&
-		priceMax === "" &&
-		!isSortChanged) {
-		alert("검색어, 지역 또는 필터 조건을 선택하세요.");
-		$("#searchWord").focus();
-		return;
-	}
+		if (searchWord === "" &&
+			areaDong === "" &&
+			!tradeAvailable &&
+			!parcelAvailable &&
+			categoryNo === "" &&
+			priceMin === "" &&
+			priceMax === "" &&
+			freeOnly === "" &&
+			!isSortChanged) {
+			alert("검색어, 지역 또는 필터 조건을 선택하세요.");
+			$("#searchWord").focus();
+			return;
+		}
 
-	const params = new URLSearchParams();
+		const params = new URLSearchParams();
 
-	if (searchWord !== "") params.append("searchWord", searchWord);
-	if (areaDong !== "") params.append("areaDong", areaDong);
-	if (tradeAvailable) params.append("tradeAvailable", "Y");
-	if (parcelAvailable) params.append("parcelAvailable", "Y");
-	if (categoryNo !== "") params.append("categoryNo", categoryNo);
-	if (sortType !== "") params.append("sortType", sortType);
-	if (priceMin !== "") params.append("priceMin", priceMin);
-	if (priceMax !== "") params.append("priceMax", priceMax);
+		if (searchWord !== "") params.append("searchWord", searchWord);
+		if (areaDong !== "") params.append("areaDong", areaDong);
+		if (tradeAvailable) params.append("tradeAvailable", "Y");
+		if (parcelAvailable) params.append("parcelAvailable", "Y");
+		if (categoryNo !== "") params.append("categoryNo", categoryNo);
+		if (sortType !== "") params.append("sortType", sortType);
+		if (priceMin !== "" && freeOnly === "") params.append("priceMin", priceMin);
+		if (priceMax !== "" && freeOnly === "") params.append("priceMax", priceMax);
+		if (freeOnly !== "") params.append("freeOnly", freeOnly);
 
-	location.href = url + "?" + params.toString();
-};
+		location.href = url + "?" + params.toString();
+	};
 
-$("#applyFilterBtn").on("click", function () {
-	window.searchBtnClick();
-});
+	$("#applyFilterBtn").on("click", function () {
+		window.searchBtnClick();
+	});
 
-$("#resetFilterBtn").on("click", function () {
-	$("#tradeAvailable").prop("checked", false);
-	$("#parcelAvailable").prop("checked", false);
-	$("#categoryNo").val("");
-	$("#sortType").val("latest");
-	$("#priceMin").val("");
-	$("#priceMax").val("");
+	$("#resetFilterBtn").on("click", function () {
+		$("#tradeAvailable").prop("checked", false);
+		$("#parcelAvailable").prop("checked", false);
+		$("#categoryNo").val("");
+		$("#sortType").val("latest");
+		$("#priceMin").val("");
+		$("#priceMax").val("");
+		$("#freeOnly").val("");
+		$("#pricePills .pill").removeClass("is-active");
 
-	const url = /*[[@{/product/product_list}]]*/ "";
-	const searchWord = $("#searchWord").val().trim();
-	const areaDong = $("#areaDong").val().trim();
+		const rangeRow = document.querySelector(".range-row");
+		if (rangeRow) {
+			rangeRow.classList.remove("is-active");
+		}
 
-	const params = new URLSearchParams();
-	if (searchWord !== "") params.append("searchWord", searchWord);
-	if (areaDong !== "") params.append("areaDong", areaDong);
+		const url = /*[[@{/product/product_list}]]*/ "";
+		const searchWord = $("#searchWord").val().trim();
+		const areaDong = $("#areaDong").val().trim();
 
-	location.href = params.toString() ? url + "?" + params.toString() : url;
-});
+		const params = new URLSearchParams();
+		if (searchWord !== "") params.append("searchWord", searchWord);
+		if (areaDong !== "") params.append("areaDong", areaDong);
+
+		location.href = params.toString() ? url + "?" + params.toString() : url;
+	});
 
 	$displayList.hide();
 
@@ -510,8 +524,10 @@ $("#resetFilterBtn").on("click", function () {
 	const minEl = document.getElementById("priceMin");
 	const maxEl = document.getElementById("priceMax");
 	const rangeRow = document.querySelector(".range-row");
+	const freeOnlyEl = document.getElementById("freeOnly");
 
-	if (pillsWrap && minEl && maxEl && rangeRow) {
+	if (pillsWrap && minEl && maxEl && rangeRow && freeOnlyEl) {
+
 		function clearPillActive() {
 			pills.forEach((b) => b.classList.remove("is-active"));
 		}
@@ -533,16 +549,28 @@ $("#resetFilterBtn").on("click", function () {
 			clearPillActive();
 			btn.classList.add("is-active");
 			clearRangeValues();
+			freeOnlyEl.value = "";
+
+			const isFree = btn.dataset.free === "Y";
+			if (isFree) {
+				freeOnlyEl.value = "Y";
+				minEl.value = "";
+				maxEl.value = "";
+				setRangeActive(false);
+				return;
+			}
 
 			const max = btn.dataset.max ? Number(btn.dataset.max) : null;
 			if (max !== null && !Number.isNaN(max)) {
 				minEl.value = "";
 				maxEl.value = max;
+				setRangeActive(true);
 			}
 		});
 
 		function onRangeIntent() {
 			clearPillActive();
+			freeOnlyEl.value = "";
 			setRangeActive(true);
 		}
 
@@ -559,7 +587,34 @@ $("#resetFilterBtn").on("click", function () {
 		minEl.addEventListener("blur", syncRangeActive);
 		maxEl.addEventListener("blur", syncRangeActive);
 
-		
+		(function syncPricePillState() {
+			const freeOnly = freeOnlyEl.value.trim();
+			const priceMin = minEl.value.trim();
+			const priceMax = maxEl.value.trim();
+
+			clearPillActive();
+
+			if (freeOnly === "Y") {
+				const freeBtn = pillsWrap.querySelector('.pill[data-free="Y"]');
+				if (freeBtn) freeBtn.classList.add("is-active");
+				setRangeActive(false);
+				return;
+			}
+
+			const quickBtn = pillsWrap.querySelector(`.pill[data-max="${priceMax}"]`);
+			if (priceMin === "" && priceMax !== "" && quickBtn) {
+				quickBtn.classList.add("is-active");
+				setRangeActive(false);
+				return;
+			}
+
+			if (priceMin !== "" || priceMax !== "") {
+				setRangeActive(true);
+			}
+			else {
+				setRangeActive(false);
+			}
+		})();
 	}
 
 	// ===============================
@@ -1111,52 +1166,52 @@ $("#resetFilterBtn").on("click", function () {
 	// 하트 버튼
 	// ===============================
 	$(document).on("click", ".heart", function (e) {
-	e.preventDefault();
-	e.stopPropagation();
+		e.preventDefault();
+		e.stopPropagation();
 
-	const $btn = $(this);
-	const isLogin = String($btn.data("login")) === "true";
+		const $btn = $(this);
+		const isLogin = String($btn.data("login")) === "true";
 
-	if (!isLogin) {
-		alert("로그인이 필요합니다.");
-		location.href = "/finalProject_3/login/login";
-		return;
-	}
-
-	const productNo = $btn.data("product-no");
-
-	$.ajax({
-		url: /*[[@{/product/wishlist/toggle}]]*/ "",
-		type: "post",
-		data: { productNo: productNo },
-		dataType: "json",
-		success: function (json) {
-			if (!json.success) {
-				alert(json.message || "찜 처리에 실패했습니다.");
-				return;
-			}
-
-			const $icon = $btn.find("i");
-
-			if (json.wished) {
-				$btn.addClass("on");
-				$icon.removeClass("fa-regular").addClass("fa-solid");
-				alert("찜 성공");
-			} else {
-				$btn.removeClass("on");
-				$icon.removeClass("fa-solid").addClass("fa-regular");
-				alert("찜 취소");
-			}
-		},
-		error: function (request, status, error) {
-			console.log("찜 AJAX ERROR");
-			console.log("status =", request.status);
-			console.log("responseText =", request.responseText);
-			console.log("error =", error);
-			alert("찜 처리 중 오류가 발생했습니다.");
+		if (!isLogin) {
+			alert("로그인이 필요합니다.");
+			location.href = "/finalProject_3/login/login";
+			return;
 		}
+
+		const productNo = $btn.data("product-no");
+
+		$.ajax({
+			url: /*[[@{/product/wishlist/toggle}]]*/ "",
+			type: "post",
+			data: { productNo: productNo },
+			dataType: "json",
+			success: function (json) {
+				if (!json.success) {
+					alert(json.message || "찜 처리에 실패했습니다.");
+					return;
+				}
+
+				const $icon = $btn.find("i");
+
+				if (json.wished) {
+					$btn.addClass("on");
+					$icon.removeClass("fa-regular").addClass("fa-solid");
+					alert("찜 성공");
+				} else {
+					$btn.removeClass("on");
+					$icon.removeClass("fa-solid").addClass("fa-regular");
+					alert("찜 취소");
+				}
+			},
+			error: function (request, status, error) {
+				console.log("찜 AJAX ERROR");
+				console.log("status =", request.status);
+				console.log("responseText =", request.responseText);
+				console.log("error =", error);
+				alert("찜 처리 중 오류가 발생했습니다.");
+			}
+		});
 	});
-});
 
 	// ===============================
 	// 초기 지역 라벨 복원
@@ -1168,7 +1223,7 @@ $("#resetFilterBtn").on("click", function () {
 			labelSpan.textContent = initialAreaDong;
 		}
 	}
-	
+
 	// ===============================
 	// 더보기
 	// ===============================
@@ -1209,7 +1264,9 @@ $("#resetFilterBtn").on("click", function () {
 		return `
 			<a class="card" href="/finalProject_3/product/product_detail/${p.productNo}">
 				<div class="thumb">
-					<span class="thumb-badge selling">판매중</span>
+					<span class="thumb-badge ${p.saleType === "나눔" ? "free" : "selling"}">
+						${p.saleType === "나눔" ? "무료나눔" : "판매중"}
+					</span>
 					<button class="heart ${wished ? "on" : ""}"
 					        type="button"
 					        aria-label="찜"
@@ -1255,6 +1312,7 @@ $("#resetFilterBtn").on("click", function () {
 		const sortType = $("#sortType").val();
 		const priceMin = $("#priceMin").val().trim();
 		const priceMax = $("#priceMax").val().trim();
+		const freeOnly = $("#freeOnly").val().trim();
 
 		$loadMoreBtn.prop("disabled", true).text("불러오는 중...");
 
@@ -1269,8 +1327,9 @@ $("#resetFilterBtn").on("click", function () {
 				parcelAvailable: parcelAvailable,
 				categoryNo: categoryNo,
 				sortType: sortType,
-				priceMin: priceMin,
-				priceMax: priceMax,
+				priceMin: freeOnly === "" ? priceMin : "",
+				priceMax: freeOnly === "" ? priceMax : "",
+				freeOnly: freeOnly,
 				page: currentPage,
 				size: pageSize
 			},

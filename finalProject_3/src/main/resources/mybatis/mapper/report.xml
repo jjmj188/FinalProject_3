@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.chat.model.ReportDAO">
+
+    <select id="findOtherUserByRoomId" resultType="String">
+        SELECT CASE 
+                   WHEN SELLER_EMAIL = #{myEmail} THEN BUYER_EMAIL
+                   ELSE SELLER_EMAIL 
+               END
+        FROM CHAT_ROOM
+        WHERE ROOM_ID = #{roomId}
+    </select>
+
+    <select id="findTypeIdByName" parameterType="String" resultType="int">
+        SELECT TYPE_ID 
+        FROM REPORT_TYPES 
+        WHERE TYPE_NAME = #{typeName}
+    </select>
+
+    <insert id="insertReport" parameterType="com.spring.app.chat.domain.ReportDTO">
+        INSERT INTO REPORTS (
+            REPORT_ID, 
+            REPORTER_EMAIL, 
+            TARGET_EMAIL, 
+            TYPE_ID,
+            ROOM_ID, 
+            NOSQL_MSG_KEY, 
+            REPORT_DETAIL, 
+            REPORT_STATUS, 
+            REPORT_DATE
+        ) VALUES (
+            SEQ_REPORT_ID.NEXTVAL, 
+            #{reporterEmail}, 
+            #{targetEmail}, 
+            #{typeId},
+            #{roomId, jdbcType=VARCHAR}, 
+            #{nosqlMsgKey, jdbcType=VARCHAR}, 
+            #{reportContent}, 
+            '접수', 
+            SYSDATE
+        )
+    </insert>
+
+</mapper>

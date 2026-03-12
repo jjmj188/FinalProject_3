@@ -124,7 +124,7 @@
         .msg-wrapper { display: flex; align-items: flex-end; gap: 5px; margin-bottom: 5px; }
         .msg-wrapper.mine { justify-content: flex-end; }
         .msg-wrapper.other { justify-content: flex-start; }
-        .message { max-width: 70%; padding: 10px 14px; border-radius: 20px; font-size: 14px; word-break: break-all; }
+        .message { max-width: 70%; padding: 10px 14px; border-radius: 20px; font-size: 14px; word-break: break-all; white-space: pre-wrap;}
         .msg-mine { background: #222; color: #fff; border-bottom-right-radius: 4px; }
         .msg-other { background: #f2f2f2; color: #222; border-bottom-left-radius: 4px; }
         .msg-time { font-size: 11px; color: #999; margin-bottom: 2px; }
@@ -233,8 +233,10 @@
                     <button class="header-btn" onclick="closeReportModal()">✕</button>
                 </div>
                 <div class="report-content">
-                    <div class="type-detail-box">신고 유형 상세 <span>⌵</span></div>
-                    <textarea id="reportText" placeholder="신고 사유를 입력해주세요. (최대 150자)" maxlength="150" oninput="updateCharCount(this)"></textarea>
+    				<select id="subCategory" class="form-control" style="padding: 15px; background: #f5f5f5; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: none; width: 100%; outline: none;">
+        				</select>
+    
+   			 		<textarea id="reportText" placeholder="신고 사유를 자세히 적어주세요. (최대 150자)" maxlength="150" oninput="updateCharCount(this)"></textarea>
                     <div class="char-count"><span id="currentCharCount">0</span>/150</div>
                     
                     <div class="photo-upload-section">
@@ -245,6 +247,30 @@
                         </div>
                     </div>
                     <button class="btn-submit-report" onclick="submitReport()">신고하기</button>
+                </div>
+            </div>
+        </div>
+        <div id="reserveModal" class="report-modal">
+            <div style="width:100%; height:100%; display:flex; flex-direction:column;">
+                <div class="report-header">
+                    <button class="header-btn" onclick="closeReserveModal()">✕</button>
+                    <h4>예약 잡기</h4>
+                    <div style="width:24px;"></div>
+                </div>
+                <div class="report-notice">
+                    예약 일시와 장소를 확정하면 채팅방에 안내 메시지가 전송되며, 상품 상태가 '예약중'으로 자동 변경됩니다.
+                </div>
+                <div class="report-content" style="gap: 15px;">
+                    <div style="font-size: 14px; font-weight: bold; color: #333;">약속 일시</div>
+                    <input type="datetime-local" id="reserveDate" style="padding: 15px; background: #f5f5f5; border: none; border-radius: 8px; outline: none; width: 100%; font-size: 14px; box-sizing: border-box;">
+
+                    <div style="font-size: 14px; font-weight: bold; color: #333;">만날 장소</div>
+                    <input type="text" id="reserveLocation" placeholder="예) 강남역 1번 출구 앞" style="padding: 15px; background: #f5f5f5; border: none; border-radius: 8px; outline: none; width: 100%; font-size: 14px; box-sizing: border-box;">
+
+                    <div style="font-size: 14px; font-weight: bold; color: #333;">최종 거래 가격 (원)</div>
+                    <input type="number" id="reservePrice" placeholder="예) 50000" style="padding: 15px; background: #f5f5f5; border: none; border-radius: 8px; outline: none; width: 100%; font-size: 14px; box-sizing: border-box;">
+
+                    <button class="btn-submit-report" style="margin-top: 20px;" onclick="submitReserve()">예약 확정 및 메시지 전송</button>
                 </div>
             </div>
         </div>
@@ -294,7 +320,8 @@
                 .then(r => r.json())
                 .then(data => { if(data.success) window.renderRoomList(data.roomList); });
         };
-
+		
+        
         window.renderRoomList = function(roomList) {
             const ul = document.getElementById('roomListArea');
             ul.innerHTML = ''; 
@@ -307,24 +334,27 @@
                 // ★ 수정됨: 클릭할 때 가격(productPrice)과 상태(tradeStatus)도 같이 넘겨줍니다!
                 li.onclick = () => window.openChatRoom(
                     room.roomId, 
-                    room.otherUserEmail, 
+                    room.nickname, 
                     room.productName, 
                     room.productImgUrl, 
                     room.productPrice, // 추가됨
-                    room.tradeStatus   // 추가됨
+                    room.tradeStatus,   // 추가됨
+                    room.sellerEmail,  // 추가됨
+                    room.productNo
                 );
                 
                 li.innerHTML = `
-                    <div style="font-weight:bold; margin-bottom:5px;">${room.otherUserEmail}</div>
+                    <div style="font-weight:bold; margin-bottom:5px;">${room.nickname}</div>
                     <div style="font-size:13px; color:#666;">[${room.productName}] ${room.lastMessage || '대화를 시작하세요.'}</div>
                 `;
                 ul.appendChild(li);
             });
         };
 
-        // ★ 수정됨: 매개변수로 price, status 추가
-        window.openChatRoom = function(roomId, targetUser, productName, imgUrl, price, status) {
+     // ★ 매개변수 맨 뒤에 sellerEmail, productNo 가 추가되었습니다.
+        window.openChatRoom = function(roomId, targetUser, productName, imgUrl, price, status, sellerEmail, productNo) {
             currentRoomId = roomId;
+            currentProductNo = productNo; // ★ 예약 확정을 위해 현재 상품번호를 전역 변수에 저장합니다.
             document.getElementById('chatMainArea').style.visibility = 'visible';
             
             document.getElementById('currentRoomTitle').innerText = targetUser;
@@ -338,7 +368,7 @@
                 bannerImg.src = 'https://via.placeholder.com/50?text=No+Image';
             }
 
-            // ★ 추가됨: 가격 세팅 (숫자면 3자리마다 콤마 찍고 '원' 붙이기)
+            // 가격 세팅 (숫자면 3자리마다 콤마 찍고 '원' 붙이기)
             const priceEl = document.getElementById('bannerPrice');
             if(price !== undefined && price !== null) {
                 priceEl.innerText = price.toLocaleString() + '원';
@@ -346,11 +376,11 @@
                 priceEl.innerText = '가격 정보 없음';
             }
 
-            // ★ 추가됨: 판매상태 세팅
+            // 판매상태 세팅
             const statusEl = document.getElementById('bannerStatus');
             statusEl.innerText = status ? status : '상태 모름';
             
-            // 상태에 따라 뱃지 색상을 바꾸고 싶다면 이런 디테일도 가능합니다!
+            // 상태에 따라 뱃지 색상을 바꾸기
             if(status === '판매완료') {
                 statusEl.style.background = '#666';
                 statusEl.style.color = '#fff';
@@ -360,6 +390,15 @@
             } else {
                 statusEl.style.background = '#fff';
                 statusEl.style.color = '#222';
+            }
+
+            // ★ 추가된 핵심 로직: 예약 버튼 노출 조건 
+            // 현재 로그인한 사람(currentUserEmail)이 판매자(sellerEmail)와 똑같고, 상품 상태가 '판매중'일 때만 예약버튼이 보입니다.
+            const btnReserve = document.querySelector('.btn-reserve');
+            if (currentUserEmail === sellerEmail && status === '판매중') {
+                btnReserve.style.display = 'block';
+            } else {
+                btnReserve.style.display = 'none';
             }
 
             // 메시지 초기화
@@ -441,15 +480,35 @@
             backToReportStep1(); // 열 때마다 항상 1단계로 초기화
             window.toggleOptionsMenu(); // 열려있는 메뉴 닫기
         };
-
-        // 2. 2단계로 이동
+        const reportData = {
+       	    "불법 행위": ["판매 금지 품목 게시", "장물 및 습득물 판매", "가품(이미테이션) 판매", "청소년 유해물 게시"],
+       	    "사기 피해": ["직거래 유도 후 잠적", "외부 채널 유도", "물품 정보 허위 기재", "택배 사기"],
+       	    "비매너 행위": ["노쇼(No-Show)", "무리한 가격 제안", "반말 및 욕설", "거래 확정 후 변심"],
+       	    "스팸성 홍보": ["전문 업자의 반복 게시", "홍보 및 광고", "도배 게시물", "낚시성 키워드 사용"],
+       	    "기타 사유": ["기타 사유 직접 입력"] // HTML 리스트에 기타 사유가 있어서 추가함
+       	};
+        
+     // 2. 2단계로 이동 (수정됨)
         window.goReportStep2 = function(typeName) {
             document.getElementById('reportStep1').style.display = 'none';
             const step2 = document.getElementById('reportStep2');
             step2.style.display = 'flex';
             document.getElementById('selectedTypeName').innerText = typeName;
+            
+            // ★ 추가된 부분: 넘어온 typeName(대분류)에 맞춰 상세 드롭다운(소분류)을 그립니다.
+            const subSelect = document.getElementById('subCategory');
+            subSelect.innerHTML = ''; // 기존 옵션 비우기
+            
+            const subItems = reportData[typeName] || [];
+            subItems.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item;
+                option.text = item;
+                subSelect.appendChild(option);
+            });
+
             document.getElementById('reportText').value = ''; // 텍스트 초기화
-            updateCharCount(document.getElementById('reportText'));
+            window.updateCharCount(document.getElementById('reportText'));
         };
 
         // 3. 1단계로 돌아가기
@@ -468,20 +527,23 @@
             document.getElementById('currentCharCount').innerText = obj.value.length;
         };
 
-        // 6. 최종 신고 제출
+     // 6. 최종 신고 제출
         window.submitReport = function() {
-            const content = document.getElementById('reportText').value.trim();
-            const type = document.getElementById('selectedTypeName').innerText;
+            const mainType = document.getElementById('selectedTypeName').innerText; // 대분류
+            const subType = document.getElementById('subCategory').value;           // 소분류
+            const content = document.getElementById('reportText').value.trim();     // 상세내용
 
-            if(!content) { alert("신고 사유를 입력해주세요."); return; }
+            if(!subType) { alert("상세 신고 유형을 선택해주세요."); return; }
+            if(!content) { alert("신고 사유를 입력해주세요."); return; } // 내용 없음 방어 코드 추가
 
             // 서버 연동 로직
             fetch(`${ctxPath}/api/chat/report`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    roomId: currentRoomId,
-                    reportType: type,
+                    roomId: currentRoomId,        // ★ 핵심: 전역 변수에서 현재 채팅방 번호 가져와서 추가!
+                    reportMainCategory: mainType, 
+                    reportSubCategory: subType,   
                     reportContent: content
                 })
             })
@@ -489,7 +551,7 @@
             .then(data => {
                 if(data.success) {
                     alert("신고가 정상적으로 접수되었습니다.");
-                    closeReportModal();
+                    window.closeReportModal(); // window. 명시
                 } else {
                     alert("신고 접수에 실패했습니다.");
                 }
@@ -526,7 +588,74 @@
                 toggleOptionsMenu(); 
             }
         };
-        window.actionReserve = function() { alert("예약잡기 로직 구현 필요"); };
+
+     // 1. 예약 모달 열기
+        window.actionReserve = function() {
+            document.getElementById('reserveModal').style.display = 'flex';
+            
+            // 기존 배너에 있던 가격 숫자를 긁어와서 기본값으로 세팅 (편의성)
+            const currentPriceStr = document.getElementById('bannerPrice').innerText;
+            const priceNumber = currentPriceStr.replace(/[^0-9]/g, ""); // 숫자만 추출
+            document.getElementById('reservePrice').value = priceNumber;
+        };
+
+        // 2. 예약 모달 닫기
+        window.closeReserveModal = function() {
+            document.getElementById('reserveModal').style.display = 'none';
+        };
+
+        // 3. 예약 확정 전송 로직
+        window.submitReserve = function() {
+            const dateVal = document.getElementById('reserveDate').value;
+            const locVal = document.getElementById('reserveLocation').value;
+            const priceVal = document.getElementById('reservePrice').value;
+
+            if (!dateVal || !locVal || !priceVal) {
+                alert("예약 일시, 장소, 가격을 모두 입력해주세요.");
+                return;
+            }
+
+            // 날짜 이쁘게 포맷팅 (YYYY-MM-DDTHH:mm -> YYYY년 MM월 DD일 HH시 mm분)
+            const d = new Date(dateVal);
+            const formattedDate = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${d.getHours() >= 12 ? '오후' : '오전'} ${d.getHours() % 12 || 12}시 ${d.getMinutes() === 0 ? '00' : d.getMinutes()}분`;
+
+            // 1. 서버에 상태 업데이트 요청 ('판매중' -> '예약중')
+            fetch(`${ctxPath}/api/chat/reserve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productNo: currentProductNo })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // 2. 채팅방에 전송할 이쁜 템플릿 메시지 만들기
+                    const msgContent = `[🤝 예약이 확정되었습니다!]\n\n📅 일시 : ${formattedDate}\n📍 장소 : ${locVal}\n💰 최종가격 : ${Number(priceVal).toLocaleString()}원\n\n약속 시간에 늦지 않게 와주세요!`;
+
+                    const msg = { 
+                        sender: currentUserEmail, 
+                        content: msgContent, 
+                        roomId: currentRoomId, 
+                        timestamp: new Date().toISOString() 
+                    };
+                    
+                    // 웹소켓으로 쏘기
+                    stompClient.send("/app/chat/send", {}, JSON.stringify(msg));
+
+                    // 3. 화면의 상품 배너 상태 즉시 업데이트
+                    const statusEl = document.getElementById('bannerStatus');
+                    statusEl.innerText = '예약중';
+                    statusEl.style.background = '#00c73c'; // 초록색 배경
+                    statusEl.style.color = '#fff';
+                    document.querySelector('.btn-reserve').style.display = 'none'; // 예약 버튼 숨기기
+
+                    alert("예약이 정상적으로 확정되었습니다.");
+                    window.closeReserveModal();
+                } else {
+                    alert("예약 처리에 실패했습니다.");
+                }
+            })
+            .catch(e => console.error("예약 에러:", e));
+        };
 
         /*]]>*/
     </script>

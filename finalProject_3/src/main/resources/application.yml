@@ -104,6 +104,7 @@ mybatis: #mybatis 설정
 logging: #로그 지정
   level:
     '[com.spring.app]': debug
+    com.netflix.discovery: WARN
 
 server:
   port: 9080
@@ -115,7 +116,7 @@ server:
       force: true
   tomcat:
     max-part-count: 30
-    
+
 management:
   endpoints:
     web:
@@ -128,7 +129,25 @@ file:
   emailattachfile-dir: file_emailattachfile
   images-dir: file_images
   adminupload-dir: file_adminupload
+  profile-dir: file_profile
 
 jwt:
   secret: e37ea07e222779c4066309ce10e47004a9718bbbc8e1062b7b4bca9b5d89a83d
 
+aes256:
+  secret-key: FinalProject3!@#$
+
+toss:
+  payments:
+    client-key: test_ck_4yKeq5bgrpzZ5k20qP1p3GX0lzW6
+    secret-key: test_sk_Gv6LjeKD8aXjoNN5QYQkrwYxAdXy
+    api-url: https://api.tosspayments.com/v1
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

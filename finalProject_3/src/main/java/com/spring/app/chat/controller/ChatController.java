@@ -3,12 +3,19 @@ package com.spring.app.chat.controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.spring.app.chat.domain.ChatMessageDTO;
 import com.spring.app.chat.domain.ChatRoomDTO;
+import com.spring.app.chat.domain.ReportDTO;
 import com.spring.app.chat.service.ChatService;
 import com.spring.app.chat.service.FirebaseService;
+import com.spring.app.chat.service.ReportService;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping; 
 import org.springframework.messaging.simp.SimpMessagingTemplate; 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -151,6 +158,54 @@ public class ChatController {
         } catch (Exception e) {
             resultMap.put("success", false);
             resultMap.put("message", "나가기 처리 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+        return resultMap;
+    }
+    
+    @RestController
+    @RequestMapping("/api/chat")
+    public class ChatReportController {
+
+        @Autowired
+        private ReportService service;
+
+        @PostMapping("/report")
+        public Map<String, Object> submitReport(@RequestBody ReportDTO reportDto) {
+            Map<String, Object> resultMap = new HashMap<>();
+
+            try {
+                // 현재 로그인한 사용자 이메일 꺼내기 (우리가 만든 하이브리드 JWT 방식!)
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                String myEmail = auth.getName();
+
+                // 서비스로 넘겨서 DB 저장 처리
+                service.submitChatReport(reportDto, myEmail);
+
+                resultMap.put("success", true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                resultMap.put("success", false);
+            }
+
+            return resultMap;
+        }
+    }
+    
+ // 6. 예약 확정 시 상품 상태 '예약중'으로 변경 API
+    @PostMapping("/reserve")
+    public Map<String, Object> reserveProduct(@RequestBody Map<String, Object> payload) {
+        Map<String, Object> resultMap = new HashMap<>();
+        try {
+            int productNo = Integer.parseInt(payload.get("productNo").toString());
+            
+            // ★ 핵심: 이제 눈속임이 아니라 진짜 서비스(DB)를 호출해서 '예약중'으로 덮어씌웁니다!
+            chatService.updateTradeStatus(productNo, "예약중"); 
+            
+            resultMap.put("success", true);
+        } catch (Exception e) {
+            resultMap.put("success", false);
+            resultMap.put("message", "상태 변경 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
         return resultMap;

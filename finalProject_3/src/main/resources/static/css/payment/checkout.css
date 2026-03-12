@@ -1,0 +1,434 @@
+/* =============================================
+   안전결제(에스크로) 페이지 스타일
+   ============================================= */
+
+/* === 기본 레이아웃 === */
+.pay-page {
+    min-height: 80vh;
+    background: #f5f6f8;
+    padding: 40px 20px 80px;
+}
+
+.pay-container {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+    align-items: start;
+}
+
+/* === 좌측: 주문 정보 === */
+.pay-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #222;
+    margin: 0 0 6px 0;
+}
+.pay-title i {
+    color: #3182f6;
+    margin-right: 8px;
+}
+
+.pay-subtitle {
+    font-size: 15px;
+    color: #888;
+    margin: 0 0 28px 0;
+}
+
+/* 상품 카드 */
+.pay-product-card {
+    display: flex;
+    gap: 18px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    margin-bottom: 24px;
+}
+
+.pay-product-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f0f0f0;
+}
+.pay-product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pay-product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.pay-product-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    line-height: 1.3;
+}
+
+.pay-product-seller {
+    font-size: 14px;
+    color: #666;
+}
+
+.pay-product-condition {
+    font-size: 13px;
+    color: #999;
+}
+.pay-dot {
+    margin: 0 4px;
+}
+
+/* 에스크로 안내 */
+.pay-escrow-info {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.pay-escrow-info h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 18px 0;
+}
+.pay-escrow-info h3 i {
+    color: #3182f6;
+    margin-right: 6px;
+}
+
+.pay-escrow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pay-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.pay-step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #3182f6;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pay-step-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.pay-step-text strong {
+    font-size: 15px;
+    color: #333;
+}
+.pay-step-text span {
+    font-size: 13px;
+    color: #888;
+}
+
+/* === 우측: 결제 정보 === */
+.pay-summary {
+    position: sticky;
+    top: 100px;
+}
+
+.pay-summary-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+.pay-summary-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    margin: 0 0 20px 0;
+}
+
+.pay-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    color: #555;
+    padding: 8px 0;
+}
+
+.pay-summary-divider {
+    height: 1px;
+    background: #eee;
+    margin: 12px 0;
+}
+
+.pay-summary-total {
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+}
+
+.pay-total-amount {
+    font-size: 22px;
+    font-weight: 800;
+    color: #3182f6;
+}
+
+/* 결제 수단 */
+.pay-method-wrap {
+    margin-top: 24px;
+}
+.pay-method-wrap h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px 0;
+}
+
+.pay-methods {
+    display: flex;
+    gap: 10px;
+}
+
+.pay-method-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border: 2px solid #e5e8ec;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .2s;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+.pay-method-item input { display: none; }
+.pay-method-item i { font-size: 20px; }
+.pay-method-item:hover {
+    border-color: #b0c4f6;
+}
+.pay-method-item.is-active {
+    border-color: #3182f6;
+    background: #f0f6ff;
+    color: #3182f6;
+    font-weight: 600;
+}
+
+/* 결제 버튼 */
+.pay-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    margin-top: 24px;
+    border: none;
+    border-radius: 12px;
+    background: #3182f6;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s;
+    text-decoration: none;
+}
+.pay-btn:hover { background: #1b64da; }
+.pay-btn:active { transform: scale(.98); }
+
+.pay-btn-secondary {
+    background: #f1f3f5;
+    color: #555;
+    margin-top: 10px;
+}
+.pay-btn-secondary:hover { background: #e5e8ec; color: #333; }
+
+.pay-btn-confirm {
+    background: #20c997;
+}
+.pay-btn-confirm:hover { background: #12b886; }
+
+.pay-notice {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+    line-height: 1.6;
+}
+
+/* =============================================
+   결제 결과 페이지
+   ============================================= */
+.pay-result-container {
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.pay-result-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 48px 36px 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    text-align: center;
+}
+
+/* 아이콘 */
+.pay-result-icon {
+    font-size: 64px;
+    color: #20c997;
+    margin-bottom: 20px;
+}
+.pay-result-icon-fail {
+    color: #ff6b6b;
+}
+
+.pay-result-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #222;
+    margin: 0 0 10px 0;
+}
+
+.pay-result-desc {
+    font-size: 15px;
+    color: #888;
+    line-height: 1.6;
+    margin: 0 0 30px 0;
+}
+
+/* 결제 정보 테이블 */
+.pay-result-info {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.pay-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+}
+.pay-result-row + .pay-result-row {
+    border-top: 1px solid #eee;
+}
+
+.pay-result-label {
+    color: #888;
+    font-weight: 500;
+}
+.pay-result-value {
+    color: #333;
+    font-weight: 600;
+}
+.pay-result-amount {
+    color: #3182f6;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* 뱃지 */
+.pay-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.pay-badge-escrow {
+    background: #e6fcf5;
+    color: #0ca678;
+}
+
+/* 에스크로 안내 박스 (결과 페이지) */
+.pay-escrow-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: #f0f6ff;
+    border: 1px solid #d0e2ff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+    text-align: left;
+}
+.pay-escrow-notice > i {
+    font-size: 24px;
+    color: #3182f6;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.pay-escrow-notice strong {
+    display: block;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 4px;
+}
+.pay-escrow-notice p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.pay-result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* === 반응형 === */
+@media (max-width: 768px) {
+    .pay-container {
+        grid-template-columns: 1fr;
+    }
+    .pay-summary {
+        position: static;
+    }
+    .pay-product-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .pay-product-img {
+        width: 160px;
+        height: 160px;
+    }
+    .pay-methods {
+        flex-direction: column;
+    }
+    .pay-method-item {
+        flex-direction: row;
+        gap: 10px;
+        justify-content: center;
+    }
+    .pay-result-card {
+        padding: 32px 20px;
+    }
+}

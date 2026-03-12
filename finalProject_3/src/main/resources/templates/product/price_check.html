@@ -80,20 +80,24 @@
             </p>
 
             <div class="search-wrap">
-                <div class="search-pill">
-                    <input
-                        class="search-input"
-                        id="searchWord"
-                        name="searchWord"
-                        type="text"
-                        th:value="${searchWord}"
-                        placeholder="검색어를 입력해주세요" />
-
-                    <button class="search-btn" id="searchBtn" type="button">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                </div>
-            </div>
+			    <div class="search-pill" style="position: relative;">
+			        <input
+			            class="search-input"
+			            id="searchWord"
+			            name="searchWord"
+			            type="text"
+			            th:value="${searchWord}"
+			            placeholder="검색어를 입력해주세요"
+			            autocomplete="off" />
+			
+			        <button class="search-btn" id="searchBtn" type="button">
+			            <i class="fa-solid fa-magnifying-glass"></i>
+			        </button>
+			
+			        <!-- 자동완성 리스트 -->
+			        <div id="displayList"></div>
+			    </div>
+			</div>
         </div>
     </section>
 
@@ -197,50 +201,52 @@
         <section class="sps-panel is-show" id="sps-panel-sell" role="tabpanel">
             <div class="sps-sellTop" aria-label="상품 정렬">
                 <div class="sps-sort" role="tablist" aria-label="정렬 옵션">
-                    <button class="sps-sortBtn"
-                            th:classappend="${sortType == null or sortType == 'latest' ? ' is-active' : ''}"
-                            type="button" role="tab" data-sort="latest">최신순</button>
-                    <span class="sps-sep" aria-hidden="true"></span>
+                    
+     <button class="sps-sortBtn"
+        th:classappend="${sortType == null or sortType == 'latest' ? ' is-active' : ''}"
+        type="button" role="tab" data-sort="latest">최신순</button>
+<span class="sps-sep" aria-hidden="true"></span>
 
-                    <button class="sps-sortBtn"
-                            th:classappend="${sortType == 'low' ? ' is-active' : ''}"
-                            type="button" role="tab" data-sort="low">가격낮은순</button>
-                    <span class="sps-sep" aria-hidden="true"></span>
+<button class="sps-sortBtn"
+        th:classappend="${sortType == 'priceAsc' ? ' is-active' : ''}"
+        type="button" role="tab" data-sort="priceAsc">가격낮은순</button>
+<span class="sps-sep" aria-hidden="true"></span>
 
-                    <button class="sps-sortBtn"
-                            th:classappend="${sortType == 'high' ? ' is-active' : ''}"
-                            type="button" role="tab" data-sort="high">높은가격순</button>
-                    <span class="sps-sep" aria-hidden="true"></span>
+<button class="sps-sortBtn"
+        th:classappend="${sortType == 'priceDesc' ? ' is-active' : ''}"
+        type="button" role="tab" data-sort="priceDesc">높은가격순</button>
+<span class="sps-sep" aria-hidden="true"></span>
 
-                    <button class="sps-sortBtn"
-                            th:classappend="${sortType == 'pop' ? ' is-active' : ''}"
-                            type="button" role="tab" data-sort="pop">인기순</button>
+<button class="sps-sortBtn"
+        th:classappend="${sortType == 'view' ? ' is-active' : ''}"
+        type="button" role="tab" data-sort="view">인기순</button>
                 </div>
             </div>
 
             <div class="sps-grid" id="sps-grid">
                 <article class="sps-card" th:each="product : ${list}">
-                    <a class="sps-thumb"
-                       th:href="@{/product/product_detail/{productNo}(productNo=${product.productNo})}">
-                        <span class="sps-badge"
-                              th:classappend="${
-                                   product.tradeStatus == '판매중' ? ' selling' :
-                                   (product.tradeStatus == '거래중' ? ' trading' : ' soldout')
-                              }"
-                              th:text="${product.tradeStatus}">판매중</span>
+                    <div class="sps-thumb-wrap">
+    <a class="sps-thumb"
+       th:href="@{/product/product_detail/{productNo}(productNo=${product.productNo})}">
+        <span class="sps-badge"
+              th:classappend="${
+                   product.tradeStatus == '판매중' ? ' selling' :
+                   (product.tradeStatus == '거래중' ? ' trading' : ' soldout')
+              }"
+              th:text="${product.tradeStatus}">판매중</span>
 
-                       <button class="sps-like"
-						        type="button"
-						        aria-label="찜"
-						        th:attr="data-product-no=${product.productNo}, data-login=${isLogin}"
-						        th:aria-pressed="${product.wished ? 'true' : 'false'}"
-						        th:classappend="${product.wished ? ' is-on' : ''}">
-						    <i th:class="${product.wished ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
-						</button>
+        <img th:src="@{${product.imgUrl}}" alt="">
+    </a>
 
-                        <img th:src="@{${product.imgUrl}}" alt="">
-                    </a>
-
+  <button class="sps-like"
+        type="button"
+        aria-label="찜"
+        th:attr="data-product-no=${product.productNo}, data-login=${isLogin}"
+        th:aria-pressed="${product.wished ? 'true' : 'false'}"
+        th:classappend="${product.wished ? ' is-on' : ''}">
+    <i th:class="${product.wished ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
+</button>
+</div>
                     <div class="sps-body">
                         <a class="sps-title"
                            th:href="@{/product/product_detail/{productNo}(productNo=${product.productNo})}"
@@ -256,7 +262,7 @@
                             </span>
                             <span>
                                 <i class="fa-regular fa-clock"></i>
-                                <span th:text="${#dates.format(product.regDate, 'yyyy-MM-dd')}">2026-03-10</span>
+                               <span class="time-ago" th:attr="data-time=${#dates.format(product.regDate, 'yyyy-MM-dd HH:mm:ss')}"></span>
                             </span>
                             <span>
                                 <i class="fa-solid fa-eye"></i>

@@ -25,7 +25,7 @@ public interface ProductService {
 	List<ProductDTO> selectProductListSimple();
 
 	//상품상세페이지
-	ProductDTO getProductDetailFull(int productNo);
+	ProductDTO getProductDetailFull(Map<String, Object> paraMap);
 	
 	// 비슷한 거래물품
 	List<ProductDTO> selectSimilarProducts(ProductDTO productDto);
@@ -65,10 +65,15 @@ public interface ProductService {
 
 	//시세조회
 	public ProductPriceStatsDTO selectPriceCheckStats(Map<String, Object> paraMap);
-
 	public List<ProductPriceTrendDTO> selectPriceCheckChartData(Map<String, Object> paraMap);
-
 	public List<ProductDTO> selectPriceCheckProductList(Map<String, Object> paraMap);
+
+	//판매자정보
+	ProductDTO selectSellerProfileByProductNo(int productNo);
+	List<ProductDTO> selectSellerProductsByProductNo(Map<String, Object> paraMap);
+	int selectSellerProductCountByProductNo(int productNo);
+
+	
 
 	
 	

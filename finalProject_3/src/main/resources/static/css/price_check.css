@@ -3,7 +3,7 @@
 
     .hero{
       width:100%;
-      padding:150px 18px 20px;
+      padding:150px 18px 150px;
     }
     .hero-inner{
       width:60%;
@@ -157,7 +157,7 @@
     /* ✅ 상단 요약 (다시 추가) */
     .top-summary{
         width: 1100px;
-        margin: 75px auto;
+        margin: 150px auto 75px;
       background:#fff;
       border:1px solid #e7e9ee;
       border-radius:14px;
@@ -330,22 +330,23 @@
 .sps-badge.trading{ background:#f59e0b; }   /* 거래중 */
 .sps-badge.soldout{ background:#6b7280; }   /* 판매완료 */
 
-
-    .sps-like {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 0, 0, .10);
-      background: rgba(255, 255, 255, .92);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-    }
+.sps-thumb-wrap {
+  position: relative;
+}.sps-like {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, .10);
+  background: rgba(255, 255, 255, .92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  cursor: pointer;
+}
 
     .sps-like:hover {
       transform: translateY(-1px);
@@ -583,6 +584,42 @@
 }
 .area-item:hover{
   background: rgba(0,0,0,.04);
+}
+
+#displayList {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    z-index: 100;
+}
+
+#displayList .result {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #111827;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fff;
+}
+
+#displayList .result:last-child {
+    border-bottom: none;
+}
+
+#displayList .result:hover {
+    background: #f9fafb;
+}
+
+.search-highlight {
+    font-weight: bold;
+    color: red;
 }
 
 

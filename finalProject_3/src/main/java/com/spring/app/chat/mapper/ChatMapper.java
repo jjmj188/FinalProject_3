@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ChatMapper {
@@ -21,4 +22,6 @@ public interface ChatMapper {
     
     // 방 번호로 채팅방을 삭제하는 메서드 추가
     int deleteChatRoom(@Param("roomId") String roomId);
+
+	void updateTradeStatus(Map<String, Object> map);
 }

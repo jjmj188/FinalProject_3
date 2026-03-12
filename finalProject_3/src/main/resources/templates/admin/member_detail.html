@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 상세 관리 - 관리자</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        .info-label { width: 160px; background-color: #f8f9fa; font-weight: bold; vertical-align: middle; }
+        .action-card { border-top: 4px solid #0d6efd; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .profile-section { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .main-content { min-height: 100vh; background-color: #f4f7f6; }
+    </style>
+</head>
+<body class="d-flex">
+    <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
+
+    <main class="main-content w-100 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold"><i class="bi bi-person-badge"></i> 회원 상세 정보 및 관리</h4>
+            <a th:href="@{/admin/member}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+            </a>
+        </div>
+
+        <div class="row g-4" th:if="${member != null}">
+            <div class="col-lg-8">
+                <div class="profile-section d-flex align-items-center mb-4">
+                    <img th:src="${member.profileImg != null ? member.profileImg : 'https://via.placeholder.com/150'}" 
+                         class="rounded-circle border me-4" style="width: 120px; height: 120px; object-fit: cover;">
+                    <div>
+                        <h2 class="fw-bold mb-1" th:text="${member.nickname}">닉네임</h2>
+                        <div class="mb-2">
+                            <span class="badge bg-primary me-1" th:text="${member.mannerTemp} + '℃'">50℃</span>
+                            <span>
+                                <span th:if="${member.status == 0}" class="badge bg-dark">탈퇴회원</span>
+                                <th:block th:if="${member.status == 1}">
+                                    <span th:if="${member.suspended == 0}" class="badge bg-success">활동중</span>
+                                    <span th:if="${member.suspended == 1}" class="badge bg-warning text-dark">일시정지</span>
+                                    <span th:if="${member.suspended == -1}" class="badge bg-danger">영구정지</span>
+                                    <span th:if="${member.idle == 1}" class="badge bg-secondary">휴면</span>
+                                </th:block>
+                            </span>
+                        </div>
+                        <p class="text-muted mb-0 small" th:text="'가입일: ' + ${member.regDate}"></p>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">회원 기본 및 활동 정보</div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <tr>
+                                <td class="info-label text-center">이메일(ID)</td>
+                                <td th:text="${member.email}"></td>
+                                <td class="info-label text-center">회원번호</td>
+                                <td th:text="${member.userNo}"></td>
+                            </tr>
+                            <tr>
+                                <td class="info-label text-center">이름</td>
+                                <td th:text="${member.userName}"></td>
+                                <td class="info-label text-center">연락처</td>
+                                <td th:text="${member.phone}"></td>
+                            </tr>
+                            <tr>
+                                <td class="info-label text-center">생년월일</td>
+                                <td th:text="${member.birthDate}"></td>
+                                <td class="info-label text-center">성별</td>
+                                <td th:text="${member.gender == 'M' ? '남성' : '여성'}"></td>
+                            </tr>
+                            <tr>
+                                <td class="info-label text-center">주소</td>
+                                <td colspan="3" th:text="${member.address != null} ? ('[' + ${member.postcode} + '] ' + ${member.address} + ' ' + ${member.detailaddress} + ' ' + (${member.extraaddress != null ? member.extraaddress : ''})) : '정보 없음'"></td>
+                            </tr>
+                            <tr>
+                                <td class="info-label text-center">보유 권한</td>
+                                <td colspan="3">
+                                    <span th:each="auth : ${member.authorities}" th:text="${auth}" class="badge bg-light text-dark border me-1"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card action-card">
+                    <div class="card-header bg-white fw-bold text-primary">
+                        <i class="bi bi-exclamation-triangle"></i> 계정 처분 및 메시지 발송
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning small py-2">
+                            <i class="bi bi-info-circle"></i> 메시지는 즉시 발송되며, 처분 예약 시 3일의 유예 기간이 부여됩니다.
+                        </div>
+                        
+                        <form id="adminActionForm">
+                            <input type="hidden" id="targetUserNo" th:value="${member.userNo}">
+                            <input type="hidden" id="targetEmail" th:value="${member.email}">
+
+                            <div class="mb-2">
+                                <label class="form-label fw-bold small">제목</label>
+                                <input type="text" id="adminTitle" class="form-control"
+                                       placeholder="메시지 제목을 입력하세요.">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">내용</label>
+                                <textarea id="adminMessage" class="form-control" rows="5"
+                                          placeholder="회원에게 전달될 내용을 입력하세요."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary" onclick="sendMessageOnly()">
+                                    <i class="bi bi-send"></i> 일반 메시지 전송
+                                </button>
+                                <hr class="my-2">
+                                <button type="button" class="btn btn-outline-danger" onclick="alert('준비 중인 기능입니다.')">
+                                    <i class="bi bi-clock-history"></i> 3일 후 일시정지 예약
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="alert('준비 중인 기능입니다.')">
+                                    <i class="bi bi-person-x"></i> 3일 후 강제 탈퇴 예약
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${member == null}" class="text-center py-5">
+            <p class="text-muted">회원 정보를 불러올 수 없습니다.</p>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+    const contextPath = /*[[@{/}]]*/ '/';
+    function sendMessageOnly() {
+        const userNo = document.getElementById('targetUserNo').value;
+        const title = document.getElementById('adminTitle').value;
+        const message = document.getElementById('adminMessage').value;
+
+        if(!title.trim()) {
+            alert("제목을 입력해주세요.");
+            return;
+        }
+        if(!message.trim()) {
+            alert("메시지 내용을 입력해주세요.");
+            return;
+        }
+
+        if(confirm("회원에게 메시지를 전송하시겠습니까?")) {
+            const payload = {
+                userNo: parseInt(userNo),
+                targetEmail: document.getElementById('targetEmail').value,
+                title: title,
+                message: message
+            };
+
+          
+             fetch(contextPath + 'admin/api/sendMessage', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if(!res.ok) throw new Error("서버 응답 에러: " + res.status);
+                return res.json();
+            })
+            .then(data => {
+                if(data.success) {
+                    alert(data.message || "메시지가 성공적으로 전송되었습니다.");
+                    document.getElementById('adminMessage').value = ''; 
+                } else {
+                    alert("실패: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("전송 중 오류가 발생했습니다. (관리자 권한을 확인하세요)");
+            });
+        }
+    }
+    </script>
+</body>
+</html>

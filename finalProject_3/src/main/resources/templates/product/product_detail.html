@@ -94,7 +94,7 @@
       </div>
 
       <div class="pd-subline">
-        <a th:href="@{/product/price_check(productNo=${product.productNo})}" aria-label="시세조회">시세조회</a>
+       <a th:href="@{/product/price_check(searchWord=${product.productName})}" aria-label="시세조회">시세조회</a>
       </div>
 
       <div class="pd-card" aria-label="상품 정보">
@@ -229,7 +229,8 @@
         </button>
 
         <button class="pd-btn pd-btn-pay" type="button"
-                th:attr="data-product-no=${product.productNo}">
+                th:attr="data-product-no=${product.productNo}"
+                onclick="goToPayment(this)">
             안전결제
         </button>
     </div>
@@ -257,12 +258,12 @@
 
         <!-- RIGHT -->
  <section>
-    <div class="pdinfo-head">
-        <h2 class="pdinfo-title">판매자정보</h2>
-        <a th:href="@{/product/product_user_profile}">
-            <i class="fa-solid fa-chevron-right"></i>
-        </a>
-    </div>
+   <div class="pdinfo-head">
+    <h2 class="pdinfo-title">판매자정보</h2>
+    <a th:href="@{/product/product_user_profile(productNo=${product.productNo})}">
+        <i class="fa-solid fa-chevron-right"></i>
+    </a>
+</div>
 
     <div class="pdinfo-card">
         <div class="pdinfo-cardbody">
@@ -313,8 +314,10 @@
         </div>
                 <div class="pdinfo-reviews-head">
                     <div class="pdinfo-reviews-title">최근후기</div>
-                    <a class="pdinfo-reviews-link" th:href="@{/product/product_user_profile}">전체보기 <i
-                            class="fa-solid fa-chevron-right"></i></a>
+                  <a class="pdinfo-reviews-link"
+				   th:href="@{/product/product_user_profile(productNo=${product.productNo})}">
+				    전체보기 <i class="fa-solid fa-chevron-right"></i>
+				</a>
                 </div>
 
                 <div class="pdinfo-reviews">
@@ -538,8 +541,11 @@
             console.error("방 생성 에러:", error);
         });
     }
+    function goToPayment(btn) {
+        const productNo = btn.getAttribute('data-product-no');
+        location.href = '/finalProject_3/payment/checkout?productNo=' + productNo;
+    }
     
-   
 </script>
 </main>
 <script th:src="@{/js/product/product_detail.js}"></script>

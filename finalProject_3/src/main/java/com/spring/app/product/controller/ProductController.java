@@ -74,12 +74,14 @@ public class ProductController {
         return result;
     }
 
+    //상품목록(장터)
     @GetMapping("/product_list")
     public String product_list(
             @RequestParam(name = "searchWord", required = false) String searchWord,
             @RequestParam(name = "areaDong", required = false) String areaDong,
             @RequestParam(name = "tradeAvailable", required = false) String tradeAvailable,
             @RequestParam(name = "parcelAvailable", required = false) String parcelAvailable,
+            @RequestParam(name = "freeOnly", required = false) String freeOnly,
             @RequestParam(name = "categoryNo", required = false) Integer categoryNo,
             @RequestParam(name = "sortType", required = false) String sortType,
             @RequestParam(name = "priceMin", required = false) Integer priceMin,
@@ -92,6 +94,11 @@ public class ProductController {
         if (searchWord != null) searchWord = searchWord.trim();
         if (areaDong != null) areaDong = areaDong.trim();
         if (sortType == null || "".equals(sortType.trim())) sortType = "latest";
+
+        if (freeOnly != null && !"".equals(freeOnly.trim())) {
+            priceMin = null;
+            priceMax = null;
+        }
 
         String memberEmail = getLoginEmail(authentication);
 
@@ -119,6 +126,7 @@ public class ProductController {
         paraMap.put("areaDong", areaDong);
         paraMap.put("tradeAvailable", tradeAvailable);
         paraMap.put("parcelAvailable", parcelAvailable);
+        paraMap.put("freeOnly", freeOnly);
         paraMap.put("categoryNo", categoryNo);
         paraMap.put("sortType", sortType);
         paraMap.put("priceMin", priceMin);
@@ -135,6 +143,7 @@ public class ProductController {
         priceParaMap.put("areaDong", areaDong);
         priceParaMap.put("tradeAvailable", tradeAvailable);
         priceParaMap.put("parcelAvailable", parcelAvailable);
+        priceParaMap.put("freeOnly", freeOnly);
         priceParaMap.put("categoryNo", categoryNo);
         priceParaMap.put("priceMin", priceMin);
         priceParaMap.put("priceMax", priceMax);
@@ -148,14 +157,14 @@ public class ProductController {
 
         return "product/product_list";
     }
-
     
+    //판매하기
     @GetMapping("/sell")
     public String sellPage() {
         return "product/sell";
     }
 
-    
+    //상품등록하기
     @PostMapping("/sellRegister")
     @ResponseBody
     public Map<String, Object> sellRegister(
@@ -311,6 +320,7 @@ public class ProductController {
         }
     }
 
+    //상품목록 더보기
     @GetMapping("/product_list_more")
     @ResponseBody
     public List<ProductDTO> product_list_more(
@@ -318,6 +328,7 @@ public class ProductController {
             @RequestParam(name = "areaDong", required = false) String areaDong,
             @RequestParam(name = "tradeAvailable", required = false) String tradeAvailable,
             @RequestParam(name = "parcelAvailable", required = false) String parcelAvailable,
+            @RequestParam(name = "freeOnly", required = false) String freeOnly,
             @RequestParam(name = "categoryNo", required = false) Integer categoryNo,
             @RequestParam(name = "sortType", required = false) String sortType,
             @RequestParam(name = "priceMin", required = false) Integer priceMin,
@@ -330,6 +341,11 @@ public class ProductController {
         if (areaDong != null) areaDong = areaDong.trim();
         if (sortType == null || "".equals(sortType.trim())) sortType = "latest";
 
+        if (freeOnly != null && !"".equals(freeOnly.trim())) {
+            priceMin = null;
+            priceMax = null;
+        }
+
         int startRow = ((page - 1) * size) + 1;
         int endRow = page * size;
 
@@ -340,6 +356,7 @@ public class ProductController {
         paraMap.put("areaDong", areaDong);
         paraMap.put("tradeAvailable", tradeAvailable);
         paraMap.put("parcelAvailable", parcelAvailable);
+        paraMap.put("freeOnly", freeOnly);
         paraMap.put("categoryNo", categoryNo);
         paraMap.put("sortType", sortType);
         paraMap.put("priceMin", priceMin);
@@ -350,7 +367,8 @@ public class ProductController {
 
         return pservice.selectProductListByConditionMore(paraMap);
     }
-
+    
+    //나눔하기
     @GetMapping("/share")
     public String share() {
         return "product/share";
@@ -363,10 +381,14 @@ public class ProductController {
 
         pservice.updateViewCount(productNo);
 
-        ProductDTO productDto = pservice.getProductDetailFull(productNo);
-        List<ProductDTO> similarProductList = pservice.selectSimilarProducts(productDto);
-
         String memberEmail = getLoginEmail(authentication);
+
+        Map<String, Object> paraMap = new HashMap<>();
+        paraMap.put("productNo", productNo);
+        paraMap.put("memberEmail", memberEmail);
+
+        ProductDTO productDto = pservice.getProductDetailFull(paraMap);
+        List<ProductDTO> similarProductList = pservice.selectSimilarProducts(productDto);
 
         model.addAttribute("product", productDto);
         model.addAttribute("similarProductList", similarProductList);
@@ -375,7 +397,7 @@ public class ProductController {
         return "product/product_detail";
     }
 
-    
+    //찜
     @PostMapping("/wishlist/toggle")
     @ResponseBody
     public Map<String, Object> toggleWishlist(@RequestParam("productNo") Integer productNo,
@@ -398,6 +420,7 @@ public class ProductController {
         return result;
     }
 
+    //시세조회
     @GetMapping("/price_check")
     public String price_check(
             @RequestParam(name = "searchWord", required = false) String searchWord,
@@ -471,11 +494,67 @@ public class ProductController {
         return "product/price_check";
     }
 
+  //판매자 정보 페이지
     @GetMapping("/product_user_profile")
-    public String product_user_profile() {
+    public String product_user_profile(@RequestParam("productNo") int productNo, Model model) {
+        model.addAttribute("productNo", productNo);
         return "product/product_user_profile";
     }
+    
+ // 판매자 기본 정보 조회
+    @GetMapping("/seller/profile")
+    @ResponseBody
+    public Map<String, Object> sellerProfile(@RequestParam("productNo") int productNo) {
 
+        ProductDTO sellerDto = pservice.selectSellerProfileByProductNo(productNo);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        if (sellerDto == null) {
+            result.put("success", false);
+            result.put("message", "판매자 정보를 찾을 수 없습니다.");
+            return result;
+        }
+
+        result.put("success", true);
+        result.put("seller", sellerDto);
+        return result;
+    }
+    
+ // 판매자 판매상품 조회
+    @GetMapping("/seller/products")
+    @ResponseBody
+    public Map<String, Object> sellerProducts(@RequestParam("productNo") int productNo,
+                                              @RequestParam(name = "sortType", defaultValue = "latest") String sortType,
+                                              @RequestParam(name = "page", defaultValue = "1") int page,
+                                              @RequestParam(name = "size", defaultValue = "8") int size,
+                                              Authentication authentication) {
+
+        String memberEmail = getLoginEmail(authentication);
+
+        int startRow = ((page - 1) * size) + 1;
+        int endRow = page * size;
+
+        Map<String, Object> paraMap = new LinkedHashMap<>();
+        paraMap.put("productNo", productNo);
+        paraMap.put("sortType", sortType);
+        paraMap.put("startRow", startRow);
+        paraMap.put("endRow", endRow);
+        paraMap.put("memberEmail", memberEmail);
+
+        List<ProductDTO> productList = pservice.selectSellerProductsByProductNo(paraMap);
+        int totalCount = pservice.selectSellerProductCountByProductNo(productNo);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("success", true);
+        result.put("productList", productList);
+        result.put("totalCount", totalCount);
+        result.put("hasMore", totalCount > endRow);
+
+        return result;
+    }
+
+    //자동 검색어
     @GetMapping("/wordSearchShow")
     @ResponseBody
     public List<Map<String, String>> wordSearchShow(@RequestParam Map<String, String> paraMap) {

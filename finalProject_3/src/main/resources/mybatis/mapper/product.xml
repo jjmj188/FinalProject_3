@@ -153,15 +153,14 @@
 	<!-- 상품 상세 - 기본정보 (PRODUCTS) -->
 
 	<select id="selectProductDetail"
+        parameterType="hashMap"
         resultType="com.spring.app.product.domain.ProductDTO">
 
 SELECT
     PRODUCTS.PRODUCT_NO AS productNo,
     PRODUCTS.SELLER_EMAIL AS sellerEmail,
     PRODUCTS.CATEGORY_NO AS categoryNo,
-
     CATEGORY.CATEGORY_NAME AS categoryName,
-
     PRODUCTS.SALE_TYPE AS saleType,
     PRODUCTS.PRODUCT_NAME AS productName,
     PRODUCTS.PRODUCT_PRICE AS productPrice,
@@ -171,24 +170,38 @@ SELECT
     PRODUCTS.TRADE_METHOD AS tradeMethod,
     PRODUCTS.VIEW_COUNT AS viewCount,
     PRODUCTS.REG_DATE AS regDate,
-
     MEMBER.NICKNAME AS sellerName,
     MEMBER.MANNER_TEMP AS mannerTemp,
     MEMBER.PROFILE_IMG AS sellerProfileImg,
-
     (
         SELECT COUNT(*)
         FROM WISHLIST
         WHERE WISHLIST.PRODUCT_NO = PRODUCTS.PRODUCT_NO
-    ) AS wishCount
+    ) AS wishCount,
+
+    <choose>
+        <when test="memberEmail != null and memberEmail != ''">
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM WISHLIST
+                    WHERE WISHLIST.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+                      AND WISHLIST.MEMBER_EMAIL = #{memberEmail}
+                )
+                THEN 1
+                ELSE 0
+            END AS wished
+        </when>
+        <otherwise>
+            0 AS wished
+        </otherwise>
+    </choose>
 
 FROM PRODUCTS
 LEFT JOIN CATEGORY
 ON PRODUCTS.CATEGORY_NO = CATEGORY.CATEGORY_NO
-
 LEFT JOIN MEMBER
 ON PRODUCTS.SELLER_EMAIL = MEMBER.EMAIL
-
 WHERE PRODUCTS.PRODUCT_NO = #{productNo}
 
 </select>
@@ -427,11 +440,11 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
         PRODUCTS.CATEGORY_NO AS categoryNo,
 
         (
-		    SELECT PRODUCT_MEET_LOCATION.PLACE_NAME
-		    FROM PRODUCT_MEET_LOCATION
-		    WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
-		    AND ROWNUM = 1
-		) AS placeName,
+            SELECT PRODUCT_MEET_LOCATION.PLACE_NAME
+            FROM PRODUCT_MEET_LOCATION
+            WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+            AND ROWNUM = 1
+        ) AS placeName,
 
         (
             SELECT PRODUCT_IMAGE.IMG_URL
@@ -465,15 +478,19 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
         AND PRODUCTS.TRADE_METHOD = '택배'
     </if>
 
+    <if test="freeOnly != null and freeOnly != ''">
+        AND PRODUCTS.SALE_TYPE = '나눔'
+    </if>
+
     <if test="categoryNo != null">
         AND PRODUCTS.CATEGORY_NO = #{categoryNo}
     </if>
 
-    <if test="priceMin != null">
+    <if test="priceMin != null and (freeOnly == null or freeOnly == '')">
         AND PRODUCTS.PRODUCT_PRICE &gt;= #{priceMin}
     </if>
 
-    <if test="priceMax != null">
+    <if test="priceMax != null and (freeOnly == null or freeOnly == '')">
         AND PRODUCTS.PRODUCT_PRICE &lt;= #{priceMax}
     </if>
 
@@ -556,13 +573,11 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
         resultType="com.spring.app.product.domain.ProductPriceStatsDTO">
 
     SELECT
-        NVL(ROUND(AVG(PRODUCTS.PRODUCT_PRICE)), 0) AS avgPrice,
-        NVL(MAX(PRODUCTS.PRODUCT_PRICE), 0) AS maxPrice,
-        NVL(MIN(PRODUCTS.PRODUCT_PRICE), 0) AS minPrice
+        NVL(ROUND(AVG(NVL(PRODUCTS.PRODUCT_PRICE, 0))), 0) AS avgPrice,
+        NVL(MAX(NVL(PRODUCTS.PRODUCT_PRICE, 0)), 0) AS maxPrice,
+        NVL(MIN(NVL(PRODUCTS.PRODUCT_PRICE, 0)), 0) AS minPrice
     FROM PRODUCTS
-    WHERE PRODUCTS.SALE_TYPE = '판매'
-      AND PRODUCTS.PRODUCT_PRICE IS NOT NULL
-      AND PRODUCTS.TRADE_STATUS = '판매중'
+    WHERE PRODUCTS.TRADE_STATUS = '판매중'
       AND PRODUCTS.REG_DATE >= SYSDATE - 7
 
     <if test="searchWord != null and searchWord != ''">
@@ -586,15 +601,24 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
         AND PRODUCTS.TRADE_METHOD = '택배'
     </if>
 
+    <if test="freeOnly != null and freeOnly != ''">
+        AND PRODUCTS.SALE_TYPE = '나눔'
+    </if>
+
+    <if test="freeOnly == null or freeOnly == ''">
+        AND PRODUCTS.SALE_TYPE = '판매'
+        AND PRODUCTS.PRODUCT_PRICE IS NOT NULL
+    </if>
+
     <if test="categoryNo != null">
         AND PRODUCTS.CATEGORY_NO = #{categoryNo}
     </if>
 
-    <if test="priceMin != null">
+    <if test="priceMin != null and (freeOnly == null or freeOnly == '')">
         AND PRODUCTS.PRODUCT_PRICE &gt;= #{priceMin}
     </if>
 
-    <if test="priceMax != null">
+    <if test="priceMax != null and (freeOnly == null or freeOnly == '')">
         AND PRODUCTS.PRODUCT_PRICE &lt;= #{priceMax}
     </if>
 
@@ -703,15 +727,19 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
             AND PRODUCTS.TRADE_METHOD = '택배'
         </if>
 
+        <if test="freeOnly != null and freeOnly != ''">
+            AND PRODUCTS.SALE_TYPE = '나눔'
+        </if>
+
         <if test="categoryNo != null">
             AND PRODUCTS.CATEGORY_NO = #{categoryNo}
         </if>
 
-        <if test="priceMin != null">
+        <if test="priceMin != null and (freeOnly == null or freeOnly == '')">
             AND PRODUCTS.PRODUCT_PRICE &gt;= #{priceMin}
         </if>
 
-        <if test="priceMax != null">
+        <if test="priceMax != null and (freeOnly == null or freeOnly == '')">
             AND PRODUCTS.PRODUCT_PRICE &lt;= #{priceMax}
         </if>
     )
@@ -856,20 +884,159 @@ WHERE PRODUCTS.PRODUCT_NO = #{productNo}
           AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
       </if>
 
-    <choose>
-        <when test="sortType == 'pop'">
-            ORDER BY PRODUCTS.VIEW_COUNT DESC, PRODUCTS.REG_DATE DESC
-        </when>
-        <when test="sortType == 'low'">
-            ORDER BY PRODUCTS.PRODUCT_PRICE ASC, PRODUCTS.REG_DATE DESC
-        </when>
-        <when test="sortType == 'high'">
-            ORDER BY PRODUCTS.PRODUCT_PRICE DESC, PRODUCTS.REG_DATE DESC
-        </when>
-        <otherwise>
-            ORDER BY PRODUCTS.REG_DATE DESC
-        </otherwise>
-    </choose>
+   <choose>
+    <when test="sortType == 'view'">
+        ORDER BY PRODUCTS.VIEW_COUNT DESC, PRODUCTS.REG_DATE DESC
+    </when>
+    <when test="sortType == 'priceAsc'">
+        ORDER BY PRODUCTS.PRODUCT_PRICE ASC, PRODUCTS.REG_DATE DESC
+    </when>
+    <when test="sortType == 'priceDesc'">
+        ORDER BY PRODUCTS.PRODUCT_PRICE DESC, PRODUCTS.REG_DATE DESC
+    </when>
+    <otherwise>
+        ORDER BY PRODUCTS.REG_DATE DESC
+    </otherwise>
+</choose>
+
+</select>
+
+<select id="selectSellerProfileByProductNo"
+        parameterType="int"
+        resultType="com.spring.app.product.domain.ProductDTO">
+
+    SELECT
+        MEMBER.EMAIL AS sellerEmail,
+        MEMBER.NICKNAME AS sellerName,
+        MEMBER.PROFILE_IMG AS sellerProfileImg,
+        MEMBER.MANNER_TEMP AS mannerTemp,
+
+        0 AS reviewCount,
+        0 AS safePayCount,
+
+        (
+            SELECT COUNT(*)
+            FROM PRODUCTS
+            WHERE PRODUCTS.SELLER_EMAIL = MEMBER.EMAIL
+        ) AS tradeCount
+
+    FROM PRODUCTS
+    JOIN MEMBER
+    ON PRODUCTS.SELLER_EMAIL = MEMBER.EMAIL
+    WHERE PRODUCTS.PRODUCT_NO = #{productNo}
+
+</select>
+
+
+<select id="selectSellerProductsByProductNo"
+        parameterType="hashMap"
+        resultType="com.spring.app.product.domain.ProductDTO">
+
+    SELECT
+        productNo,
+        productName,
+        saleType,
+        productPrice,
+        tradeStatus,
+        regDate,
+        viewCount,
+        categoryNo,
+        placeName,
+        imgUrl,
+        wished
+    FROM
+    (
+        SELECT
+            ROW_NUMBER() OVER (
+                <choose>
+                    <when test="sortType == 'low'">
+                        ORDER BY PRODUCTS.PRODUCT_PRICE ASC, PRODUCTS.REG_DATE DESC
+                    </when>
+                    <when test="sortType == 'high'">
+                        ORDER BY PRODUCTS.PRODUCT_PRICE DESC, PRODUCTS.REG_DATE DESC
+                    </when>
+                    <when test="sortType == 'pop'">
+                        ORDER BY
+                        (
+                            SELECT COUNT(*)
+                            FROM WISHLIST
+                            WHERE WISHLIST.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+                        ) DESC,
+                        PRODUCTS.VIEW_COUNT DESC,
+                        PRODUCTS.REG_DATE DESC
+                    </when>
+                    <otherwise>
+                        ORDER BY PRODUCTS.REG_DATE DESC
+                    </otherwise>
+                </choose>
+            ) AS rno,
+
+            PRODUCTS.PRODUCT_NO AS productNo,
+            PRODUCTS.PRODUCT_NAME AS productName,
+            PRODUCTS.SALE_TYPE AS saleType,
+            PRODUCTS.PRODUCT_PRICE AS productPrice,
+            PRODUCTS.TRADE_STATUS AS tradeStatus,
+            PRODUCTS.REG_DATE AS regDate,
+            PRODUCTS.VIEW_COUNT AS viewCount,
+            PRODUCTS.CATEGORY_NO AS categoryNo,
+
+            (
+                SELECT PRODUCT_MEET_LOCATION.PLACE_NAME
+                FROM PRODUCT_MEET_LOCATION
+                WHERE PRODUCT_MEET_LOCATION.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+                AND ROWNUM = 1
+            ) AS placeName,
+
+            (
+                SELECT PRODUCT_IMAGE.IMG_URL
+                FROM PRODUCT_IMAGE
+                WHERE PRODUCT_IMAGE.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+                AND PRODUCT_IMAGE.IS_MAIN = 'Y'
+                AND ROWNUM = 1
+            ) AS imgUrl,
+
+            <choose>
+                <when test="memberEmail != null and memberEmail != ''">
+                    CASE
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM WISHLIST
+                            WHERE WISHLIST.PRODUCT_NO = PRODUCTS.PRODUCT_NO
+                              AND WISHLIST.MEMBER_EMAIL = #{memberEmail}
+                        )
+                        THEN 1
+                        ELSE 0
+                    END AS wished
+                </when>
+                <otherwise>
+                    0 AS wished
+                </otherwise>
+            </choose>
+
+        FROM PRODUCTS
+        WHERE PRODUCTS.SELLER_EMAIL =
+        (
+            SELECT PRODUCTS.SELLER_EMAIL
+            FROM PRODUCTS
+            WHERE PRODUCTS.PRODUCT_NO = #{productNo}
+        )
+    )
+    WHERE rno BETWEEN #{startRow} AND #{endRow}
+
+</select>
+
+<select id="selectSellerProductCountByProductNo"
+        parameterType="int"
+        resultType="int">
+
+    SELECT COUNT(*)
+    FROM PRODUCTS
+    WHERE PRODUCTS.SELLER_EMAIL =
+    (
+        SELECT PRODUCTS.SELLER_EMAIL
+        FROM PRODUCTS
+        WHERE PRODUCTS.PRODUCT_NO = #{productNo}
+    )
 
 </select>
 

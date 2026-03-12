@@ -16,8 +16,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 	Spring Security 사용: SecurityConfig 에서 로그인/회원가입 URL 허용 및 폼 로그인을 설정함.
 */
 @SpringBootApplication
-@EnableAspectJAutoProxy  // Application 클래스에 @EnableAspectJAutoProxy 를 추가하여 AOP(Aspect Oriented Programming)클래스를 찾을 수 있게 해준다. 우리는 com.spring.app.aop.MyAop 이 AOP 클래스 이다.
-//@EnableScheduling        // === #208. @EnableScheduling 어노테이션을 사용하여 스프링스케줄러를 구현하도록 한다. Scheduler는 기본적으로 Spring Boot에 포함되어 있기 때문에 추가적으로 build.gradle 파일에 dependency 를 추가할 필요는 없고, Application 클래스에 @EnableScheduling 를 추가만 해주면 Scheduler 를 기능을 사용할 수 있게 된다.
+@EnableAspectJAutoProxy
+@org.springframework.scheduling.annotation.EnableScheduling
 public class FinalProject3Application {
 
 	public static void main(String[] args) {

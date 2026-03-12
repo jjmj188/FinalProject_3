@@ -4,25 +4,35 @@
 <mapper namespace="com.spring.app.chat.mapper.ChatMapper">
 
     <select id="selectMyChatRooms" parameterType="String" resultType="com.spring.app.chat.domain.ChatRoomDTO">
-        SELECT 
-            C.ROOM_ID AS roomId,
-            C.PRODUCT_NO AS productNo,
-            C.SELLER_EMAIL AS sellerEmail,
-            C.BUYER_EMAIL AS buyerEmail,
-            C.LAST_MESSAGE AS lastMessage,
-            TO_CHAR(C.LAST_MESSAGE_AT, 'YYYY-MM-DD HH24:MI') AS lastMessageAt,
-            C.MUTE_YN AS muteYn,
-            P.PRODUCT_NAME AS productName,
-            P.PRODUCT_PRICE AS productPrice, P.TRADE_STATUS AS tradeStatus,   (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = C.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
-            CASE 
-                WHEN C.SELLER_EMAIL = #{loginUserEmail} THEN C.BUYER_EMAIL
-                ELSE C.SELLER_EMAIL
-            END AS otherUserEmail
-        FROM CHAT_ROOM C
-        JOIN PRODUCTS P ON C.PRODUCT_NO = P.PRODUCT_NO  
-        WHERE C.SELLER_EMAIL = #{loginUserEmail} OR C.BUYER_EMAIL = #{loginUserEmail}
-        ORDER BY C.LAST_MESSAGE_AT DESC NULLS LAST
-    </select>
+	    SELECT 
+	        C.ROOM_ID AS roomId,
+	        C.PRODUCT_NO AS productNo,
+	        C.SELLER_EMAIL AS sellerEmail,
+	        C.BUYER_EMAIL AS buyerEmail,
+	        C.LAST_MESSAGE AS lastMessage,
+	        TO_CHAR(C.LAST_MESSAGE_AT, 'YYYY-MM-DD HH24:MI') AS lastMessageAt,
+	        C.MUTE_YN AS muteYn,
+	        P.PRODUCT_NAME AS productName,
+	        P.PRODUCT_PRICE AS productPrice, 
+	        P.TRADE_STATUS AS tradeStatus,   
+	        (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = C.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
+	        CASE 
+	            WHEN C.SELLER_EMAIL = #{loginUserEmail} THEN C.BUYER_EMAIL
+	            ELSE C.SELLER_EMAIL
+	        END AS otherUserEmail,
+	        
+	        (SELECT NICKNAME 
+	         FROM MEMBER M 
+	         WHERE M.EMAIL = (
+	             CASE 
+	                 WHEN C.SELLER_EMAIL = #{loginUserEmail} THEN C.BUYER_EMAIL
+	                 ELSE C.SELLER_EMAIL
+	             END
+	         )) AS nickname FROM CHAT_ROOM C
+	    JOIN PRODUCTS P ON C.PRODUCT_NO = P.PRODUCT_NO  
+	    WHERE C.SELLER_EMAIL = #{loginUserEmail} OR C.BUYER_EMAIL = #{loginUserEmail}
+	    ORDER BY C.LAST_MESSAGE_AT DESC NULLS LAST
+	</select>
 
     <select id="findRoomId" resultType="String">
 	    SELECT ROOM_ID 
@@ -43,4 +53,10 @@
 	    DELETE FROM CHAT_ROOM 
 	    WHERE ROOM_ID = #{roomId}
 	</delete>
+	
+	<update id="updateTradeStatus">
+        UPDATE PRODUCTS 
+        SET TRADE_STATUS = #{status} 
+        WHERE PRODUCT_NO = #{productNo}
+    </update>
 </mapper>

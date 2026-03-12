@@ -15,7 +15,7 @@
    /* 전체 시세 카드 40% 축소 */
 .mk-wrap{
   width:min(700px, 100%);
-  margin:75px auto;
+  margin:0px auto;
 
 }
 

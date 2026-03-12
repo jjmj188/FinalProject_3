@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/payment/checkout.css}">
+    <!-- 토스페이먼츠 SDK v2 -->
+    <script src="https://js.tosspayments.com/v2/standard"></script>
+</head>
+
+<body>
+<main>
+<section class="pay-page">
+    <div class="pay-container">
+
+        <!-- 좌측: 주문 정보 -->
+        <div class="pay-order">
+            <h1 class="pay-title">
+                <i class="fa-solid fa-shield-halved"></i>
+                안전결제
+            </h1>
+            <p class="pay-subtitle">에스크로 방식으로 안전하게 거래하세요</p>
+
+            <!-- 상품 정보 카드 -->
+            <div class="pay-product-card">
+                <div class="pay-product-img">
+                    <img th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}"
+                         th:src="@{${product.imageList[0].imgUrl}}"
+                         alt="상품 이미지">
+                    <img th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}"
+                         th:src="@{/images/no_image.png}"
+                         alt="상품 이미지">
+                </div>
+                <div class="pay-product-info">
+                    <div class="pay-product-name" th:text="${product.productName}">상품명</div>
+                    <div class="pay-product-seller">
+                        판매자: <span th:text="${product.sellerName}">판매자명</span>
+                    </div>
+                    <div class="pay-product-condition">
+                        상태: <span th:text="${product.productCondition}">상</span>
+                        <span class="pay-dot">·</span>
+                        <span th:text="${product.tradeMethod}">택배</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 에스크로 안내 -->
+            <div class="pay-escrow-info">
+                <h3><i class="fa-solid fa-circle-info"></i> 안전결제 진행 과정</h3>
+                <div class="pay-escrow-steps">
+                    <div class="pay-step">
+                        <div class="pay-step-num">1</div>
+                        <div class="pay-step-text">
+                            <strong>결제</strong>
+                            <span>구매자가 결제하면 금액이 안전하게 보관됩니다</span>
+                        </div>
+                    </div>
+                    <div class="pay-step">
+                        <div class="pay-step-num">2</div>
+                        <div class="pay-step-text">
+                            <strong>상품 발송</strong>
+                            <span>판매자가 상품을 발송합니다</span>
+                        </div>
+                    </div>
+                    <div class="pay-step">
+                        <div class="pay-step-num">3</div>
+                        <div class="pay-step-text">
+                            <strong>구매확인</strong>
+                            <span>상품 수령 후 구매확인하면 판매자에게 대금이 전달됩니다</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 우측: 결제 정보 -->
+        <div class="pay-summary">
+            <div class="pay-summary-card">
+                <h2 class="pay-summary-title">결제 정보</h2>
+
+                <div class="pay-summary-row">
+                    <span>상품금액</span>
+                    <span class="pay-amount"
+                          th:text="${#numbers.formatInteger(product.productPrice, 3, 'COMMA')} + '원'">
+                        60,000원
+                    </span>
+                </div>
+
+                <!-- 배송비 (택배거래일 때) -->
+                <div class="pay-summary-row"
+                     th:if="${product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)}">
+                    <span>배송비</span>
+                    <span th:text="${#numbers.formatInteger(product.shippingOptionList[0].shippingFee, 3, 'COMMA')} + '원'">
+                        3,000원
+                    </span>
+                </div>
+
+                <div class="pay-summary-divider"></div>
+
+                <div class="pay-summary-row pay-summary-total">
+                    <span>총 결제금액</span>
+                    <span class="pay-total-amount"
+                          id="payTotalAmount"
+                          th:with="shippingFee=${(product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0}"
+                          th:text="${#numbers.formatInteger(product.productPrice + shippingFee, 3, 'COMMA')} + '원'"
+                          th:data-amount="${product.productPrice + ((product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0)}">
+                        63,000원
+                    </span>
+                </div>
+
+                <!-- 결제 수단 선택 (유료 상품만 표시) -->
+                <div class="pay-method-wrap"
+                     th:with="totalAmt=${product.productPrice + ((product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0)}"
+                     th:if="${totalAmt > 0}">
+                    <h3>결제 수단</h3>
+                    <div class="pay-methods">
+                        <label class="pay-method-item is-active">
+                            <input type="radio" name="payMethod" value="카드" checked>
+                            <i class="fa-regular fa-credit-card"></i>
+                            <span>카드결제</span>
+                        </label>
+                        <label class="pay-method-item">
+                            <input type="radio" name="payMethod" value="가상계좌">
+                            <i class="fa-solid fa-building-columns"></i>
+                            <span>가상계좌</span>
+                        </label>
+                        <label class="pay-method-item">
+                            <input type="radio" name="payMethod" value="간편결제">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                            <span>간편결제</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 나눔 상품 안내 (0원일 때) -->
+                <div class="pay-method-wrap"
+                     th:with="totalAmt=${product.productPrice + ((product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0)}"
+                     th:if="${totalAmt == 0}">
+                    <div style="background:#e6fcf5; border-radius:12px; padding:16px; text-align:center; color:#0ca678; font-weight:600;">
+                        <i class="fa-solid fa-gift" style="margin-right:6px;"></i> 무료나눔 상품입니다
+                    </div>
+                </div>
+
+                <button id="btnPay" class="pay-btn" type="button"
+                        th:with="totalAmt=${product.productPrice + ((product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0)}">
+                    <i th:class="${totalAmt > 0} ? 'fa-solid fa-lock' : 'fa-solid fa-gift'"></i>
+                    <span th:text="${totalAmt > 0} ? '안전결제 하기' : '나눔 신청하기'">안전결제 하기</span>
+                </button>
+
+                <p class="pay-notice"
+                   th:with="totalAmt=${product.productPrice + ((product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0)}"
+                   th:if="${totalAmt > 0}">
+                    결제 시 에스크로(안전결제) 서비스가 적용됩니다.<br>
+                    상품 수령 후 구매확인을 하시면 판매자에게 대금이 전달됩니다.
+                </p>
+                <p class="pay-notice"
+                   th:with="totalAmt=${product.productPrice + ((product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0)}"
+                   th:if="${totalAmt == 0}">
+                    나눔 신청 후 판매자가 확인하면 거래가 진행됩니다.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- hidden data -->
+<input type="hidden" id="tossClientKey" th:value="${tossClientKey}">
+<input type="hidden" id="productNo" th:value="${product.productNo}">
+<input type="hidden" id="productName" th:value="${product.productName}">
+<input type="hidden" id="productPrice" th:value="${product.productPrice}">
+<input type="hidden" id="totalAmount"
+       th:value="${product.productPrice + ((product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)) ? product.shippingOptionList[0].shippingFee : 0)}">
+<input type="hidden" id="buyerEmail" th:value="${buyerEmail}">
+<input type="hidden" id="contextPath" th:value="@{/}">
+
+<script th:inline="javascript">
+
+/*<![CDATA[*/
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const clientKey  = document.getElementById('tossClientKey').value;
+    const contextPath = document.getElementById('contextPath').value.replace(/\/$/, '');
+    const productNo  = document.getElementById('productNo').value;
+    const productName = document.getElementById('productName').value;
+    const amount     = parseInt(document.getElementById('totalAmount').value);
+    const buyerEmail = document.getElementById('buyerEmail').value;
+
+    // 토스 SDK v2 초기화
+    const tossPayments = TossPayments(clientKey);
+    // v2: payment() 메서드로 결제창 인스턴스 생성 (customerKey 필수)
+    const payment = tossPayments.payment({ customerKey: buyerEmail });
+
+    // 결제 수단 라디오 버튼 이벤트
+    const methodItems = document.querySelectorAll('.pay-method-item');
+    methodItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            methodItems.forEach(function(el) { el.classList.remove('is-active'); });
+            this.classList.add('is-active');
+            this.querySelector('input').checked = true;
+        });
+    });
+
+    // 결제 버튼 클릭
+    let isProcessing = false;
+    document.getElementById('btnPay').addEventListener('click', function() {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        let paymentType = '카드결제'; // 기본값
+        let tossMethod = 'CARD';      // 기본값
+
+        // 👉 에러 수정 부분: 금액이 0원보다 클 때만 결제 수단 라디오 버튼의 값을 읽어옵니다.
+        if (amount > 0) {
+            const checkedRadio = document.querySelector('input[name="payMethod"]:checked');
+            if (checkedRadio) {
+                const selectedMethod = checkedRadio.value;
+                if (selectedMethod === '가상계좌') {
+                    paymentType = '가상계좌';
+                    tossMethod = 'VIRTUAL_ACCOUNT';
+                } else if (selectedMethod === '간편결제') {
+                    paymentType = '간편결제';
+                    tossMethod = 'EASY_PAY';
+                }
+            }
+        }
+
+        // 1) 서버에 거래 생성 요청
+        fetch(contextPath + '/payment/prepare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                productNo: parseInt(productNo),
+                paymentType: amount === 0 ? '무료나눔' : paymentType
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                alert(data.message || '처리에 실패했습니다.');
+                isProcessing = false;
+                return;
+            }
+
+            // ★ 무료나눔(0원): 토스 결제 없이 바로 무료 거래 완료 처리
+            if (amount === 0) {
+                fetch(contextPath + '/payment/free-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: data.orderId,
+                        transactionId: data.transactionId
+                    })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        location.href = contextPath + '/payment/success?paymentKey=FREE&orderId=FREE&amount=0&transactionId=' + data.transactionId;
+                    } else {
+                        alert(result.message || '나눔 신청에 실패했습니다.');
+                        isProcessing = false;
+                    }
+                })
+                .catch(function(err) {
+                    console.error('나눔 신청 오류:', err);
+                    alert('나눔 신청 중 오류가 발생했습니다.');
+                    isProcessing = false;
+                });
+                return;
+            }
+
+            // ★ 유료 상품: 토스 결제창 호출 (v2 방식)
+            payment.requestPayment({
+                method: tossMethod,
+                amount: {
+                    currency: 'KRW',
+                    value: amount
+                },
+                orderId: data.orderId,
+                orderName: productName,
+                customerEmail: buyerEmail,
+                successUrl: window.location.origin + contextPath + '/payment/success',
+                failUrl: window.location.origin + contextPath + '/payment/fail'
+            }).catch(function(error) {
+                if (error.code === 'USER_CANCEL') {
+                    // 사용자 취소 시 처리 (필요시 추가)
+                } else {
+                    alert(error.message || '결제 중 오류가 발생했습니다.');
+                }
+                isProcessing = false;
+            });
+        })
+        .catch(function(err) {
+            console.error('결제 준비 오류:', err);
+            alert('결제 준비 중 오류가 발생했습니다.');
+            isProcessing = false;
+        });
+    });
+});
+
+/*]]>*/
+
+</script>
+</main>
+</body>
+</html>
