@@ -8,14 +8,14 @@
 </head>
 
 <body>
-<main>
+<main th:attr="data-product-no=${productNo}">
  <section class="spx-wrap">
     <div class="spx-grid">
 
       <!-- LEFT -->
       <div class="spx-sellerCard">
         <div class="spx-sellerTop">
-          <img src="" class="spx-avatar" aria-hidden="true"></img>
+          <img th:src="@{/images/default_profile.png}" class="spx-avatar" aria-hidden="true" alt="판매자 프로필 이미지">
           <div>
             <div class="spx-sellerName">판매자 이름</div>
             <div class="spx-sellerSub">최근 접속 시간 전 | 응답률 92%</div>
@@ -343,6 +343,321 @@
   </section>
 </main>
 <script th:src="@{/js/product/product_user_profile.js}"></script>
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function () {
 
+    const ctxPath = "/finalProject_3";
+    const main = document.querySelector("main");
+    const productNo = main ? main.getAttribute("data-product-no") : "";
+
+    const sellerNameEl = document.querySelector(".spx-sellerName");
+    const sellerSubEl = document.querySelector(".spx-sellerSub");
+    const avatarEl = document.querySelector(".spx-avatar");
+    const tempStrongEl = document.querySelector(".spx-tempValue strong");
+    const tempBarEl = document.querySelector(".spx-bar i");
+
+    const statEls = document.querySelectorAll(".spx-stat .v");
+
+    const sellGrid = document.getElementById("sps-grid");
+    const sortBtns = document.querySelectorAll(".sps-sortBtn");
+    const loadMoreBtn = document.querySelector(".btn-load-more");
+
+    const tabs = document.querySelectorAll(".sps-tab");
+    const sellPanel = document.getElementById("sps-panel-sell");
+    const reviewPanel = document.getElementById("sps-panel-review");
+
+    let currentSort = "latest";
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMore = true;
+
+    if (!productNo) {
+        alert("잘못된 접근입니다.");
+        return;
+    }
+
+    loadSellerProfile();
+    loadSellerProducts(true);
+    initTabs();
+    initSortButtons();
+    initLoadMore();
+
+    function loadSellerProfile() {
+        fetch(ctxPath + "/product/seller/profile?productNo=" + encodeURIComponent(productNo), {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("판매자 정보를 불러오지 못했습니다.");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                alert(data.message || "판매자 정보를 불러오지 못했습니다.");
+                return;
+            }
+
+            const seller = data.seller || {};
+
+            const sellerName = seller.sellerName || "판매자";
+            const sellerProfileImg = buildImageUrl(
+                seller.sellerProfileImg,
+                ctxPath + "/images/default_profile.png"
+            );
+            const mannerTemp = seller.mannerTemp != null ? seller.mannerTemp : 36.5;
+            const safePayCount = seller.safePayCount != null ? seller.safePayCount : 0;
+            const reviewCount = seller.reviewCount != null ? seller.reviewCount : 0;
+            const tradeCount = seller.tradeCount != null ? seller.tradeCount : 0;
+
+            sellerNameEl.textContent = sellerName;
+            sellerSubEl.textContent = "판매자 정보";
+            avatarEl.src = sellerProfileImg;
+            tempStrongEl.textContent = Number(mannerTemp).toFixed(1) + "°C";
+
+            const percent = calcTempPercent(mannerTemp);
+            tempBarEl.style.width = percent + "%";
+
+            if (statEls.length >= 3) {
+                statEls[0].textContent = safePayCount;
+                statEls[1].textContent = reviewCount;
+                statEls[2].textContent = tradeCount;
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("판매자 정보를 불러오는 중 오류가 발생했습니다.");
+        });
+    }
+
+    function loadSellerProducts(reset) {
+        if (isLoading) return;
+        if (!hasMore && !reset) return;
+
+        isLoading = true;
+
+        if (reset) {
+            currentPage = 1;
+            hasMore = true;
+            sellGrid.innerHTML = "";
+        }
+
+        const url = ctxPath + "/product/seller/products"
+            + "?productNo=" + encodeURIComponent(productNo)
+            + "&sortType=" + encodeURIComponent(currentSort)
+            + "&page=" + encodeURIComponent(currentPage)
+            + "&size=8";
+
+        fetch(url, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("판매상품을 불러오지 못했습니다.");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                alert(data.message || "판매상품을 불러오지 못했습니다.");
+                return;
+            }
+
+            const productList = data.productList || [];
+            hasMore = !!data.hasMore;
+
+            if (reset && productList.length === 0) {
+                sellGrid.innerHTML = `<div class="sps-empty">등록된 판매상품이 없습니다.</div>`;
+            } else {
+                productList.forEach(product => {
+                    sellGrid.insertAdjacentHTML("beforeend", makeProductCard(product));
+                });
+            }
+
+            toggleLoadMoreButton();
+            currentPage++;
+        })
+        .catch(error => {
+            console.error(error);
+            alert("판매상품을 불러오는 중 오류가 발생했습니다.");
+        })
+        .finally(() => {
+            isLoading = false;
+        });
+    }
+
+    function makeProductCard(product) {
+        const productNo = product.productNo;
+        const productName = escapeHtml(product.productName || "상품명");
+        const productPrice = formatPrice(product.productPrice);
+        const tradeStatus = escapeHtml(product.tradeStatus || "판매중");
+        const placeName = escapeHtml(product.placeName || "위치정보 없음");
+        const imgUrl = buildImageUrl(
+            product.imgUrl,
+            ctxPath + "/images/no_image.png"
+        );
+        const timeAgo = formatTimeAgo(product.regDate);
+        const viewCount = product.viewCount != null ? product.viewCount : 0;
+        const wished = Number(product.wished) === 1;
+
+        return `
+            <article class="sps-card">
+                <a class="sps-thumb" href="${ctxPath}/product/product_detail/${productNo}">
+                    <span class="sps-badge">${tradeStatus}</span>
+                    <button class="sps-like ${wished ? "is-active" : ""}" type="button" aria-label="찜" aria-pressed="${wished}"
+                            data-product-no="${productNo}">
+                        <i class="${wished ? "fa-solid" : "fa-regular"} fa-heart"></i>
+                    </button>
+                    <img src="${imgUrl}" alt="${productName}">
+                </a>
+                <div class="sps-body">
+                    <a class="sps-title" href="${ctxPath}/product/product_detail/${productNo}">${productName}</a>
+                    <div class="sps-price">${productPrice}</div>
+                    <div class="sps-meta">
+                        <span><i class="fa-solid fa-location-dot"></i> ${placeName}</span>
+                        <span><i class="fa-regular fa-clock"></i> ${timeAgo}</span>
+                        <span><i class="fa-solid fa-eye"></i> ${viewCount}</span>
+                    </div>
+                </div>
+            </article>
+        `;
+    }
+
+    function buildImageUrl(path, defaultUrl) {
+        if (!path || String(path).trim() === "") {
+            return defaultUrl;
+        }
+
+        path = String(path).trim();
+
+        if (path.startsWith("http://") || path.startsWith("https://")) {
+            return path;
+        }
+
+        if (path.startsWith(ctxPath + "/")) {
+            return path;
+        }
+
+        if (path.startsWith("/images/") || path.startsWith("/upload/")) {
+            return ctxPath + path;
+        }
+
+        if (path.startsWith("images/") || path.startsWith("upload/")) {
+            return ctxPath + "/" + path;
+        }
+
+        return ctxPath + "/images/" + path;
+    }
+
+    function initSortButtons() {
+        sortBtns.forEach(btn => {
+            btn.addEventListener("click", function () {
+                sortBtns.forEach(el => {
+                    el.classList.remove("is-active");
+                    el.setAttribute("aria-selected", "false");
+                });
+
+                this.classList.add("is-active");
+                this.setAttribute("aria-selected", "true");
+
+                currentSort = this.getAttribute("data-sort");
+                loadSellerProducts(true);
+            });
+        });
+    }
+
+    function initLoadMore() {
+        if (!loadMoreBtn) return;
+
+        loadMoreBtn.addEventListener("click", function () {
+            loadSellerProducts(false);
+        });
+    }
+
+    function toggleLoadMoreButton() {
+        if (!loadMoreBtn) return;
+        loadMoreBtn.style.display = hasMore ? "inline-flex" : "none";
+    }
+
+    function initTabs() {
+        tabs.forEach(tab => {
+            tab.addEventListener("click", function () {
+                tabs.forEach(el => {
+                    el.classList.remove("is-active");
+                    el.setAttribute("aria-selected", "false");
+                });
+
+                this.classList.add("is-active");
+                this.setAttribute("aria-selected", "true");
+
+                const tabName = this.getAttribute("data-tab");
+
+                if (tabName === "sell") {
+                    sellPanel.classList.add("is-show");
+                    sellPanel.hidden = false;
+                    reviewPanel.classList.remove("is-show");
+                    reviewPanel.hidden = true;
+                } else {
+                    reviewPanel.classList.add("is-show");
+                    reviewPanel.hidden = false;
+                    sellPanel.classList.remove("is-show");
+                    sellPanel.hidden = true;
+                }
+            });
+        });
+    }
+
+    function calcTempPercent(temp) {
+        const min = 0;
+        const max = 100;
+        const current = Number(temp) || 36.5;
+        const percent = (current - min) / (max - min) * 100;
+        return Math.max(0, Math.min(100, percent));
+    }
+
+    function formatPrice(price) {
+        const num = Number(price || 0);
+        return num.toLocaleString("ko-KR") + "원";
+    }
+
+    function formatTimeAgo(regDate) {
+        if (!regDate) return "";
+
+        const date = new Date(regDate);
+        if (isNaN(date.getTime())) return "";
+
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMin = Math.floor(diffMs / 60000);
+        const diffHour = Math.floor(diffMs / 3600000);
+        const diffDay = Math.floor(diffMs / 86400000);
+
+        if (diffMin < 1) return "방금 전";
+        if (diffMin < 60) return diffMin + "분 전";
+        if (diffHour < 24) return diffHour + "시간 전";
+        if (diffDay < 30) return diffDay + "일 전";
+
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return y + "." + m + "." + d;
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+});
+</script>
 </body>
 </html>

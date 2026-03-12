@@ -328,8 +328,21 @@ public class ProductService_imple implements ProductService {
         return pdao.selectPriceCheckProductList(paraMap);
     }
 
+	//판매자정보
+    @Override
+    public ProductDTO selectSellerProfileByProductNo(int productNo) {
+        return pdao.selectSellerProfileByProductNo(productNo);
+    }
 
-	
+    @Override
+    public List<ProductDTO> selectSellerProductsByProductNo(Map<String, Object> paraMap) {
+        return pdao.selectSellerProductsByProductNo(paraMap);
+    }
+
+    @Override
+    public int selectSellerProductCountByProductNo(int productNo) {
+        return pdao.selectSellerProductCountByProductNo(productNo);
+    }
     
     
 }

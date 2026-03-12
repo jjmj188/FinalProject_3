@@ -65,10 +65,13 @@ public interface ProductService {
 
 	//시세조회
 	public ProductPriceStatsDTO selectPriceCheckStats(Map<String, Object> paraMap);
-
 	public List<ProductPriceTrendDTO> selectPriceCheckChartData(Map<String, Object> paraMap);
-
 	public List<ProductDTO> selectPriceCheckProductList(Map<String, Object> paraMap);
+
+	//판매자정보
+	ProductDTO selectSellerProfileByProductNo(int productNo);
+	List<ProductDTO> selectSellerProductsByProductNo(Map<String, Object> paraMap);
+	int selectSellerProductCountByProductNo(int productNo);
 
 	
 

@@ -78,9 +78,12 @@ public interface ProductDAO {
 	
 	//시세조회
 	ProductPriceStatsDTO selectPriceCheckStats(Map<String, Object> paraMap);
-
 	List<ProductPriceTrendDTO> selectPriceCheckChartData(Map<String, Object> paraMap);
-
 	List<ProductDTO> selectPriceCheckProductList(Map<String, Object> paraMap);
+
+	//판매자 정보
+	ProductDTO selectSellerProfileByProductNo(int productNo);
+	List<ProductDTO> selectSellerProductsByProductNo(Map<String, Object> paraMap);
+	int selectSellerProductCountByProductNo(int productNo);
     
 }

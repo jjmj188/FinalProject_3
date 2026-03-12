@@ -69,6 +69,13 @@ public class ProductDTO {
     /* ============================= */
     private Integer wishCount;
     private boolean wished;
+    /* ============================= */
+    /* 판매자 정보 */
+    /* ============================= */
+    private Integer reviewCount;
+    private Integer safePayCount;
+    private Integer tradeCount;
+    
     // 관리자 페이지 전용 의심 플래그
     private boolean suspect;
 
