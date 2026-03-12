@@ -76,6 +76,7 @@ public class SecurityConfig {
                         "/product/sell",
                         "/product/sellRegister",
                         "/product/wishlist/**",
+                        "/product/product_user_profile",
                         "/payment/**"
                     ).authenticated()
                 
@@ -94,7 +95,6 @@ public class SecurityConfig {
                     "/product/price_check",
                     "/product/share",
                     "/product/product_detail/**",
-                    "/product/product_user_profile",
                     "/product/wordSearchShow",
                     "/actuator/**",
                     "/adminupload/**"
