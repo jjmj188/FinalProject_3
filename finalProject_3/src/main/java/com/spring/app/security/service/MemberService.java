@@ -12,4 +12,10 @@ public interface MemberService {
 
     // 비밀번호 재설정 (휴대폰 번호 기준)
     void updatePasswordByPhone(String phone, String encodedPassword);
+
+    // 휴면 계정 여부 확인 (전화번호 기준)
+    boolean isIdlePhone(String phone);
+
+    // 휴면 해제 (IDLE=0, USER_DORMANT 삭제)
+    void reactivateMember(String email);
 }

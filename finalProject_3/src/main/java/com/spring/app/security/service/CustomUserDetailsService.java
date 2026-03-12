@@ -3,6 +3,7 @@ package com.spring.app.security.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,6 +30,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         MemberDTO member = dao.findByEmail(email);
         if (member == null) {
             throw new UsernameNotFoundException("해당 이메일을 가진 사용자가 없습니다.");
+        }
+
+        // 휴면 계정 체크 - FailureHandler 가 "IDLE_ACCOUNT" 메시지로 구분
+        if (member.getIdle() == 1) {
+            throw new DisabledException("IDLE_ACCOUNT");
         }
 
         // 2. AUTHORITIES 테이블에서 권한 목록 조회

@@ -80,6 +80,26 @@
             </div>
         </div>
 
+        <!-- 휴면 계정 해제 모달 -->
+        <div id="idleModal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>휴면 계정 해제</h3>
+                    <button type="button" class="close-btn" onclick="closeIdleModal()">&times;</button>
+                </div>
+                <p class="help-text">1년 이상 로그인하지 않아 휴면 처리된 계정입니다.<br>가입 시 등록한 휴대폰 인증으로 해제할 수 있습니다.</p>
+                <div class="input-group">
+                    <input type="text" id="idlePhone" placeholder="휴대폰 번호 (숫자만)" maxlength="11">
+                    <button type="button" class="btn-action-outline" onclick="sendIdleSms()">인증번호 전송</button>
+                </div>
+                <div id="idleAuthArea" class="input-group" style="display: none;">
+                    <input type="text" id="idleCode" placeholder="인증번호 6자리 입력" maxlength="6">
+                    <span id="timerIdle" class="timer-text">03:00</span>
+                    <button type="button" class="btn-action" onclick="reactivateAction()">휴면 해제</button>
+                </div>
+            </div>
+        </div>
+
         <div id="findModal" class="modal-overlay" style="display: none;">
             <div class="modal-content">
                 <div class="modal-header">
@@ -132,7 +152,87 @@
 
     <script th:inline="javascript">
 	    /*<![CDATA[*/
-	    
+
+        // idle=true 파라미터가 있으면 휴면해제 모달 자동 오픈
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('idle') === 'true') {
+                window.addEventListener('load', function() {
+                    $("#idleModal").fadeIn(200);
+                });
+            }
+        })();
+
+        // 휴면 모달 관련
+        let idleTimerInterval;
+        let idleTimeLeft = 180;
+        let currentIdlePhone = "";
+
+        function closeIdleModal() {
+            $("#idleModal").fadeOut(200);
+            clearInterval(idleTimerInterval);
+            $("#idlePhone").val("").attr("readonly", false).css("background", "#fff");
+            $("#idleCode").val("");
+            $("#idleAuthArea").hide();
+        }
+
+        function sendIdleSms() {
+            const phone = $("#idlePhone").val().trim();
+            const regExpPhone = /^[0-9]{11}$/;
+            if (!regExpPhone.test(phone)) {
+                alert("휴대폰 번호는 11자리 숫자만 입력해주세요.");
+                $("#idlePhone").focus();
+                return;
+            }
+
+            const reqUrl = /*[[@{/security/sendSmsForIdle}]]*/ '/security/sendSmsForIdle';
+
+            $.ajax({
+                url: reqUrl, type: "post", data: {"phone": phone},
+                success: function(res) {
+                    alert(res.msg);
+                    if (res.success) {
+                        currentIdlePhone = phone;
+                        $("#idlePhone").attr("readonly", true).css("background", "#f5f5f5");
+                        $("#idleAuthArea").css("display", "flex");
+                        clearInterval(idleTimerInterval);
+                        idleTimeLeft = 180;
+                        $("#timerIdle").text(formatTime(idleTimeLeft)).css("color", "#f03f40");
+                        idleTimerInterval = setInterval(function() {
+                            idleTimeLeft--;
+                            $("#timerIdle").text(formatTime(idleTimeLeft));
+                            if (idleTimeLeft <= 0) {
+                                clearInterval(idleTimerInterval);
+                                alert("인증 시간이 만료되었습니다. 인증번호를 다시 전송해주세요.");
+                                $("#idleCode").val("");
+                            }
+                        }, 1000);
+                    }
+                },
+                error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+            });
+        }
+
+        function reactivateAction() {
+            if (idleTimeLeft <= 0) { alert("인증 시간이 만료되었습니다."); return; }
+            const code = $("#idleCode").val().trim();
+            if (code === "") { alert("인증번호를 입력해주세요."); return; }
+
+            const reqUrl = /*[[@{/security/reactivateMember}]]*/ '/security/reactivateMember';
+
+            $.ajax({
+                url: reqUrl, type: "post", data: {"phone": currentIdlePhone, "code": code},
+                success: function(res) {
+                    alert(res.msg);
+                    if (res.success) {
+                        clearInterval(idleTimerInterval);
+                        closeIdleModal();
+                    }
+                },
+                error: function() { alert("서버와 통신 중 에러가 발생했습니다."); }
+            });
+        }
+
         // 타이머 관련 변수
         let timerInterval;
         let timeLeft = 180; // 3분 = 180초
