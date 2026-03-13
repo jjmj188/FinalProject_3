@@ -24,4 +24,13 @@ public interface ChatMapper {
     int deleteChatRoom(@Param("roomId") String roomId);
 
 	void updateTradeStatus(Map<String, Object> map);
+
+    // 예약 확정: TRADE_STATUS='예약중' + RESERVED_ROOM_ID 저장
+    void updateReserveStatus(Map<String, Object> map);
+
+    // 예약 취소: TRADE_STATUS='판매중' + RESERVED_ROOM_ID=NULL
+    void cancelReserveStatus(Map<String, Object> map);
+
+    // 상품의 현재 예약된 채팅방 ID 조회
+    String getReservedRoomId(@Param("productNo") int productNo);
 }

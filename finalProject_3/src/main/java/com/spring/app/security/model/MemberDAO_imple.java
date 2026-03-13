@@ -94,6 +94,11 @@ public class MemberDAO_imple implements MemberDAO {
         sqlsession.delete("member.deleteFromUserDormant", email);
     }
 
+    @Override
+    public void updateProfile(MemberDTO member) {
+        sqlsession.update("member.updateProfile", member);
+    }
+
     // RefreshToken 저장/업데이트
     @Override
     public void saveRefreshToken(String email, String rtValue) {

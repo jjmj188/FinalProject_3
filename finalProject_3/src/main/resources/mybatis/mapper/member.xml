@@ -130,6 +130,14 @@
 	    WHERE EMAIL = #{email}
 	</delete>
 
+	<!-- 프로필 수정 (닉네임 + 프로필 이미지) -->
+	<update id="updateProfile" parameterType="com.spring.app.security.domain.MemberDTO">
+	    UPDATE MEMBER
+	    SET NICKNAME = #{nickname},
+	        PROFILE_IMG = #{profileImg}
+	    WHERE EMAIL = #{email}
+	</update>
+
     <!-- AUTHORITIES 테이블에서 권한 목록 조회 -->
     <select id="findAuthoritiesByEmail" parameterType="String" resultType="String">
         SELECT AUTHORITY FROM AUTHORITIES WHERE EMAIL = #{email}

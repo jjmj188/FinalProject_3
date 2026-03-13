@@ -192,20 +192,53 @@ public class ChatController {
         }
     }
     
- // 6. 예약 확정 시 상품 상태 '예약중'으로 변경 API
+ // 6. 예약 확정 API - roomId도 함께 저장하여 예약된 채팅방 추적
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/reserve")
-    public Map<String, Object> reserveProduct(@RequestBody Map<String, Object> payload) {
+    public Map<String, Object> reserveProduct(@RequestBody Map<String, Object> payload, Principal principal) {
         Map<String, Object> resultMap = new HashMap<>();
         try {
             int productNo = Integer.parseInt(payload.get("productNo").toString());
-            
-            // ★ 핵심: 이제 눈속임이 아니라 진짜 서비스(DB)를 호출해서 '예약중'으로 덮어씌웁니다!
-            chatService.updateTradeStatus(productNo, "예약중"); 
-            
+            String roomId = payload.get("roomId").toString();
+
+            // 예약 확정: TRADE_STATUS='예약중' + RESERVED_ROOM_ID=roomId
+            chatService.confirmReserve(productNo, roomId);
+
             resultMap.put("success", true);
         } catch (Exception e) {
             resultMap.put("success", false);
             resultMap.put("message", "상태 변경 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+        return resultMap;
+    }
+
+    // 7. 예약 취소 API - TRADE_STATUS='판매중', RESERVED_ROOM_ID=NULL
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/cancelReserve")
+    public Map<String, Object> cancelReserve(@RequestBody Map<String, Object> payload, Principal principal) {
+        Map<String, Object> resultMap = new HashMap<>();
+        try {
+            int productNo = Integer.parseInt(payload.get("productNo").toString());
+            String roomId = payload.get("roomId").toString();
+
+            chatService.cancelReserve(productNo);
+
+            // 채팅방에 예약취소 안내 메시지 전송
+            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            ChatMessageDTO cancelMsg = new ChatMessageDTO();
+            cancelMsg.setSender(principal.getName());
+            cancelMsg.setContent("[❌ 예약이 취소되었습니다.]\n\n다시 일정을 조율해 주세요.");
+            cancelMsg.setRoomId(roomId);
+            cancelMsg.setTimestamp(now);
+
+            firebaseService.saveMessage(cancelMsg);
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, cancelMsg);
+
+            resultMap.put("success", true);
+        } catch (Exception e) {
+            resultMap.put("success", false);
+            resultMap.put("message", "예약 취소 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
         return resultMap;

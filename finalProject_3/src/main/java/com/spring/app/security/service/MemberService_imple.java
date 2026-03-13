@@ -100,4 +100,14 @@ public class MemberService_imple implements MemberService {
         dao.reactivateMember(email);
         dao.deleteFromUserDormant(email);
     }
+
+    @Override
+    public MemberDTO getMemberByEmail(String email) {
+        return dao.findByEmail(email);
+    }
+
+    @Override
+    public void updateProfile(MemberDTO member) {
+        dao.updateProfile(member);
+    }
 }

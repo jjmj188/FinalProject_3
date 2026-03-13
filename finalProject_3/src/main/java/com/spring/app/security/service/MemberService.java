@@ -18,4 +18,10 @@ public interface MemberService {
 
     // 휴면 해제 (IDLE=0, USER_DORMANT 삭제)
     void reactivateMember(String email);
+
+    // 이메일로 회원 정보 조회
+    MemberDTO getMemberByEmail(String email);
+
+    // 프로필 수정 (닉네임 + 프로필 이미지)
+    void updateProfile(MemberDTO member);
 }

@@ -4,7 +4,7 @@
 <mapper namespace="com.spring.app.chat.mapper.ChatMapper">
 
     <select id="selectMyChatRooms" parameterType="String" resultType="com.spring.app.chat.domain.ChatRoomDTO">
-	    SELECT 
+	    SELECT
 	        C.ROOM_ID AS roomId,
 	        C.PRODUCT_NO AS productNo,
 	        C.SELLER_EMAIL AS sellerEmail,
@@ -13,23 +13,24 @@
 	        TO_CHAR(C.LAST_MESSAGE_AT, 'YYYY-MM-DD HH24:MI') AS lastMessageAt,
 	        C.MUTE_YN AS muteYn,
 	        P.PRODUCT_NAME AS productName,
-	        P.PRODUCT_PRICE AS productPrice, 
-	        P.TRADE_STATUS AS tradeStatus,   
+	        P.PRODUCT_PRICE AS productPrice,
+	        P.TRADE_STATUS AS tradeStatus,
+	        P.RESERVED_ROOM_ID AS reservedRoomId,
 	        (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = C.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
-	        CASE 
+	        CASE
 	            WHEN C.SELLER_EMAIL = #{loginUserEmail} THEN C.BUYER_EMAIL
 	            ELSE C.SELLER_EMAIL
 	        END AS otherUserEmail,
-	        
-	        (SELECT NICKNAME 
-	         FROM MEMBER M 
+
+	        (SELECT NICKNAME
+	         FROM MEMBER M
 	         WHERE M.EMAIL = (
-	             CASE 
+	             CASE
 	                 WHEN C.SELLER_EMAIL = #{loginUserEmail} THEN C.BUYER_EMAIL
 	                 ELSE C.SELLER_EMAIL
 	             END
 	         )) AS nickname FROM CHAT_ROOM C
-	    JOIN PRODUCTS P ON C.PRODUCT_NO = P.PRODUCT_NO  
+	    JOIN PRODUCTS P ON C.PRODUCT_NO = P.PRODUCT_NO
 	    WHERE C.SELLER_EMAIL = #{loginUserEmail} OR C.BUYER_EMAIL = #{loginUserEmail}
 	    ORDER BY C.LAST_MESSAGE_AT DESC NULLS LAST
 	</select>
@@ -54,9 +55,33 @@
 	    WHERE ROOM_ID = #{roomId}
 	</delete>
 	
-	<update id="updateTradeStatus">
-        UPDATE PRODUCTS 
-        SET TRADE_STATUS = #{status} 
+	<!-- 예약 확정: TRADE_STATUS = '예약중' + RESERVED_ROOM_ID 저장 -->
+    <update id="updateReserveStatus">
+        UPDATE PRODUCTS
+        SET TRADE_STATUS = '예약중',
+            RESERVED_ROOM_ID = #{roomId}
         WHERE PRODUCT_NO = #{productNo}
     </update>
+
+	<!-- 예약 취소: TRADE_STATUS = '판매중' + RESERVED_ROOM_ID 초기화 -->
+    <update id="cancelReserveStatus">
+        UPDATE PRODUCTS
+        SET TRADE_STATUS = '판매중',
+            RESERVED_ROOM_ID = NULL
+        WHERE PRODUCT_NO = #{productNo}
+    </update>
+
+	<!-- 기존 updateTradeStatus (다른 곳에서 사용 중일 수 있으므로 유지) -->
+	<update id="updateTradeStatus">
+        UPDATE PRODUCTS
+        SET TRADE_STATUS = #{status}
+        WHERE PRODUCT_NO = #{productNo}
+    </update>
+
+    <!-- 예약중인 상품에 대해 해당 구매자의 기존 채팅방 존재 여부 확인 -->
+    <select id="getReservedRoomId" resultType="String">
+        SELECT RESERVED_ROOM_ID
+        FROM PRODUCTS
+        WHERE PRODUCT_NO = #{productNo}
+    </select>
 </mapper>

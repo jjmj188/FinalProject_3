@@ -42,6 +42,9 @@ public interface MemberDAO {
     void reactivateMember(String email);
     void deleteFromUserDormant(String email);
 
+    // 프로필 수정 (닉네임 + 프로필 이미지)
+    void updateProfile(MemberDTO member);
+
     // RefreshToken CRUD
     void saveRefreshToken(@org.apache.ibatis.annotations.Param("email") String email,
                           @org.apache.ibatis.annotations.Param("rtValue") String rtValue);

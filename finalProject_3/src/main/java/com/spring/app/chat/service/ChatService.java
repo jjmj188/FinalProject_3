@@ -14,4 +14,13 @@ public interface ChatService {
 	boolean leaveChatRoom(String roomId);
 
 	void updateTradeStatus(int productNo, String string);
+
+    // 예약 확정 (roomId와 함께 저장)
+    void confirmReserve(int productNo, String roomId);
+
+    // 예약 취소
+    void cancelReserve(int productNo);
+
+    // 현재 예약된 채팅방 ID 조회
+    String getReservedRoomId(int productNo);
 }

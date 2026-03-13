@@ -55,8 +55,26 @@ public class ChatServiceImpl implements ChatService {
 	     Map<String, Object> map = new HashMap<>();
 	     map.put("productNo", productNo);
 	     map.put("status", status);
-	     
-	     // 이전에 Mapper XML에 추가했던 updateTradeStatus 쿼리를 실행합니다.
-	     chatMapper.updateTradeStatus(map); 
+	     chatMapper.updateTradeStatus(map);
 	 }
+
+    @Override
+    public void confirmReserve(int productNo, String roomId) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("productNo", productNo);
+        map.put("roomId", roomId);
+        chatMapper.updateReserveStatus(map);
+    }
+
+    @Override
+    public void cancelReserve(int productNo) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("productNo", productNo);
+        chatMapper.cancelReserveStatus(map);
+    }
+
+    @Override
+    public String getReservedRoomId(int productNo) {
+        return chatMapper.getReservedRoomId(productNo);
+    }
 }

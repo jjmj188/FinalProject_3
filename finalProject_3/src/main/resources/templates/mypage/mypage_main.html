@@ -3,9 +3,8 @@
       xmlns:th="http://www.thymeleaf.org"
       lang="ko">
 <head>
-<!-- <link rel="stylesheet" th:href="@{/css/index.css}"> -->
-<!--  <script defer th:src="@{/js/index.js}"></script>  -->
 	<link rel="stylesheet" th:href="@{/css/mypage/mypage.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
@@ -33,12 +32,12 @@
             <div class="mp-profile-card">
                 <div class="mp-user-info">
                     <div class="mp-avatar">
-                        <img th:src="${#authentication.principal != 'anonymousUser' ? '/images/default_profile.png' : '/images/default_profile.png'}" alt="프로필">
+                        <img id="mypageProfileImg" th:src="${profileImgUrl}" alt="프로필">
                     </div>
                     <div class="mp-user-text">
                         <div class="mp-nickname">
-                            <span th:text="${#authentication.name}">유의한안전토파즈</span>
-                            <a href="#" class="mp-edit-link">프로필 수정</a>
+                            <span id="mypageNickname" th:text="${member.nickname}">닉네임</span>
+                            <a href="#" class="mp-edit-link" onclick="openProfileEditModal(); return false;">프로필 수정</a>
                         </div>
                         <div class="mp-manner">
                             <span class="label">매너온도</span>
@@ -85,8 +84,214 @@
             </div>
         </section>
     </div>
+
+    <!-- 프로필 수정 모달 -->
+    <div id="profileEditOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:460px; max-height:85vh; overflow-y:auto; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h3 style="margin:0; font-size:18px; font-weight:bold;">프로필 수정</h3>
+                <button onclick="closeProfileEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
+            </div>
+
+            <!-- 프로필 이미지 -->
+            <div style="text-align:center; margin-bottom:20px;">
+                <div onclick="toggleEditAvatarPicker()" style="cursor:pointer; display:inline-block; position:relative;">
+                    <img id="editProfilePreview" src="" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #eee;">
+                    <div style="position:absolute; bottom:0; right:0; background:#222; color:#fff; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-size:12px;">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <p style="font-size:12px; color:#999; margin-top:8px;">클릭하여 프로필 사진 변경</p>
+            </div>
+            <input type="file" id="editAttach" accept="image/*" style="display:none;" onchange="previewEditProfileImage(this)"/>
+            <input type="hidden" id="editDefaultProfile" value=""/>
+
+            <!-- 아바타 선택 패널 -->
+            <div id="editAvatarPicker" style="display:none; border:1px solid #eee; border-radius:8px; padding:15px; margin-bottom:20px;">
+                <div id="editAvatarGrid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px; max-height:200px; overflow-y:auto;"></div>
+                <div style="text-align:center; margin:10px 0; color:#aaa; font-size:12px;">OR</div>
+                <button type="button" onclick="document.getElementById('editAttach').click();" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; cursor:pointer; background:#fff; font-size:13px;">
+                    <i class="fas fa-upload"></i> 내 PC에서 사진 올리기
+                </button>
+            </div>
+
+            <!-- 닉네임 -->
+            <div style="margin-bottom:20px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">닉네임</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="editNickname" maxlength="10"
+                           style="flex:1; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none;"
+                           oninput="onEditNicknameChange()"/>
+                    <button type="button" onclick="checkEditNickname()"
+                            style="padding:11px 14px; background:#222; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:13px; white-space:nowrap;">
+                        중복확인
+                    </button>
+                </div>
+                <span id="editNicknameResult" style="font-size:12px; margin-top:5px; display:block;"></span>
+            </div>
+
+            <button type="button" onclick="saveProfile()"
+                    style="width:100%; padding:14px; background:#222; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer;">
+                저장하기
+            </button>
+        </div>
+    </div>
 </main>
 <script th:inline="javascript">
-</script>
+    /*<![CDATA[*/
+    const ctxPath = /*[[@{/}]]*/ '/';
+    let currentProfileImg = /*[[${member != null ? member.profileImg : ''}]]*/ '';
+    let editOriginalNickname = '';
+    let editNicknameChecked = false;
+
+    window.openProfileEditModal = function() {
+        editOriginalNickname = document.getElementById('mypageNickname').innerText.trim();
+        editNicknameChecked = true; // 현재 닉네임은 유효
+
+        document.getElementById('editNickname').value = editOriginalNickname;
+        document.getElementById('editProfilePreview').src = document.getElementById('mypageProfileImg').src;
+        document.getElementById('editDefaultProfile').value = currentProfileImg;
+        document.getElementById('editNicknameResult').textContent = '';
+        document.getElementById('editAvatarPicker').style.display = 'none';
+
+        // 아바타 그리드 초기화 (한 번만 생성)
+        const grid = document.getElementById('editAvatarGrid');
+        if (grid.children.length === 0) {
+            for (let i = 1; i <= 50; i++) {
+                const img = document.createElement('img');
+                img.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${i}`;
+                img.style.cssText = 'width:100%; aspect-ratio:1; border-radius:6px; cursor:pointer; border:2px solid transparent; object-fit:cover;';
+                img.onclick = function() { window.selectEditAvatar(this); };
+                grid.appendChild(img);
+            }
+        }
+        document.getElementById('profileEditOverlay').style.display = 'block';
+    }
+
+    window.closeProfileEditModal = function() {
+        document.getElementById('profileEditOverlay').style.display = 'none';
+        document.getElementById('editAttach').value = '';
+    }
+
+    window.toggleEditAvatarPicker = function() {
+        const picker = document.getElementById('editAvatarPicker');
+        picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+    }
+
+    window.selectEditAvatar = function(imgEl) {
+        const url = imgEl.src;
+        document.getElementById('editProfilePreview').src = url;
+        document.getElementById('editDefaultProfile').value = url;
+        document.getElementById('editAttach').value = '';
+        document.getElementById('editAvatarPicker').style.display = 'none';
+        document.querySelectorAll('#editAvatarGrid img').forEach(i => i.style.borderColor = 'transparent');
+        imgEl.style.borderColor = '#222';
+    }
+
+    window.previewEditProfileImage = function(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('editProfilePreview').src = e.target.result;
+                document.getElementById('editDefaultProfile').value = '';
+            };
+            reader.readAsDataURL(input.files[0]);
+            document.getElementById('editAvatarPicker').style.display = 'none';
+        }
+    }
+
+    window.onEditNicknameChange = function() {
+        const val = document.getElementById('editNickname').value;
+        if (val === editOriginalNickname) {
+            editNicknameChecked = true;
+            document.getElementById('editNicknameResult').textContent = '';
+        } else {
+            editNicknameChecked = false;
+            document.getElementById('editNicknameResult').textContent = '';
+        }
+    }
+
+    window.checkEditNickname = function() {
+        const nickname = document.getElementById('editNickname').value.trim();
+        if (!nickname) { alert('닉네임을 입력하세요.'); return; }
+
+        const regExp = /^[a-zA-Z0-9가-힣]{1,10}$/;
+        if (!regExp.test(nickname)) {
+            alert('닉네임은 특수문자 없이 10자리 이하로 입력해주세요.');
+            return;
+        }
+
+        if (nickname === editOriginalNickname) {
+            editNicknameChecked = true;
+            const el = document.getElementById('editNicknameResult');
+            el.textContent = '현재 사용 중인 닉네임입니다.';
+            el.style.color = '#999';
+            return;
+        }
+
+        fetch(`${ctxPath}security/nicknameDuplicateCheck`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `nickname=${encodeURIComponent(nickname)}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            const el = document.getElementById('editNicknameResult');
+            if (data.isExist) {
+                el.textContent = '이미 사용 중인 닉네임입니다.';
+                el.style.color = 'red';
+                editNicknameChecked = false;
+            } else {
+                el.textContent = '사용 가능한 닉네임입니다.';
+                el.style.color = 'green';
+                editNicknameChecked = true;
+            }
+        });
+    }
+
+    window.saveProfile = function() {
+        const nickname = document.getElementById('editNickname').value.trim();
+        if (!nickname) { alert('닉네임을 입력하세요.'); return; }
+        if (!editNicknameChecked) { alert('닉네임 중복확인을 완료해주세요.'); return; }
+
+        const formData = new FormData();
+        formData.append('nickname', nickname);
+
+        const attachInput = document.getElementById('editAttach');
+        const defaultProfile = document.getElementById('editDefaultProfile').value;
+
+        if (attachInput.files && attachInput.files[0]) {
+            formData.append('attach', attachInput.files[0]);
+        } else {
+            formData.append('defaultProfile', defaultProfile);
+        }
+
+        fetch(`${ctxPath}security/updateProfile`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('mypageNickname').textContent = data.nickname;
+                editOriginalNickname = data.nickname;
+
+                if (data.profileImg) {
+                    currentProfileImg = data.profileImg;
+                    const imgEl = document.getElementById('mypageProfileImg');
+                    imgEl.src = data.profileImg.startsWith('http')
+                        ? data.profileImg
+                        : `${ctxPath}resources/profile_images/${data.profileImg}`;
+                }
+
+                alert('프로필이 수정되었습니다.');
+                closeProfileEditModal();
+            } else {
+                alert(data.message || '프로필 수정에 실패했습니다.');
+            }
+        })
+        .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+    /*]]>*/
 </body>
 </html>
