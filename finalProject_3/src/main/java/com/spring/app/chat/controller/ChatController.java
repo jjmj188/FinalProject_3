@@ -1,6 +1,8 @@
 package com.spring.app.chat.controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 import com.spring.app.chat.domain.ChatMessageDTO;
 import com.spring.app.chat.domain.ChatRoomDTO;
 import com.spring.app.chat.domain.ReportDTO;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.PostMapping; // ★ 추가됨
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam; // ★ 추가됨
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -170,17 +174,26 @@ public class ChatController {
         @Autowired
         private ReportService service;
 
-        @PostMapping("/report")
-        public Map<String, Object> submitReport(@RequestBody ReportDTO reportDto) {
+        @PostMapping(value = "/report", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public Map<String, Object> submitReport(
+                @RequestParam("roomId") String roomId,
+                @RequestParam("reportMainCategory") String reportMainCategory,
+                @RequestParam("reportSubCategory") String reportSubCategory,
+                @RequestParam(value = "reportContent", required = false, defaultValue = "") String reportContent,
+                @RequestParam(value = "image", required = false) MultipartFile image) {
             Map<String, Object> resultMap = new HashMap<>();
 
             try {
-                // 현재 로그인한 사용자 이메일 꺼내기 (우리가 만든 하이브리드 JWT 방식!)
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 String myEmail = auth.getName();
 
-                // 서비스로 넘겨서 DB 저장 처리
-                service.submitChatReport(reportDto, myEmail);
+                ReportDTO reportDto = new ReportDTO();
+                reportDto.setRoomId(roomId);
+                reportDto.setReportMainCategory(reportMainCategory);
+                reportDto.setReportSubCategory(reportSubCategory);
+                reportDto.setReportContent(reportContent);
+
+                service.submitChatReport(reportDto, myEmail, image);
 
                 resultMap.put("success", true);
             } catch (Exception e) {

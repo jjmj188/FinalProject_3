@@ -248,10 +248,12 @@
                     
                     <div class="photo-upload-section">
                         <p>사진 첨부</p>
-                        <div class="photo-btn">
+                        <input type="file" id="reportFileInput" accept="image/*" style="display:none;" onchange="onReportFileSelected(this)">
+                        <div class="photo-btn" onclick="document.getElementById('reportFileInput').click()">
                             <span style="font-size: 20px;">📷</span>
-                            <span>0/10</span>
+                            <span id="reportPhotoCount">0/1</span>
                         </div>
+                        <div id="reportPhotoPreview" style="display:flex; gap:8px; margin-top:10px;"></div>
                     </div>
                     <button class="btn-submit-report" onclick="submitReport()">신고하기</button>
                 </div>
@@ -549,6 +551,11 @@
 
             document.getElementById('reportText').value = ''; // 텍스트 초기화
             window.updateCharCount(document.getElementById('reportText'));
+            // 사진 첨부 초기화
+            reportSelectedFile = null;
+            document.getElementById('reportFileInput').value = '';
+            document.getElementById('reportPhotoCount').textContent = '0/1';
+            document.getElementById('reportPhotoPreview').innerHTML = '';
         };
 
         // 3. 1단계로 돌아가기
@@ -567,6 +574,42 @@
             document.getElementById('currentCharCount').innerText = obj.value.length;
         };
 
+        // 6-1. 첨부 파일 선택 처리 (1장)
+        let reportSelectedFile = null;
+
+        window.onReportFileSelected = function(input) {
+            if (!input.files || input.files.length === 0) return;
+            reportSelectedFile = input.files[0];
+            input.value = '';
+            renderReportPhotoPreview();
+        };
+
+        function renderReportPhotoPreview() {
+            const preview = document.getElementById('reportPhotoPreview');
+            preview.innerHTML = '';
+            if (!reportSelectedFile) {
+                document.getElementById('reportPhotoCount').textContent = '0/1';
+                return;
+            }
+            document.getElementById('reportPhotoCount').textContent = '1/1';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative; width:60px; height:60px;';
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #ddd;';
+                const del = document.createElement('button');
+                del.textContent = '✕';
+                del.style.cssText = 'position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; border:none; background:#e44; color:#fff; font-size:10px; cursor:pointer; padding:0; line-height:18px; text-align:center;';
+                del.onclick = function() { reportSelectedFile = null; renderReportPhotoPreview(); };
+                wrap.appendChild(img);
+                wrap.appendChild(del);
+                preview.appendChild(wrap);
+            };
+            reader.readAsDataURL(reportSelectedFile);
+        }
+
      // 6. 최종 신고 제출
         window.submitReport = function() {
             const mainType = document.getElementById('selectedTypeName').innerText; // 대분류
@@ -574,18 +617,21 @@
             const content = document.getElementById('reportText').value.trim();     // 상세내용
 
             if(!subType) { alert("상세 신고 유형을 선택해주세요."); return; }
-            if(!content) { alert("신고 사유를 입력해주세요."); return; } // 내용 없음 방어 코드 추가
+            if(!content) { alert("신고 사유를 입력해주세요."); return; }
+
+            const formData = new FormData();
+            formData.append('roomId', currentRoomId);
+            formData.append('reportMainCategory', mainType);
+            formData.append('reportSubCategory', subType);
+            formData.append('reportContent', content);
+            if (reportSelectedFile) {
+                formData.append('image', reportSelectedFile);
+            }
 
             // 서버 연동 로직
             fetch(`${ctxPath}/api/chat/report`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    roomId: currentRoomId,        // ★ 핵심: 전역 변수에서 현재 채팅방 번호 가져와서 추가!
-                    reportMainCategory: mainType, 
-                    reportSubCategory: subType,   
-                    reportContent: content
-                })
+                body: formData
             })
             .then(r => r.json())
             .then(data => {

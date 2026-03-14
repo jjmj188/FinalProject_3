@@ -160,6 +160,7 @@ public class SecurityConfig {
                                  "/images/**",
                                  "/upload/**",
                                  "/profile/**",
+                                 "/report-files/**",
                                  "/jquery-ui-1.13.1.custom/**",
                                  "/js/**",
                                  "/smarteditor/**");

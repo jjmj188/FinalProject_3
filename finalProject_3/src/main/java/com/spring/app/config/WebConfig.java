@@ -27,6 +27,9 @@ public class WebConfig implements WebMvcConfigurer{
     @Value("${file.profile-dir}")
     private String profileDir; // 회원 프로필 이미지 경로
 
+    @Value("${file.reports-dir}")
+    private String reportsDir; // 신고 첨부 이미지 경로
+
     @Override
     public void  addResourceHandlers(ResourceHandlerRegistry registry) {
     	registry.addResourceHandler("/upload/**")
@@ -55,5 +58,8 @@ public class WebConfig implements WebMvcConfigurer{
 
     	registry.addResourceHandler("/profile/**")
         .addResourceLocations("file:" + profileDir + "/");
+
+    	registry.addResourceHandler("/report-files/**")
+        .addResourceLocations("file:" + reportsDir + "/");
     }
 }
