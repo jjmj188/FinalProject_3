@@ -110,4 +110,9 @@ public class MemberService_imple implements MemberService {
     public void updateProfile(MemberDTO member) {
         dao.updateProfile(member);
     }
+
+    @Override
+    public void withdrawMember(String email) {
+        dao.withdrawMember(email);
+    }
 }

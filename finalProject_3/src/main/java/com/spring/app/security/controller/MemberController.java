@@ -171,6 +171,16 @@ public class MemberController {
         return map;
     }
 
+    // 회원 탈퇴
+    @PostMapping("/withdraw")
+    public String withdraw(Principal principal, HttpServletRequest request) {
+        if (principal != null) {
+            memberService.withdrawMember(principal.getName());
+            try { request.logout(); } catch (Exception e) { e.printStackTrace(); }
+        }
+        return "redirect:/";
+    }
+
     // 회원가입 완료 처리
     @PostMapping("/registerEnd")
     public String registerEnd(MemberDTO memberDTO, HttpServletRequest request) {

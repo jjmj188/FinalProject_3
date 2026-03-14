@@ -48,4 +48,128 @@
         WHERE ROWNUM &lt;= 3
     </select>
 
+
+    <!-- ===== 내 판매상품 목록 ===== -->
+    <select id="getMyProducts" parameterType="String" resultType="com.spring.app.product.domain.ProductDTO">
+        SELECT p.PRODUCT_NO    AS productNo,
+               p.PRODUCT_NAME  AS productName,
+               p.PRODUCT_PRICE AS productPrice,
+               p.SALE_TYPE     AS saleType,
+               p.TRADE_STATUS  AS tradeStatus,
+               pi.IMG_URL      AS imgUrl
+        FROM PRODUCTS p
+        LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+        WHERE p.SELLER_EMAIL = #{email}
+        ORDER BY p.PRODUCT_NO DESC
+    </select>
+
+    <!-- ===== 찜 목록 ===== -->
+    <select id="getWishlist" parameterType="String" resultType="com.spring.app.product.domain.ProductDTO">
+        SELECT p.PRODUCT_NO   AS productNo,
+               p.PRODUCT_NAME AS productName,
+               p.PRODUCT_PRICE AS productPrice,
+               p.SALE_TYPE    AS saleType,
+               p.TRADE_STATUS AS tradeStatus,
+               pi.IMG_URL     AS imgUrl
+        FROM WISHLIST w
+        JOIN PRODUCTS p ON w.PRODUCT_NO = p.PRODUCT_NO
+        LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+        WHERE w.MEMBER_EMAIL = #{email}
+        ORDER BY p.PRODUCT_NO DESC
+    </select>
+
+    <!-- ===== 계좌 관리 ===== -->
+
+    <select id="getAccountList" parameterType="String" resultType="com.spring.app.mypage.domain.AccountDTO">
+        SELECT ACCOUNT_ID   AS accountId,
+               EMAIL        AS email,
+               BANK_NAME    AS bankName,
+               ACCOUNT_NUM  AS accountNum,
+               ACCOUNT_HOLDER AS accountHolder,
+               IS_PRIMARY   AS isPrimary
+        FROM ACCOUNTS
+        WHERE EMAIL = #{email}
+        ORDER BY IS_PRIMARY DESC, ACCOUNT_ID ASC
+    </select>
+
+    <select id="getAccountCount" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM ACCOUNTS WHERE EMAIL = #{email}
+    </select>
+
+    <insert id="insertAccount" parameterType="com.spring.app.mypage.domain.AccountDTO">
+        INSERT INTO ACCOUNTS (ACCOUNT_ID, EMAIL, BANK_NAME, ACCOUNT_NUM, ACCOUNT_HOLDER, IS_PRIMARY)
+        VALUES (SEQ_ACCOUNT_ID.NEXTVAL, #{email}, #{bankName}, #{accountNum}, #{accountHolder}, #{isPrimary})
+    </insert>
+
+    <update id="updateAccount" parameterType="com.spring.app.mypage.domain.AccountDTO">
+        UPDATE ACCOUNTS
+        SET BANK_NAME      = #{bankName},
+            ACCOUNT_NUM    = #{accountNum},
+            ACCOUNT_HOLDER = #{accountHolder}
+        WHERE ACCOUNT_ID = #{accountId} AND EMAIL = #{email}
+    </update>
+
+    <delete id="deleteAccount" parameterType="map">
+        DELETE FROM ACCOUNTS WHERE ACCOUNT_ID = #{accountId} AND EMAIL = #{email}
+    </delete>
+
+    <update id="setPrimaryAccount" parameterType="map">
+        UPDATE ACCOUNTS
+        SET IS_PRIMARY = CASE WHEN ACCOUNT_ID = #{accountId} THEN 'Y' ELSE 'N' END
+        WHERE EMAIL = #{email}
+    </update>
+
+    <!-- ===== 배송지 관리 ===== -->
+
+    <select id="getDeliveryList" parameterType="String" resultType="com.spring.app.mypage.domain.DeliveryAddressDTO">
+        SELECT DELIVERY_NO    AS deliveryNo,
+               MEMBER_EMAIL   AS memberEmail,
+               LABEL          AS label,
+               RECEIVER_NAME  AS receiverName,
+               RECEIVER_PHONE AS receiverPhone,
+               POSTCODE       AS postcode,
+               ADDRESS        AS address,
+               DETAILADDRESS  AS detailAddress,
+               EXTRAADDRESS   AS extraAddress,
+               IS_PRIMARY     AS isPrimary
+        FROM DELIVERY_ADDRESS
+        WHERE MEMBER_EMAIL = #{email}
+        ORDER BY IS_PRIMARY DESC, DELIVERY_NO ASC
+    </select>
+
+    <select id="getDeliveryCount" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM DELIVERY_ADDRESS WHERE MEMBER_EMAIL = #{email}
+    </select>
+
+    <insert id="insertDelivery" parameterType="com.spring.app.mypage.domain.DeliveryAddressDTO">
+        INSERT INTO DELIVERY_ADDRESS
+            (DELIVERY_NO, MEMBER_EMAIL, LABEL, RECEIVER_NAME, RECEIVER_PHONE,
+             POSTCODE, ADDRESS, DETAILADDRESS, EXTRAADDRESS, IS_PRIMARY)
+        VALUES
+            (SEQ_DELIVERY_NO.NEXTVAL, #{memberEmail}, #{label}, #{receiverName}, #{receiverPhone},
+             #{postcode}, #{address}, #{detailAddress}, #{extraAddress}, #{isPrimary})
+    </insert>
+
+    <update id="updateDelivery" parameterType="com.spring.app.mypage.domain.DeliveryAddressDTO">
+        UPDATE DELIVERY_ADDRESS
+        SET LABEL          = #{label},
+            RECEIVER_NAME  = #{receiverName},
+            RECEIVER_PHONE = #{receiverPhone},
+            POSTCODE       = #{postcode},
+            ADDRESS        = #{address},
+            DETAILADDRESS  = #{detailAddress},
+            EXTRAADDRESS   = #{extraAddress}
+        WHERE DELIVERY_NO = #{deliveryNo} AND MEMBER_EMAIL = #{memberEmail}
+    </update>
+
+    <delete id="deleteDelivery" parameterType="map">
+        DELETE FROM DELIVERY_ADDRESS WHERE DELIVERY_NO = #{deliveryNo} AND MEMBER_EMAIL = #{email}
+    </delete>
+
+    <update id="setPrimaryDelivery" parameterType="map">
+        UPDATE DELIVERY_ADDRESS
+        SET IS_PRIMARY = CASE WHEN DELIVERY_NO = #{deliveryNo} THEN 'Y' ELSE 'N' END
+        WHERE MEMBER_EMAIL = #{email}
+    </update>
+
 </mapper>

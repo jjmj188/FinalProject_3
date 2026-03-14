@@ -59,3 +59,197 @@
 .mp-tab-sub-header span.active { color: #222; font-weight: bold; }
 
 .mp-empty { padding: 100px 0; text-align: center; color: #999; border-top: 1px solid #eee; }
+
+/* ===== 계좌/배송지 관리 ===== */
+.mp-mgmt-card {
+    background: #fff;
+    padding: 28px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.mp-mgmt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.mp-mgmt-header h3 { font-size: 16px; font-weight: bold; margin: 0; }
+
+.mp-count-badge { font-size: 13px; color: #999; }
+
+.mp-mgmt-list { margin-bottom: 16px; }
+
+.mp-mgmt-empty {
+    text-align: center;
+    color: #999;
+    padding: 30px 0;
+    font-size: 14px;
+    margin: 0;
+}
+
+.mp-mgmt-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.mp-mgmt-item-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.mp-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.mp-badge-primary { background: #222; color: #fff; }
+.mp-badge-sub { background: #f0f0f0; color: #666; }
+
+.mp-mgmt-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.mp-mgmt-item-info strong { font-size: 14px; }
+.mp-mgmt-item-info span { font-size: 13px; color: #666; }
+
+.mp-mgmt-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.mp-action-btn {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    color: #444;
+    white-space: nowrap;
+}
+.mp-action-btn:hover { background: #f5f5f5; }
+.mp-action-primary { border-color: #222; color: #222; font-weight: bold; }
+.mp-action-delete { color: #cc3333; border-color: #cc3333; }
+
+.mp-add-btn {
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+.mp-add-btn:hover { background: #f9f9f9; border-color: #999; }
+
+/* ===== 공통 섹션 타이틀 ===== */
+.mp-section-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #222;
+}
+
+/* 찜내역 그리드 */
+.mp-wish-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.mp-wish-card {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.mp-wish-img-wrap {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.mp-wish-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s;
+}
+
+.mp-wish-img-wrap:hover img { transform: scale(1.03); }
+
+.mp-wish-status {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.wish-status-sale { background: #222; }
+.wish-status-reserve { background: #f90; }
+.wish-status-done { background: #aaa; }
+
+.mp-wish-info { padding: 10px 12px 6px; flex: 1; }
+.mp-wish-name { font-size: 14px; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-wish-price { font-size: 14px; font-weight: bold; margin: 0; }
+
+.mp-wish-cancel {
+    margin: 0 12px 12px;
+    padding: 7px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12px;
+    color: #e44;
+    cursor: pointer;
+    width: calc(100% - 24px);
+}
+
+.mp-wish-cancel:hover { background: #fff0f0; border-color: #e44; }
+
+/* ===== 페이징 ===== */
+.mp-paging {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.mp-page-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+}
+
+.mp-page-btn:hover { background: #f5f5f5; border-color: #999; }
+.mp-page-btn.active { background: #222; color: #fff; border-color: #222; font-weight: bold; }

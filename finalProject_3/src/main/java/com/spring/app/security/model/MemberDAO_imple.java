@@ -99,6 +99,11 @@ public class MemberDAO_imple implements MemberDAO {
         sqlsession.update("member.updateProfile", member);
     }
 
+    @Override
+    public void withdrawMember(String email) {
+        sqlsession.delete("member.withdrawMember", email);
+    }
+
     // RefreshToken 저장/업데이트
     @Override
     public void saveRefreshToken(String email, String rtValue) {

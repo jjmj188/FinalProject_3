@@ -130,6 +130,11 @@
 	    WHERE EMAIL = #{email}
 	</delete>
 
+	<!-- 회원 탈퇴 (완전 삭제) -->
+	<delete id="withdrawMember" parameterType="String">
+	    DELETE FROM MEMBER WHERE EMAIL = #{email}
+	</delete>
+
 	<!-- 프로필 수정 (닉네임 + 프로필 이미지) -->
 	<update id="updateProfile" parameterType="com.spring.app.security.domain.MemberDTO">
 	    UPDATE MEMBER

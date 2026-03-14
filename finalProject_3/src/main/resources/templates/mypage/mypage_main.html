@@ -15,20 +15,22 @@
             <h2 class="mp-sidebar-title">마이페이지</h2>
             <nav class="mp-nav">
                 <ul>
-                    <li><a href="#" class="active">내 정보</a></li>
-                    <li><a href="#">구매관리</a></li>
-                    <li><a href="#">계좌/배송지 관리</a></li>
-                    <li><a href="#">후기관리</a></li>
-                    <li><a href="#">찜내역</a></li>
-                    <li><a href="#">신고관리</a></li>
+                    <li><a href="#" id="nav-info" class="active" onclick="switchSection('info'); return false;">내 정보</a></li>
+                    <li><a href="#" id="nav-purchase" onclick="switchSection('purchase'); return false;">구매관리</a></li>
+                    <li><a href="#" id="nav-account" onclick="switchSection('account'); return false;">계좌/배송지 관리</a></li>
+                    <li><a href="#" id="nav-review" onclick="switchSection('review'); return false;">후기관리</a></li>
+                    <li><a href="#" id="nav-wish" onclick="switchSection('wish'); return false;">찜내역</a></li>
+                    <li><a href="#" id="nav-report" onclick="switchSection('report'); return false;">신고관리</a></li>
                 </ul>
             </nav>
             <div class="mp-exit-wrap">
-                <a href="#" class="mp-exit-btn">탈퇴하기</a>
+                <a href="#" class="mp-exit-btn" onclick="openWithdrawModal(); return false;">탈퇴하기</a>
             </div>
         </aside>
 
         <section class="mp-content">
+            <!-- 내 정보 섹션 -->
+            <div id="mp-info-section">
             <div class="mp-profile-card">
                 <div class="mp-user-info">
                     <div class="mp-avatar">
@@ -70,19 +72,225 @@
                     <button class="tab-btn active">내 판매상품</button>
                     <button class="tab-btn">내 경매상품</button>
                 </div>
-                <div class="mp-tab-sub-header">
-                    <span class="active">전체</span>
-                    <span>판매중</span>
-                    <span>예약중</span>
-                    <span>판매완료</span>
+                <div class="mp-tab-sub-header" id="myProductFilterHeader">
+                    <span class="active" onclick="switchMyProductFilter(this, '전체')">전체</span>
+                    <span onclick="switchMyProductFilter(this, '판매중')">판매중</span>
+                    <span onclick="switchMyProductFilter(this, '예약중')">예약중</span>
+                    <span onclick="switchMyProductFilter(this, '판매완료')">판매완료</span>
                 </div>
-                <div class="mp-tab-content">
-                    <div class="mp-empty">
-                        <p>선택된 조건에 해당하는 상품이 없습니다.</p>
+                <div id="myProductContent" class="mp-tab-content">
+                    <div class="mp-empty"><p>선택된 조건에 해당하는 상품이 없습니다.</p></div>
+                </div>
+                <div id="myProductPaging" class="mp-paging"></div>
+            </div>
+            </div><!-- /mp-info-section -->
+
+            <!-- 계좌/배송지 관리 섹션 -->
+            <div id="mp-account-section" style="display:none;">
+                <!-- 내 계좌 관리 -->
+                <div class="mp-mgmt-card">
+                    <div class="mp-mgmt-header">
+                        <h3>내 계좌 관리</h3>
+                        <span id="accountCountBadge" class="mp-count-badge">0/5</span>
+                    </div>
+                    <div id="accountList" class="mp-mgmt-list">
+                        <p class="mp-mgmt-empty">등록된 계좌가 없습니다.</p>
+                    </div>
+                    <button onclick="openAccountModal(null)" class="mp-add-btn" id="addAccountBtn">+ 계좌 추가</button>
+                </div>
+
+                <!-- 배송지 관리 -->
+                <div class="mp-mgmt-card">
+                    <div class="mp-mgmt-header">
+                        <h3>배송지 관리</h3>
+                        <span id="deliveryCountBadge" class="mp-count-badge">0/5</span>
+                    </div>
+                    <div id="deliveryList" class="mp-mgmt-list">
+                        <p class="mp-mgmt-empty">등록된 배송지가 없습니다.</p>
+                    </div>
+                    <button onclick="openDeliveryModal(null)" class="mp-add-btn" id="addDeliveryBtn">+ 배송지 추가</button>
+                </div>
+            </div><!-- /mp-account-section -->
+
+            <!-- 구매관리 섹션 -->
+            <div id="mp-purchase-section" style="display:none;">
+                <div class="mp-section-title">구매관리</div>
+                <div class="mp-tabs">
+                    <div class="mp-tab-header">
+                        <button class="tab-btn active" onclick="switchPurchaseTab(this, 'all')">전체</button>
+                        <button class="tab-btn" onclick="switchPurchaseTab(this, 'progress')">진행중</button>
+                        <button class="tab-btn" onclick="switchPurchaseTab(this, 'done')">거래완료</button>
+                        <button class="tab-btn" onclick="switchPurchaseTab(this, 'cancel')">취소/환불</button>
+                    </div>
+                    <div id="purchaseContent" class="mp-tab-content">
+                        <div class="mp-empty"><p>구매 내역이 없습니다.</p></div>
                     </div>
                 </div>
-            </div>
+            </div><!-- /mp-purchase-section -->
+
+            <!-- 후기관리 섹션 -->
+            <div id="mp-review-section" style="display:none;">
+                <div class="mp-section-title">후기관리</div>
+                <div class="mp-tabs">
+                    <div class="mp-tab-header">
+                        <button class="tab-btn active" onclick="switchReviewTab(this, 'received')">받은 후기</button>
+                        <button class="tab-btn" onclick="switchReviewTab(this, 'written')">작성한 후기</button>
+                        <button class="tab-btn" onclick="switchReviewTab(this, 'pending')">미작성 후기</button>
+                    </div>
+                    <div id="reviewContent" class="mp-tab-content">
+                        <div class="mp-empty"><p>후기가 없습니다.</p></div>
+                    </div>
+                </div>
+            </div><!-- /mp-review-section -->
+
+            <!-- 찜내역 섹션 -->
+            <div id="mp-wish-section" style="display:none;">
+                <div class="mp-section-title">찜내역 <span id="wishCountBadge" style="font-size:15px; color:#999; font-weight:normal;"></span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <div class="mp-tab-sub-header" id="wishFilterHeader" style="padding:0; margin:0;">
+                        <span class="active" onclick="switchWishFilter(this, '전체')">전체</span>
+                        <span onclick="switchWishFilter(this, '판매중')">판매중</span>
+                        <span onclick="switchWishFilter(this, '예약중')">예약중</span>
+                        <span onclick="switchWishFilter(this, '판매완료')">판매완료</span>
+                    </div>
+                    <select id="wishSortSelect" onchange="onWishSortChange()" style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px; cursor:pointer; outline:none;">
+                        <option value="latest">최신순</option>
+                        <option value="price_asc">가격 낮은순</option>
+                        <option value="price_desc">가격 높은순</option>
+                    </select>
+                </div>
+                <div id="wishContent" class="mp-wish-grid"></div>
+                <div id="wishPaging" class="mp-paging"></div>
+            </div><!-- /mp-wish-section -->
+
+            <!-- 신고관리 섹션 -->
+            <div id="mp-report-section" style="display:none;">
+                <div class="mp-section-title">신고관리</div>
+                <div class="mp-tabs">
+                    <div class="mp-tab-header">
+                        <button class="tab-btn active" onclick="switchReportTab(this, 'sent')">신고한 내역</button>
+                        <button class="tab-btn" onclick="switchReportTab(this, 'received')">신고받은 내역</button>
+                    </div>
+                    <div id="reportContent" class="mp-tab-content">
+                        <div class="mp-empty"><p>신고 내역이 없습니다.</p></div>
+                    </div>
+                </div>
+            </div><!-- /mp-report-section -->
         </section>
+    </div>
+
+    <!-- 탈퇴 확인 모달 -->
+    <div id="withdrawModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:380px; background:#fff; border-radius:12px; padding:36px 30px; box-sizing:border-box; text-align:center;">
+            <div style="font-size:40px; margin-bottom:16px;">😢</div>
+            <h3 style="margin:0 0 12px; font-size:18px; font-weight:bold;">정말 탈퇴하시겠습니까?</h3>
+            <p style="font-size:14px; color:#666; margin:0 0 28px; line-height:1.6;">
+                탈퇴 시 계정 정보 및 거래 내역이<br>모두 삭제되며 복구할 수 없습니다.
+            </p>
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeWithdrawModal()"
+                        style="flex:1; padding:13px; border:1px solid #ddd; border-radius:8px; background:#fff; font-size:14px; cursor:pointer; font-weight:bold;">
+                    취소
+                </button>
+                <form id="withdrawForm" th:action="@{/security/withdraw}" method="post" style="flex:1;">
+                    <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}">
+                    <button type="submit"
+                            style="width:100%; padding:13px; border:none; border-radius:8px; background:#e33; color:#fff; font-size:14px; cursor:pointer; font-weight:bold;">
+                        탈퇴하기
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 계좌 추가/수정 모달 -->
+    <div id="accountModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:420px; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h3 id="accountModalTitle" style="margin:0; font-size:18px; font-weight:bold;">계좌 추가</h3>
+                <button onclick="closeAccountModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
+            </div>
+            <input type="hidden" id="accountIdInput" value="">
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">은행명</label>
+                <select id="bankNameInput" style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none;">
+                    <option value="">은행 선택</option>
+                    <option>국민은행</option><option>신한은행</option><option>우리은행</option>
+                    <option>하나은행</option><option>농협은행</option><option>기업은행</option>
+                    <option>SC제일은행</option><option>씨티은행</option><option>카카오뱅크</option>
+                    <option>토스뱅크</option><option>케이뱅크</option><option>새마을금고</option>
+                    <option>수협은행</option><option>부산은행</option><option>대구은행</option>
+                    <option>경남은행</option><option>전북은행</option><option>광주은행</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">계좌번호</label>
+                <input type="text" id="accountNumInput" placeholder="- 없이 숫자만 입력"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">예금주</label>
+                <input type="text" id="accountHolderInput" placeholder="예금주명 입력"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+
+            <button onclick="saveAccount()" style="width:100%; padding:14px; background:#222; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer;">
+                저장하기
+            </button>
+        </div>
+    </div>
+
+    <!-- 배송지 추가/수정 모달 -->
+    <div id="deliveryModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:460px; max-height:85vh; overflow-y:auto; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h3 id="deliveryModalTitle" style="margin:0; font-size:18px; font-weight:bold;">배송지 추가</h3>
+                <button onclick="closeDeliveryModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
+            </div>
+            <input type="hidden" id="deliveryNoInput" value="">
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">배송지명</label>
+                <input type="text" id="deliveryLabelInput" placeholder="집, 회사, 기타" maxlength="20"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">수령인</label>
+                <input type="text" id="receiverNameInput" placeholder="수령인 이름"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">연락처</label>
+                <input type="text" id="receiverPhoneInput" placeholder="010-0000-0000"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">주소</label>
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <input type="text" id="deliveryPostcode" placeholder="우편번호" readonly
+                           style="flex:1; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#f9f9f9; outline:none;">
+                    <button type="button" onclick="searchDeliveryAddress()"
+                            style="padding:11px 14px; background:#222; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:13px; white-space:nowrap;">
+                        주소 검색
+                    </button>
+                </div>
+                <input type="text" id="deliveryAddress" placeholder="기본주소" readonly
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; background:#f9f9f9; box-sizing:border-box; outline:none; margin-bottom:8px;">
+                <input type="text" id="deliveryDetailAddress" placeholder="상세주소 입력"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+                <input type="hidden" id="deliveryExtraAddress" value="">
+            </div>
+
+            <button onclick="saveDelivery()" style="width:100%; padding:14px; background:#222; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer;">
+                저장하기
+            </button>
+        </div>
     </div>
 
     <!-- 프로필 수정 모달 -->
@@ -139,6 +347,7 @@
 </main>
 <script th:inline="javascript">
     /*<![CDATA[*/
+    (function() {
     const ctxPath = /*[[@{/}]]*/ '/';
     let currentProfileImg = /*[[${member != null ? member.profileImg : ''}]]*/ '';
     let editOriginalNickname = '';
@@ -292,6 +501,468 @@
         })
         .catch(() => alert('서버 오류가 발생했습니다.'));
     }
+
+    // ===== 탈퇴 =====
+    window.openWithdrawModal = function() {
+        document.getElementById('withdrawModal').style.display = 'block';
+    }
+    window.closeWithdrawModal = function() {
+        document.getElementById('withdrawModal').style.display = 'none';
+    }
+
+    // ===== 섹션 전환 =====
+    const sectionIds = ['info', 'account', 'purchase', 'review', 'wish', 'report'];
+
+    window.switchSection = function(section) {
+        sectionIds.forEach(id => {
+            const el = document.getElementById('mp-' + id + '-section');
+            if (el) el.style.display = id === section ? '' : 'none';
+        });
+
+        document.querySelectorAll('.mp-nav a').forEach(a => a.classList.remove('active'));
+        const navEl = document.getElementById('nav-' + section);
+        if (navEl) navEl.classList.add('active');
+
+        if (section === 'account') { loadAccounts(); loadDeliveries(); }
+        if (section === 'wish') { loadWishlist(); }
+        if (section === 'info') { loadMyProducts(); }
+    }
+
+    // ===== 내 판매상품 =====
+    const MY_PROD_PAGE_SIZE = 6;
+    let myProductAllData = [];
+    let myProductPage = 1;
+    let myProductFilter = '전체';
+
+    window.loadMyProducts = function() {
+        fetch(`${ctxPath}mypage/my-products`)
+        .then(r => r.json())
+        .then(data => {
+            myProductAllData = data;
+            myProductPage = 1;
+            renderMyProductsPage(1);
+        });
+    }
+
+    window.switchMyProductFilter = function(el, filter) {
+        document.querySelectorAll('#myProductFilterHeader span').forEach(s => s.classList.remove('active'));
+        el.classList.add('active');
+        myProductFilter = filter;
+        myProductPage = 1;
+        renderMyProductsPage(1);
+    }
+
+    function renderMyProductsPage(page) {
+        myProductPage = page;
+        const filtered = myProductFilter === '전체'
+            ? myProductAllData
+            : myProductAllData.filter(p => p.tradeStatus === myProductFilter);
+
+        const total = filtered.length;
+        const start = (page - 1) * MY_PROD_PAGE_SIZE;
+        const pageItems = filtered.slice(start, start + MY_PROD_PAGE_SIZE);
+
+        const container = document.getElementById('myProductContent');
+        if (total === 0) {
+            container.innerHTML = '<div class="mp-empty"><p>선택된 조건에 해당하는 상품이 없습니다.</p></div>';
+            document.getElementById('myProductPaging').innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = `<div class="mp-wish-grid">${pageItems.map(p => {
+            const imgSrc = p.imgUrl
+                ? (p.imgUrl.startsWith('http') ? p.imgUrl : ctxPath.replace(/\/$/, '') + p.imgUrl)
+                : `${ctxPath}images/no_image.png`;
+            const priceText = p.saleType === '나눔' ? '나눔'
+                : p.saleType === '경매' ? '경매'
+                : (p.productPrice ? p.productPrice.toLocaleString() + '원' : '가격 미정');
+            const statusClass = p.tradeStatus === '판매중' ? 'wish-status-sale'
+                : p.tradeStatus === '예약중' ? 'wish-status-reserve'
+                : 'wish-status-done';
+            return `
+                <div class="mp-wish-card">
+                    <a href="${ctxPath}product/product_detail/${p.productNo}" class="mp-wish-img-wrap">
+                        <img src="${imgSrc}" alt="${p.productName}" onerror="this.src='${ctxPath}images/no_image.png'">
+                        <span class="mp-wish-status ${statusClass}">${p.tradeStatus}</span>
+                    </a>
+                    <div class="mp-wish-info">
+                        <p class="mp-wish-name">${p.productName}</p>
+                        <p class="mp-wish-price">${priceText}</p>
+                    </div>
+                </div>`;
+        }).join('')}</div>`;
+
+        renderPaging('myProductPaging', total, page, MY_PROD_PAGE_SIZE, renderMyProductsPage);
+    }
+
+    // ===== 찜 목록 =====
+    const WISH_PAGE_SIZE = 6;
+    let wishAllData = [];
+    let wishPage = 1;
+    let wishSort = 'latest';
+    let wishFilter = '전체';
+
+    window.loadWishlist = function() {
+        fetch(`${ctxPath}mypage/wishlist`)
+        .then(r => r.json())
+        .then(data => {
+            wishAllData = data;
+            wishPage = 1;
+            renderWishlistPage(1);
+        });
+    }
+
+    window.switchWishFilter = function(el, filter) {
+        document.querySelectorAll('#wishFilterHeader span').forEach(s => s.classList.remove('active'));
+        el.classList.add('active');
+        wishFilter = filter;
+        wishPage = 1;
+        renderWishlistPage(1);
+    }
+
+    window.onWishSortChange = function() {
+        wishSort = document.getElementById('wishSortSelect').value;
+        wishPage = 1;
+        renderWishlistPage(1);
+    }
+
+    function getSortedWishlist() {
+        const list = wishFilter === '전체'
+            ? [...wishAllData]
+            : wishAllData.filter(p => p.tradeStatus === wishFilter);
+        if (wishSort === 'price_asc') {
+            list.sort((a, b) => (a.productPrice || 0) - (b.productPrice || 0));
+        } else if (wishSort === 'price_desc') {
+            list.sort((a, b) => (b.productPrice || 0) - (a.productPrice || 0));
+        }
+        // 'latest' keeps original order (already sorted by PRODUCT_NO DESC from server)
+        return list;
+    }
+
+    function renderWishlistPage(page) {
+        wishPage = page;
+        const sorted = getSortedWishlist();
+        const total = sorted.length;
+        const start = (page - 1) * WISH_PAGE_SIZE;
+        const pageItems = sorted.slice(start, start + WISH_PAGE_SIZE);
+
+        document.getElementById('wishCountBadge').textContent = `(${total})`;
+        const container = document.getElementById('wishContent');
+
+        if (total === 0) {
+            container.innerHTML = '<div class="mp-empty" style="grid-column:1/-1;"><p>찜한 상품이 없습니다.</p></div>';
+            document.getElementById('wishPaging').innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = pageItems.map(p => {
+            const imgSrc = p.imgUrl
+                ? (p.imgUrl.startsWith('http') ? p.imgUrl : ctxPath.replace(/\/$/, '') + p.imgUrl)
+                : `${ctxPath}images/no_image.png`;
+            const priceText = p.saleType === '나눔' ? '나눔'
+                : p.saleType === '경매' ? '경매'
+                : (p.productPrice ? p.productPrice.toLocaleString() + '원' : '가격 미정');
+            const statusClass = p.tradeStatus === '판매중' ? 'wish-status-sale'
+                : p.tradeStatus === '예약중' ? 'wish-status-reserve'
+                : 'wish-status-done';
+            return `
+                <div class="mp-wish-card">
+                    <a href="${ctxPath}product/product_detail/${p.productNo}" class="mp-wish-img-wrap">
+                        <img src="${imgSrc}" alt="${p.productName}" onerror="this.src='${ctxPath}images/no_image.png'">
+                        <span class="mp-wish-status ${statusClass}">${p.tradeStatus}</span>
+                    </a>
+                    <div class="mp-wish-info">
+                        <p class="mp-wish-name">${p.productName}</p>
+                        <p class="mp-wish-price">${priceText}</p>
+                    </div>
+                    <button class="mp-wish-cancel" onclick="cancelWish(${p.productNo}, this)">
+                        <i class="fas fa-heart"></i> 찜 해제
+                    </button>
+                </div>`;
+        }).join('');
+
+        renderPaging('wishPaging', total, page, WISH_PAGE_SIZE, renderWishlistPage);
+    }
+
+    window.cancelWish = function(productNo, btn) {
+        btn.disabled = true;
+        fetch(`${ctxPath}product/wishlist/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `productNo=${productNo}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) loadWishlist();
+            else btn.disabled = false;
+        });
+    }
+
+    // ===== 공통 페이징 렌더 =====
+    function renderPaging(containerId, total, currentPage, pageSize, callback) {
+        const totalPages = Math.ceil(total / pageSize);
+        const container = document.getElementById(containerId);
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+        const GROUP = 5;
+        const groupStart = Math.floor((currentPage - 1) / GROUP) * GROUP + 1;
+        const groupEnd = Math.min(groupStart + GROUP - 1, totalPages);
+
+        container.innerHTML = '';
+
+        function makeBtn(label, page) {
+            const btn = document.createElement('button');
+            btn.className = 'mp-page-btn' + (page === currentPage ? ' active' : '');
+            btn.textContent = label;
+            btn.onclick = function() { callback(page); };
+            return btn;
+        }
+
+        if (groupStart > 1) container.appendChild(makeBtn('이전', groupStart - 1));
+        for (let i = groupStart; i <= groupEnd; i++) container.appendChild(makeBtn(i, i));
+        if (groupEnd < totalPages) container.appendChild(makeBtn('다음', groupEnd + 1));
+    }
+
+    window.switchPurchaseTab = function(btn, tab) {
+        btn.closest('.mp-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    window.switchReviewTab = function(btn, tab) {
+        btn.closest('.mp-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    window.switchReportTab = function(btn, tab) {
+        btn.closest('.mp-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    // ===== 계좌 관리 =====
+    let accountList = [];
+
+    window.loadAccounts = function() {
+        fetch(`${ctxPath}mypage/accounts`)
+        .then(r => r.json())
+        .then(data => { accountList = data; renderAccountList(data); });
+    }
+
+    function renderAccountList(accounts) {
+        const container = document.getElementById('accountList');
+        document.getElementById('accountCountBadge').textContent = `${accounts.length}/5`;
+        document.getElementById('addAccountBtn').style.display = accounts.length >= 5 ? 'none' : '';
+
+        if (accounts.length === 0) {
+            container.innerHTML = '<p class="mp-mgmt-empty">등록된 계좌가 없습니다.</p>';
+            return;
+        }
+        container.innerHTML = accounts.map(acc => `
+            <div class="mp-mgmt-item">
+                <div class="mp-mgmt-item-left">
+                    <span class="mp-badge ${acc.isPrimary === 'Y' ? 'mp-badge-primary' : 'mp-badge-sub'}">
+                        ${acc.isPrimary === 'Y' ? '대표' : '서브'}
+                    </span>
+                    <div class="mp-mgmt-item-info">
+                        <strong>${acc.bankName}</strong>
+                        <span>${acc.accountNum}</span>
+                        <span>${acc.accountHolder}</span>
+                    </div>
+                </div>
+                <div class="mp-mgmt-item-actions">
+                    ${acc.isPrimary !== 'Y' ? `<button class="mp-action-btn mp-action-primary" onclick="setPrimaryAccount(${acc.accountId})">대표 설정</button>` : ''}
+                    <button class="mp-action-btn" onclick="openAccountModal(${acc.accountId})">수정</button>
+                    <button class="mp-action-btn mp-action-delete" onclick="deleteAccount(${acc.accountId})">삭제</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.openAccountModal = function(accountId) {
+        document.getElementById('accountModalTitle').textContent = accountId ? '계좌 수정' : '계좌 추가';
+        document.getElementById('accountIdInput').value = accountId || '';
+        if (accountId) {
+            const acc = accountList.find(a => a.accountId === accountId);
+            if (acc) {
+                document.getElementById('bankNameInput').value = acc.bankName;
+                document.getElementById('accountNumInput').value = acc.accountNum;
+                document.getElementById('accountHolderInput').value = acc.accountHolder;
+            }
+        } else {
+            document.getElementById('bankNameInput').value = '';
+            document.getElementById('accountNumInput').value = '';
+            document.getElementById('accountHolderInput').value = '';
+        }
+        document.getElementById('accountModal').style.display = 'block';
+    }
+
+    window.closeAccountModal = function() {
+        document.getElementById('accountModal').style.display = 'none';
+    }
+
+    window.saveAccount = function() {
+        const accountId = document.getElementById('accountIdInput').value;
+        const bankName = document.getElementById('bankNameInput').value;
+        const accountNum = document.getElementById('accountNumInput').value.trim();
+        const accountHolder = document.getElementById('accountHolderInput').value.trim();
+
+        if (!bankName) { alert('은행을 선택해주세요.'); return; }
+        if (!accountNum) { alert('계좌번호를 입력해주세요.'); return; }
+        if (!accountHolder) { alert('예금주를 입력해주세요.'); return; }
+
+        const url = accountId ? `${ctxPath}mypage/account/update` : `${ctxPath}mypage/account/add`;
+        const body = { bankName, accountNum, accountHolder };
+        if (accountId) body.accountId = parseInt(accountId);
+
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { closeAccountModal(); loadAccounts(); }
+            else alert(data.message || '저장에 실패했습니다.');
+        })
+        .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    window.deleteAccount = function(accountId) {
+        if (!confirm('이 계좌를 삭제하시겠습니까?')) return;
+        fetch(`${ctxPath}mypage/account/delete?accountId=${accountId}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => { if (data.success) loadAccounts(); else alert(data.message || '삭제에 실패했습니다.'); });
+    }
+
+    window.setPrimaryAccount = function(accountId) {
+        fetch(`${ctxPath}mypage/account/setPrimary?accountId=${accountId}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => { if (data.success) loadAccounts(); else alert(data.message || '오류가 발생했습니다.'); });
+    }
+
+    // ===== 배송지 관리 =====
+    let deliveryList = [];
+
+    window.loadDeliveries = function() {
+        fetch(`${ctxPath}mypage/deliveries`)
+        .then(r => r.json())
+        .then(data => { deliveryList = data; renderDeliveryList(data); });
+    }
+
+    function renderDeliveryList(deliveries) {
+        const container = document.getElementById('deliveryList');
+        document.getElementById('deliveryCountBadge').textContent = `${deliveries.length}/5`;
+        document.getElementById('addDeliveryBtn').style.display = deliveries.length >= 5 ? 'none' : '';
+
+        if (deliveries.length === 0) {
+            container.innerHTML = '<p class="mp-mgmt-empty">등록된 배송지가 없습니다.</p>';
+            return;
+        }
+        container.innerHTML = deliveries.map(d => `
+            <div class="mp-mgmt-item">
+                <div class="mp-mgmt-item-left">
+                    <span class="mp-badge ${d.isPrimary === 'Y' ? 'mp-badge-primary' : 'mp-badge-sub'}">
+                        ${d.isPrimary === 'Y' ? '대표' : '서브'}
+                    </span>
+                    <div class="mp-mgmt-item-info">
+                        <strong>${d.label}</strong>
+                        <span>${d.receiverName} · ${d.receiverPhone}</span>
+                        <span>${d.address} ${d.detailAddress}</span>
+                    </div>
+                </div>
+                <div class="mp-mgmt-item-actions">
+                    ${d.isPrimary !== 'Y' ? `<button class="mp-action-btn mp-action-primary" onclick="setPrimaryDelivery(${d.deliveryNo})">대표 설정</button>` : ''}
+                    <button class="mp-action-btn" onclick="openDeliveryModal(${d.deliveryNo})">수정</button>
+                    <button class="mp-action-btn mp-action-delete" onclick="deleteDelivery(${d.deliveryNo})">삭제</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.openDeliveryModal = function(deliveryNo) {
+        document.getElementById('deliveryModalTitle').textContent = deliveryNo ? '배송지 수정' : '배송지 추가';
+        document.getElementById('deliveryNoInput').value = deliveryNo || '';
+        if (deliveryNo) {
+            const d = deliveryList.find(x => x.deliveryNo === deliveryNo);
+            if (d) {
+                document.getElementById('deliveryLabelInput').value = d.label;
+                document.getElementById('receiverNameInput').value = d.receiverName;
+                document.getElementById('receiverPhoneInput').value = d.receiverPhone;
+                document.getElementById('deliveryPostcode').value = d.postcode;
+                document.getElementById('deliveryAddress').value = d.address;
+                document.getElementById('deliveryDetailAddress').value = d.detailAddress;
+                document.getElementById('deliveryExtraAddress').value = d.extraAddress || '';
+            }
+        } else {
+            ['deliveryLabelInput','receiverNameInput','receiverPhoneInput',
+             'deliveryPostcode','deliveryAddress','deliveryDetailAddress'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('deliveryExtraAddress').value = '';
+        }
+        document.getElementById('deliveryModal').style.display = 'block';
+    }
+
+    window.closeDeliveryModal = function() {
+        document.getElementById('deliveryModal').style.display = 'none';
+    }
+
+    window.searchDeliveryAddress = function() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('deliveryPostcode').value = data.zonecode;
+                document.getElementById('deliveryAddress').value = data.roadAddress || data.jibunAddress;
+                document.getElementById('deliveryExtraAddress').value = data.bname || '';
+                document.getElementById('deliveryDetailAddress').value = '';
+                document.getElementById('deliveryDetailAddress').focus();
+            }
+        }).open();
+    }
+
+    window.saveDelivery = function() {
+        const deliveryNo = document.getElementById('deliveryNoInput').value;
+        const label = document.getElementById('deliveryLabelInput').value.trim();
+        const receiverName = document.getElementById('receiverNameInput').value.trim();
+        const receiverPhone = document.getElementById('receiverPhoneInput').value.trim();
+        const postcode = document.getElementById('deliveryPostcode').value.trim();
+        const address = document.getElementById('deliveryAddress').value.trim();
+        const detailAddress = document.getElementById('deliveryDetailAddress').value.trim();
+        const extraAddress = document.getElementById('deliveryExtraAddress').value;
+
+        if (!label) { alert('배송지명을 입력해주세요.'); return; }
+        if (!receiverName) { alert('수령인을 입력해주세요.'); return; }
+        if (!receiverPhone) { alert('연락처를 입력해주세요.'); return; }
+        if (!postcode || !address) { alert('주소를 검색해주세요.'); return; }
+        if (!detailAddress) { alert('상세주소를 입력해주세요.'); return; }
+
+        const url = deliveryNo ? `${ctxPath}mypage/delivery/update` : `${ctxPath}mypage/delivery/add`;
+        const body = { label, receiverName, receiverPhone, postcode, address, detailAddress, extraAddress };
+        if (deliveryNo) body.deliveryNo = parseInt(deliveryNo);
+
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { closeDeliveryModal(); loadDeliveries(); }
+            else alert(data.message || '저장에 실패했습니다.');
+        })
+        .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    window.deleteDelivery = function(deliveryNo) {
+        if (!confirm('이 배송지를 삭제하시겠습니까?')) return;
+        fetch(`${ctxPath}mypage/delivery/delete?deliveryNo=${deliveryNo}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => { if (data.success) loadDeliveries(); else alert(data.message || '삭제에 실패했습니다.'); });
+    }
+
+    window.setPrimaryDelivery = function(deliveryNo) {
+        fetch(`${ctxPath}mypage/delivery/setPrimary?deliveryNo=${deliveryNo}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => { if (data.success) loadDeliveries(); else alert(data.message || '오류가 발생했습니다.'); });
+    }
+
+    // 페이지 로드 시 내 판매상품 초기 로드
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMyProducts();
+    });
+
+    })();
     /*]]>*/
+</script>
 </body>
 </html>
