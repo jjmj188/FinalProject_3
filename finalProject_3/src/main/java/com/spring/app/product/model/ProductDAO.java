@@ -11,6 +11,7 @@ import com.spring.app.product.domain.ProductImageDTO;
 import com.spring.app.product.domain.ProductMeetLocationDTO;
 import com.spring.app.product.domain.ProductPriceStatsDTO;
 import com.spring.app.product.domain.ProductPriceTrendDTO;
+import com.spring.app.product.domain.ProductReportDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.domain.SearchKeywordDTO;
 import com.spring.app.product.domain.SearchLogDTO;
@@ -86,7 +87,11 @@ public interface ProductDAO {
 	List<ProductDTO> selectSellerProductsByProductNo(Map<String, Object> paraMap);
 	int selectSellerProductCountByProductNo(int productNo);
 
-	
 	int isBuyerOfProduct(Map<String, Object> paraMap);
-    
+	
+	//게시글 신고하기
+	String selectSellerEmailByProductNo(int productNo);
+	Integer selectProductReportTypeId(ProductReportDTO reportDto);
+	int insertProductReport(ProductReportDTO reportDto);
+	
 }

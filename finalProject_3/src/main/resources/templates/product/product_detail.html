@@ -4,520 +4,838 @@
       lang="ko">
 <head>
 
-<link rel="stylesheet" th:href="@{/css/product/product_detail.css}">
+    <!-- 상품 상세페이지 전용 CSS -->
+    <link rel="stylesheet" th:href="@{/css/product/product_detail.css}">
 
+    <style>
+        /* =========================================
+           신고 버튼
+           ========================================= */
+        .pd-report-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            color: inherit;
+            font: inherit;
+        }
 
+        .pd-report-trigger .pd-user-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pd-report-trigger .pd-user-icon img {
+            display: block;
+        }
+
+        /* =========================================
+           상품 신고 오버레이
+           ========================================= */
+        .product-report-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 9998;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .product-report-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* =========================================
+           상품 신고 슬라이드 패널
+           ========================================= */
+        .product-report-panel {
+            position: fixed;
+            top: 0;
+            right: -460px;
+            width: 420px;
+            max-width: 100%;
+            height: 100vh;
+            background: #fff;
+            z-index: 9999;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .product-report-panel.show {
+            right: 0;
+        }
+
+        .product-report-step {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .product-report-step.is-active {
+            display: flex;
+        }
+
+        .product-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ebebeb;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .product-report-header h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .product-report-header-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+            padding: 5px;
+        }
+
+        .product-report-notice {
+            margin: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            border-radius: 8px;
+        }
+
+        .product-report-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+        }
+
+        .product-report-list li {
+            padding: 20px;
+            border-bottom: 1px solid #f4f4f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .product-report-list li:hover {
+            background: #fcfcfc;
+        }
+
+        .product-report-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .product-report-select {
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border: none;
+            width: 100%;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        #productReportText {
+            width: 100%;
+            height: 180px;
+            border: none;
+            background: #f2f2f2;
+            border-radius: 8px;
+            padding: 15px;
+            outline: none;
+            resize: none;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .product-report-char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .product-report-photo-upload-section {
+            margin-top: 20px;
+        }
+
+        .product-report-photo-upload-section p {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-report-photo-btn {
+            width: 70px;
+            height: 70px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .product-report-photo-preview {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .product-report-submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .product-report-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
 </head>
 
 <body>
 <!-- 상품 상세페이지 -->
-<main>
-<!--상품정보-->
-<section class="pd-page">
-  <section class="pd-grid">
+<main th:attr="data-product-no=${product.productNo},
+               data-login=${isLogin},
+               data-owner=${isOwner}">
 
-    <!-- LEFT: 이미지 영역 -->
-<div class="pd-gallery">
+    <!-- 상품정보 -->
+    <section class="pd-page">
+        <section class="pd-grid">
 
-  <div class="pd-main-img">
-    <img id="pdMainImage"
-         th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}"
-         th:src="@{${product.imageList[0].imgUrl}}"
-         alt="상품 대표 이미지">
+            <!-- LEFT: 이미지 영역 -->
+            <div class="pd-gallery">
 
-    <img id="pdMainImage"
-         th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}"
-         th:src="@{/images/no_image.png}"
-         alt="상품 이미지">
-  </div>
+                <div class="pd-main-img">
+                    <img id="pdMainImage"
+                         th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}"
+                         th:src="@{${product.imageList[0].imgUrl}}"
+                         alt="상품 대표 이미지">
 
-  <!-- 썸네일(0번=대표 제외) -->
-  <div class="pd-thumbs" aria-label="썸네일">
-
-  <th:block th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}">
-
-    <th:block th:each="img, stat : ${product.imageList}">
-      <div class="pd-thumb"
-           th:if="${stat.index < 3}">
-        <img th:src="@{${img.imgUrl}}"
-             th:alt="'썸네일 ' + ${stat.index + 1}"
-             th:attr="data-full=@{${img.imgUrl}}">
-      </div>
-    </th:block>
-
-  </th:block>
-
-  <!-- 이미지 부족할 때 -->
-  <div class="pd-thumb"
-       th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}">
-    <img th:src="@{/images/no_image.png}" alt="썸네일">
-  </div>
-
-</div>
-</div>
-
-
-
-    <!-- RIGHT: 정보 영역 -->
-    <div class="pd-info">
-      <div class="pd-topline">
-        <div>
-	        <div class="pd-breadcrumb">
-				<span th:text="${product.categoryName}"></span>
-				<span class="pd-dot">|</span>
-				<span class="time-ago"
-				      th:data-regdate="${#dates.format(product.regDate,'yyyy-MM-dd HH:mm:ss')}">
-				</span>
-				<span class="pd-dot">|</span>
-				조회 <span th:text="${product.viewCount}"></span>
-				<span class="pd-dot">|</span>
-				찜 <span th:text="${product.wishCount}"></span>
-			</div>
-        </div>
-
-        <div class="pd-actions-top">
-          <div class="pd-user-icon" aria-hidden="true">
-            <img th:src="@{/images/siren.png}" alt="신고">
-          </div>
-          <a class="pd-report"
-             th:href="@{/product/report(productNo=${product.productNo})}">
-            신고하기
-          </a>
-        </div>
-      </div>
-
-      <h1 class="pd-title" th:text="${product.productName}">상품이름</h1>
-
-     <div class="pd-price"
-     th:text="${product.productPrice != null and product.productPrice > 0 
-               ? #numbers.formatInteger(product.productPrice, 1, 'COMMA') + '원' 
-               : '가격없음'}">
-  60,000원
-</div>
-
-      <div class="pd-subline">
-       <a th:href="@{/product/price_check(searchWord=${product.productName})}" aria-label="시세조회">시세조회</a>
-      </div>
-
-      <div class="pd-card" aria-label="상품 정보">
-
-        <!-- 배송비 -->
-        <div class="pd-row pd-row-fee">
-          <div class="pd-label">배송비</div>
-          <div class="pd-value pd-value-fee">
-
-            <!-- 배송옵션이 있을 때 -->
-            <ul class="pd-fee-simple"
-    th:if="${product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)}">
-  <li th:each="opt : ${product.shippingOptionList}">
-    <span class="pd-fee-name" th:text="${opt.parcelType}">일반택배</span>
-    <span class="pd-fee-amount"
-          th:text="${#numbers.formatInteger(opt.shippingFee, 3, 'COMMA')} + '원'">4,000원</span>
-  </li>
-</ul>
-
-            <!-- 배송옵션이 없을 때 -->
-            <ul class="pd-fee-simple"
-                th:if="${product.shippingOptionList == null or #lists.isEmpty(product.shippingOptionList)}">
-              <li>
-                <span class="pd-fee-name">배송비 정보 없음</span>
-                <span class="pd-fee-amount">-</span>
-              </li>
-            </ul>
-
-          </div>
-        </div>
-
-		<!-- 상품상태 -->
-		<div class="pd-row">
-		  <div class="pd-label">상품상태</div>
-		  <div class="pd-value">
-		    <span class="pd-chip chip-grade-top"
-		          th:if="${product.productCondition == '상'}">상</span>
-		
-		    <span class="pd-chip chip-grade-mid"
-		          th:if="${product.productCondition == '중'}">중</span>
-		
-		    <span class="pd-chip chip-grade-low"
-		          th:if="${product.productCondition == '하'}">하</span>
-		
-		    <span class="pd-chip"
-		          th:if="${product.productCondition != '상' and product.productCondition != '중' and product.productCondition != '하'}"
-		          th:text="${product.productCondition}">상품상태</span>
-		  </div>
-		</div>
-		
-		<!-- 거래상태 -->
-<div class="pd-row">
-  <div class="pd-label">거래상태</div>
-  <div class="pd-value">
-
-    <span class="pd-chip chip-sale-ing"
-          th:if="${product.tradeStatus == '판매중'}">판매중</span>
-
-    <span class="pd-chip chip-sale-deal"
-          th:if="${product.tradeStatus == '예약중'}">예약중</span>
-
-    <span class="pd-chip chip-sale-done"
-          th:if="${product.tradeStatus == '판매완료'}">판매완료</span>
-
-    <span class="pd-chip"
-          th:if="${product.tradeStatus != '판매중' and product.tradeStatus != '예약중' and product.tradeStatus != '판매완료'}"
-          th:text="${product.tradeStatus}">거래상태</span>
-
-  </div>
-</div>
-
-       <!-- 거래방법 -->
-<div class="pd-row">
-  <div class="pd-label">거래방법</div>
-  <div class="pd-value">
-    <span class="pd-chip chip-method-meet"
-          th:if="${product.tradeMethod == '직거래'}">직거래</span>
-
-    <span class="pd-chip chip-method-ship"
-          th:if="${product.tradeMethod == '택배'}">택배</span>
-
-    <span class="pd-chip"
-          th:if="${product.tradeMethod != '직거래' and product.tradeMethod != '택배'}"
-          th:text="${product.tradeMethod}">거래방법</span>
-  </div>
-</div>
-
-        <!-- 거래 희망장소 -->
-       <div class="pd-row">
-		    <div class="pd-label">거래 희망장소</div>
-		
-		    <div class="pd-value pd-value-location">
-		
-		        <th:block th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
-		
-		            <button type="button"
-		                    class="pd-location"
-		                    th:each="ml, stat : ${product.meetLocationList}"
-		                    th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
-		                    th:attr="data-lat=${ml.latitude},
-		                             data-lng=${ml.longitude},
-		                             data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress},
-		                             data-target-id='map-place-' + ${stat.index}"
-		                    th:classappend="${stat.index > 0 ? ' pd-location--line' : ''}">
-		            </button>
-		
-		        </th:block>
-		
-		        <span class="pd-location"
-		              th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
-		            장소 정보 없음
-		        </span>
-		
-		    </div>
-		</div>
-  </div>
-
-     <div class="pd-cta">
-    <button class="pd-like"
-        type="button"
-        aria-label="찜하기"
-        th:classappend="${product.wished} ? ' is-active' : ''"
-        th:attr="data-product-no=${product.productNo},
-                 data-login=${isLogin}">
-    <i th:class="${product.wished} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
-</button>
-
-    <div class="pd-btns">
-        <button id="btnStartChat" class="pd-btn pd-btn-chat" type="button"
-                th:data-product-no="${product.productNo}"
-                th:data-seller-email="${product.sellerEmail}"
-                th:data-product-name="${product.productName}">
-            채팅하기
-        </button>
-
-        <button class="pd-btn pd-btn-pay" type="button"
-                th:attr="data-product-no=${product.productNo}"
-                onclick="goToPayment(this)">
-            안전결제
-        </button>
-    </div>
-</div>
-
-    </div>
-  </section>
-</section>
-<!--상품글/판매자 정보-->
-<section class="pdinfo-wrap">
-    <section class="pdinfo-grid">
-
-        <!-- LEFT -->
-        <section>
-		    <div class="pdinfo-head">
-		        <h2 class="pdinfo-title">상품정보</h2>
-		    </div>
-		
-		    <div id="pdinfoTextBox" class="pdinfo-textbox is-collapsed" th:text="${product.productDesc}">
-		        상품 설명
-		    </div>
-		
-		    <button id="pdinfoMoreBtn" class="pdinfo-morebtn is-hidden" type="button">더보기</button>
-		</section>
-
-        <!-- RIGHT -->
- <section>
-   <div class="pdinfo-head">
-    <h2 class="pdinfo-title">판매자정보</h2>
-    <a th:href="@{/product/product_user_profile(productNo=${product.productNo})}">
-        <i class="fa-solid fa-chevron-right"></i>
-    </a>
-</div>
-
-    <div class="pdinfo-card">
-        <div class="pdinfo-cardbody">
-            <div class="pdinfo-seller-top">
-                <div class="pdinfo-avatar">
-                    <img th:if="${product.sellerProfileImg != null and product.sellerProfileImg != ''}"
-                         th:src="@{${product.sellerProfileImg}}"
-                         alt="판매자 프로필">
-
-                    <img th:if="${product.sellerProfileImg == null or product.sellerProfileImg == ''}"
-                         th:src="@{/images/default_profile.png}"
-                         alt="기본 프로필">
+                    <img id="pdMainImage"
+                         th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}"
+                         th:src="@{/images/no_image.png}"
+                         alt="상품 이미지">
                 </div>
 
-                <div class="pdinfo-seller-name" th:text="${product.sellerName}">판매자 이름</div>
-            </div>
+                <!-- 썸네일(0번=대표 제외) -->
+                <div class="pd-thumbs" aria-label="썸네일">
 
-            <div class="pdinfo-temp-row">
-                <div class="pdinfo-temp-label">매너온도</div>
-                <div id="pdinfoTempValue"
-                     class="pdinfo-temp-value"
-                     th:attr="data-temp=${product.mannerTemp}"
-                     th:text="${product.mannerTemp} + '°C'">
-                    36.5°C
+                    <th:block th:if="${product.imageList != null and !#lists.isEmpty(product.imageList)}">
+
+                        <th:block th:each="img, stat : ${product.imageList}">
+                            <div class="pd-thumb"
+                                 th:if="${stat.index < 3}">
+                                <img th:src="@{${img.imgUrl}}"
+                                     th:alt="'썸네일 ' + ${stat.index + 1}"
+                                     th:attr="data-full=@{${img.imgUrl}}">
+                            </div>
+                        </th:block>
+
+                    </th:block>
+
+                    <!-- 이미지 부족할 때 -->
+                    <div class="pd-thumb"
+                         th:if="${product.imageList == null or #lists.isEmpty(product.imageList)}">
+                        <img th:src="@{/images/no_image.png}" alt="썸네일">
+                    </div>
+
                 </div>
             </div>
 
-            <div class="pdinfo-temp-sub">최근 3개월 기준 · 별점으로 거래후기 반영</div>
-
-            <div class="pdinfo-bar" id="pdinfoBar">
-                <span id="pdinfoBarFill"></span>
-            </div>
-
-            <div class="pdinfo-stats">
-                <div class="pdinfo-stat">
-                    <div class="k">안심결제</div>
-                    <div class="v">9</div>
-                </div>
-                <div class="pdinfo-stat">
-                    <div class="k">거래후기</div>
-                    <div class="v">10</div>
-                </div>
-                <div class="pdinfo-stat">
-                    <div class="k">거래횟수</div>
-                    <div class="v">10</div>
-                </div>
-            </div>
-        </div>
-                <div class="pdinfo-reviews-head">
-                    <div class="pdinfo-reviews-title">최근후기</div>
-                  <a class="pdinfo-reviews-link"
-				   th:href="@{/product/product_user_profile(productNo=${product.productNo})}">
-				    전체보기 <i class="fa-solid fa-chevron-right"></i>
-				</a>
-                </div>
-
-                <div class="pdinfo-reviews">
-                    <div class="pdinfo-review">
-                        <div>
-                            <div class="pdinfo-user">사용자 아이디</div>
-                            <div class="pdinfo-desc">설명 그대로 상태 좋아요. 응답도 빠릅니다.</div>
-                        </div>
-                        <div class="pdinfo-stars">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
+            <!-- RIGHT: 정보 영역 -->
+            <div class="pd-info">
+                <div class="pd-topline">
+                    <div>
+                        <div class="pd-breadcrumb">
+                            <span th:text="${product.categoryName}"></span>
+                            <span class="pd-dot">|</span>
+                            <span class="time-ago"
+                                  th:data-regdate="${#dates.format(product.regDate,'yyyy-MM-dd HH:mm:ss')}">
+                            </span>
+                            <span class="pd-dot">|</span>
+                            조회 <span th:text="${product.viewCount}"></span>
+                            <span class="pd-dot">|</span>
+                            찜 <span th:text="${product.wishCount}"></span>
                         </div>
                     </div>
 
-                    <div class="pdinfo-review">
-                        <div>
-                            <div class="pdinfo-user">사용자 아이디</div>
-                            <div class="pdinfo-desc">친절하고 거래 매너가 좋아요.</div>
-                        </div>
-                        <div class="pdinfo-stars">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
+                    <!-- 신고 버튼은 항상 노출 -->
+                    <div class="pd-actions-top">
+                        <button type="button" class="pd-report-trigger" onclick="openProductReportModal()">
+                            <span class="pd-user-icon" aria-hidden="true">
+                                <img th:src="@{/images/siren.png}" alt="신고">
+                            </span>
+                            <span class="pd-report">신고하기</span>
+                        </button>
+                    </div>
+                </div>
+
+                <h1 class="pd-title" th:text="${product.productName}">상품이름</h1>
+
+                <div class="pd-price"
+                     th:text="${product.productPrice != null and product.productPrice > 0
+                               ? #numbers.formatInteger(product.productPrice, 1, 'COMMA') + '원'
+                               : '가격없음'}">
+                    60,000원
+                </div>
+
+                <div class="pd-subline">
+                    <a th:href="@{/product/price_check(searchWord=${product.productName})}" aria-label="시세조회">시세조회</a>
+                </div>
+
+                <div class="pd-card" aria-label="상품 정보">
+
+                    <!-- 배송비 -->
+                    <div class="pd-row pd-row-fee">
+                        <div class="pd-label">배송비</div>
+                        <div class="pd-value pd-value-fee">
+
+                            <!-- 배송옵션이 있을 때 -->
+                            <ul class="pd-fee-simple"
+                                th:if="${product.shippingOptionList != null and !#lists.isEmpty(product.shippingOptionList)}">
+                                <li th:each="opt : ${product.shippingOptionList}">
+                                    <span class="pd-fee-name" th:text="${opt.parcelType}">일반택배</span>
+                                    <span class="pd-fee-amount"
+                                          th:text="${#numbers.formatInteger(opt.shippingFee, 3, 'COMMA')} + '원'">4,000원</span>
+                                </li>
+                            </ul>
+
+                            <!-- 배송옵션이 없을 때 -->
+                            <ul class="pd-fee-simple"
+                                th:if="${product.shippingOptionList == null or #lists.isEmpty(product.shippingOptionList)}">
+                                <li>
+                                    <span class="pd-fee-name">배송비 정보 없음</span>
+                                    <span class="pd-fee-amount">-</span>
+                                </li>
+                            </ul>
+
                         </div>
                     </div>
 
-                    <div class="pdinfo-review">
-                        <div>
-                            <div class="pdinfo-user">사용자 아이디</div>
-                            <div class="pdinfo-desc">포장 꼼꼼하고 제품 상태 만족합니다.</div>
+                    <!-- 상품상태 -->
+                    <div class="pd-row">
+                        <div class="pd-label">상품상태</div>
+                        <div class="pd-value">
+                            <span class="pd-chip chip-grade-top"
+                                  th:if="${product.productCondition == '상'}">상</span>
+
+                            <span class="pd-chip chip-grade-mid"
+                                  th:if="${product.productCondition == '중'}">중</span>
+
+                            <span class="pd-chip chip-grade-low"
+                                  th:if="${product.productCondition == '하'}">하</span>
+
+                            <span class="pd-chip"
+                                  th:if="${product.productCondition != '상' and product.productCondition != '중' and product.productCondition != '하'}"
+                                  th:text="${product.productCondition}">상품상태</span>
                         </div>
-                        <div class="pdinfo-stars">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
+                    </div>
+
+                    <!-- 거래상태 -->
+                    <div class="pd-row">
+                        <div class="pd-label">거래상태</div>
+                        <div class="pd-value">
+
+                            <span class="pd-chip chip-sale-ing"
+                                  th:if="${product.tradeStatus == '판매중'}">판매중</span>
+
+                            <span class="pd-chip chip-sale-deal"
+                                  th:if="${product.tradeStatus == '예약중'}">예약중</span>
+
+                            <span class="pd-chip chip-sale-done"
+                                  th:if="${product.tradeStatus == '판매완료'}">판매완료</span>
+
+                            <span class="pd-chip"
+                                  th:if="${product.tradeStatus != '판매중' and product.tradeStatus != '예약중' and product.tradeStatus != '판매완료'}"
+                                  th:text="${product.tradeStatus}">거래상태</span>
+
                         </div>
+                    </div>
+
+                    <!-- 거래방법 -->
+                    <div class="pd-row">
+                        <div class="pd-label">거래방법</div>
+                        <div class="pd-value">
+                            <span class="pd-chip chip-method-meet"
+                                  th:if="${product.tradeMethod == '직거래'}">직거래</span>
+
+                            <span class="pd-chip chip-method-ship"
+                                  th:if="${product.tradeMethod == '택배'}">택배</span>
+
+                            <span class="pd-chip"
+                                  th:if="${product.tradeMethod != '직거래' and product.tradeMethod != '택배'}"
+                                  th:text="${product.tradeMethod}">거래방법</span>
+                        </div>
+                    </div>
+
+                    <!-- 거래 희망장소 -->
+                    <div class="pd-row">
+                        <div class="pd-label">거래 희망장소</div>
+
+                        <div class="pd-value pd-value-location">
+
+                            <th:block th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
+
+                                <button type="button"
+                                        class="pd-location"
+                                        th:each="ml, stat : ${product.meetLocationList}"
+                                        th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
+                                        th:attr="data-lat=${ml.latitude},
+                                                 data-lng=${ml.longitude},
+                                                 data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress},
+                                                 data-target-id='map-place-' + ${stat.index}"
+                                        th:classappend="${stat.index > 0 ? ' pd-location--line' : ''}">
+                                </button>
+
+                            </th:block>
+
+                            <span class="pd-location"
+                                  th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
+                                장소 정보 없음
+                            </span>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pd-cta">
+                    <button class="pd-like"
+                            type="button"
+                            aria-label="찜하기"
+                            th:classappend="${product.wished} ? ' is-active' : ''"
+                            th:attr="data-product-no=${product.productNo},
+                                     data-login=${isLogin}">
+                        <i th:class="${product.wished} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                    </button>
+
+                    <div class="pd-btns">
+                        <button id="btnStartChat" class="pd-btn pd-btn-chat" type="button"
+                                th:data-product-no="${product.productNo}"
+                                th:data-seller-email="${product.sellerEmail}"
+                                th:data-product-name="${product.productName}">
+                            채팅하기
+                        </button>
+
+                        <button class="pd-btn pd-btn-pay" type="button"
+                                th:attr="data-product-no=${product.productNo}"
+                                onclick="goToPayment(this)">
+                            안전결제
+                        </button>
                     </div>
                 </div>
 
             </div>
         </section>
-
-    </section>
-</section>
-<!--지도/다른 판매 물품-->
-<section class="loc-wrap" id="locWrap">
-    <div class="loc-map-head">
-        <h2 class="loc-map-title">거래 희망 위치</h2>
-
-        <div class="loc-map-place-list"
-             th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
-
-            <button type="button"
-                    class="loc-map-place"
-                    th:each="ml, stat : ${product.meetLocationList}"
-                    th:id="'map-place-' + ${stat.index}"
-                    th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
-                    th:attr="data-lat=${ml.latitude},
-                             data-lng=${ml.longitude},
-                             data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress}">
-            </button>
-
-        </div>
-
-        <div class="loc-map-place-list"
-             th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
-            <span class="loc-map-place is-disabled">위치 정보 없음</span>
-        </div>
-    </div>
-
-    <section class="loc-map" aria-label="지도">
-        <div id="locMapKakao" aria-label="카카오 지도"></div>
     </section>
 
-   <div class="loc-sell-head">
-    <h3 class="loc-sell-title">이런 상품은 어때요?</h3>
-    <a class="loc-sell-more" th:href="@{/product/product_list(categoryNo=${product.categoryNo})}">
-        더보기 <i class="fa-solid fa-chevron-right"></i>
-    </a>
-</div>
+    <!-- 상품글/판매자 정보 -->
+    <section class="pdinfo-wrap">
+        <section class="pdinfo-grid">
 
-<section class="loc-carousel" aria-label="비슷한 거래물품">
-    <button class="loc-arrow" id="locPrevBtn" type="button" aria-label="이전">
-        <i class="fa-solid fa-angle-left"></i>
-    </button>
+            <!-- LEFT -->
+            <section>
+                <div class="pdinfo-head">
+                    <h2 class="pdinfo-title">상품정보</h2>
+                </div>
 
-    <div class="loc-viewport" id="locViewport">
-        <div class="loc-track" id="locTrack">
+                <div id="pdinfoTextBox" class="pdinfo-textbox is-collapsed" th:text="${product.productDesc}">
+                    상품 설명
+                </div>
 
-            <th:block th:if="${similarProductList != null and !#lists.isEmpty(similarProductList)}">
+                <button id="pdinfoMoreBtn" class="pdinfo-morebtn is-hidden" type="button">더보기</button>
+            </section>
 
-                <div class="loc-page"
-                     th:each="pageStart : ${#numbers.sequence(0, similarProductList.size() - 1, 3)}">
+            <!-- RIGHT -->
+            <section>
+                <div class="pdinfo-head">
+                    <h2 class="pdinfo-title">판매자정보</h2>
+                    <a th:href="@{/product/product_user_profile(productNo=${product.productNo})}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
 
-                    <th:block th:each="similarProduct, stat : ${similarProductList}">
-                        <th:block th:if="${stat.index >= pageStart and stat.index < pageStart + 3}">
+                <div class="pdinfo-card">
+                    <div class="pdinfo-cardbody">
+                        <div class="pdinfo-seller-top">
+                            <div class="pdinfo-avatar">
+                                <img th:if="${product.sellerProfileImg != null and product.sellerProfileImg != ''}"
+                                     th:src="@{${product.sellerProfileImg}}"
+                                     alt="판매자 프로필">
 
-                            <article class="loc-card"
-                                     th:onclick="|location.href='@{/product/product_detail/{productNo}(productNo=${similarProduct.productNo})}'|">
+                                <img th:if="${product.sellerProfileImg == null or product.sellerProfileImg == ''}"
+                                     th:src="@{/images/default_profile.png}"
+                                     alt="기본 프로필">
+                            </div>
 
-                                <div class="loc-thumb">
-                                    <img th:if="${similarProduct.imgUrl != null and similarProduct.imgUrl != ''}"
-                                         th:src="@{${similarProduct.imgUrl}}"
-                                         alt="비슷한 상품 이미지">
+                            <div class="pdinfo-seller-name" th:text="${product.sellerName}">판매자 이름</div>
+                        </div>
 
-                                    <img th:if="${similarProduct.imgUrl == null or similarProduct.imgUrl == ''}"
-                                         th:src="@{/images/no_image.png}"
-                                         alt="기본 이미지">
-                                </div>
+                        <div class="pdinfo-temp-row">
+                            <div class="pdinfo-temp-label">매너온도</div>
+                            <div id="pdinfoTempValue"
+                                 class="pdinfo-temp-value"
+                                 th:attr="data-temp=${product.mannerTemp}"
+                                 th:text="${product.mannerTemp} + '°C'">
+                                36.5°C
+                            </div>
+                        </div>
 
-                                <div class="loc-card-body">
-                                    <div class="loc-name" th:text="${similarProduct.productName}">상품이름</div>
+                        <div class="pdinfo-temp-sub">최근 3개월 기준 · 별점으로 거래후기 반영</div>
 
-                                    <div class="loc-price"
-                                         th:text="${#numbers.formatInteger(similarProduct.productPrice, 3, 'COMMA')} + '원'">
-                                        60,000원
-                                    </div>
+                        <div class="pdinfo-bar" id="pdinfoBar">
+                            <span id="pdinfoBarFill"></span>
+                        </div>
 
-                                    <div class="loc-meta">
-                                        <span th:text="${similarProduct.placeName != null and similarProduct.placeName != '' ? similarProduct.placeName : similarProduct.tradeMethod}">
-                                            직거래
-                                        </span>
-                                        <span> | </span>
-                                        <span class="time-ago"
-                                              th:data-regdate="${#dates.format(similarProduct.regDate,'yyyy-MM-dd HH:mm:ss')}">
-                                        </span>
-                                    </div>
-                                </div>
+                        <div class="pdinfo-stats">
+                            <div class="pdinfo-stat">
+                                <div class="k">안심결제</div>
+                                <div class="v">9</div>
+                            </div>
+                            <div class="pdinfo-stat">
+                                <div class="k">거래후기</div>
+                                <div class="v">10</div>
+                            </div>
+                            <div class="pdinfo-stat">
+                                <div class="k">거래횟수</div>
+                                <div class="v">10</div>
+                            </div>
+                        </div>
+                    </div>
 
-                            </article>
+                    <div class="pdinfo-reviews-head">
+                        <div class="pdinfo-reviews-title">최근후기</div>
+                        <a class="pdinfo-reviews-link"
+                           th:href="@{/product/product_user_profile(productNo=${product.productNo})}">
+                            전체보기 <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </div>
 
-                        </th:block>
-                    </th:block>
+                    <div class="pdinfo-reviews">
+                        <div class="pdinfo-review">
+                            <div>
+                                <div class="pdinfo-user">사용자 아이디</div>
+                                <div class="pdinfo-desc">설명 그대로 상태 좋아요. 응답도 빠릅니다.</div>
+                            </div>
+                            <div class="pdinfo-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                        </div>
+
+                        <div class="pdinfo-review">
+                            <div>
+                                <div class="pdinfo-user">사용자 아이디</div>
+                                <div class="pdinfo-desc">친절하고 거래 매너가 좋아요.</div>
+                            </div>
+                            <div class="pdinfo-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                        </div>
+
+                        <div class="pdinfo-review">
+                            <div>
+                                <div class="pdinfo-user">사용자 아이디</div>
+                                <div class="pdinfo-desc">포장 꼼꼼하고 제품 상태 만족합니다.</div>
+                            </div>
+                            <div class="pdinfo-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
-            </th:block>
+            </section>
 
-            <div class="loc-page"
-                 th:if="${similarProductList == null or #lists.isEmpty(similarProductList)}">
-                <article class="loc-card">
-                    <div class="loc-card-body">
-                        <div class="loc-name">비슷한 거래물품이 없습니다.</div>
-                    </div>
-                </article>
+        </section>
+    </section>
+
+    <!-- 지도/다른 판매 물품 -->
+    <section class="loc-wrap" id="locWrap">
+        <div class="loc-map-head">
+            <h2 class="loc-map-title">거래 희망 위치</h2>
+
+            <div class="loc-map-place-list"
+                 th:if="${product.meetLocationList != null and !#lists.isEmpty(product.meetLocationList)}">
+
+                <button type="button"
+                        class="loc-map-place"
+                        th:each="ml, stat : ${product.meetLocationList}"
+                        th:id="'map-place-' + ${stat.index}"
+                        th:text="${ml.placeName != null ? ml.placeName : ml.fullAddress}"
+                        th:attr="data-lat=${ml.latitude},
+                                 data-lng=${ml.longitude},
+                                 data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress}">
+                </button>
+
             </div>
 
+            <div class="loc-map-place-list"
+                 th:if="${product.meetLocationList == null or #lists.isEmpty(product.meetLocationList)}">
+                <span class="loc-map-place is-disabled">위치 정보 없음</span>
+            </div>
+        </div>
+
+        <section class="loc-map" aria-label="지도">
+            <div id="locMapKakao" aria-label="카카오 지도"></div>
+        </section>
+
+        <div class="loc-sell-head">
+            <h3 class="loc-sell-title">이런 상품은 어때요?</h3>
+            <a class="loc-sell-more" th:href="@{/product/product_list(categoryNo=${product.categoryNo})}">
+                더보기 <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </div>
+
+        <section class="loc-carousel" aria-label="비슷한 거래물품">
+            <button class="loc-arrow" id="locPrevBtn" type="button" aria-label="이전">
+                <i class="fa-solid fa-angle-left"></i>
+            </button>
+
+            <div class="loc-viewport" id="locViewport">
+                <div class="loc-track" id="locTrack">
+
+                    <th:block th:if="${similarProductList != null and !#lists.isEmpty(similarProductList)}">
+
+                        <div class="loc-page"
+                             th:each="pageStart : ${#numbers.sequence(0, similarProductList.size() - 1, 3)}">
+
+                            <th:block th:each="similarProduct, stat : ${similarProductList}">
+                                <th:block th:if="${stat.index >= pageStart and stat.index < pageStart + 3}">
+
+                                    <article class="loc-card"
+                                             th:onclick="|location.href='@{/product/product_detail/{productNo}(productNo=${similarProduct.productNo})}'|">
+
+                                        <div class="loc-thumb">
+                                            <img th:if="${similarProduct.imgUrl != null and similarProduct.imgUrl != ''}"
+                                                 th:src="@{${similarProduct.imgUrl}}"
+                                                 alt="비슷한 상품 이미지">
+
+                                            <img th:if="${similarProduct.imgUrl == null or similarProduct.imgUrl == ''}"
+                                                 th:src="@{/images/no_image.png}"
+                                                 alt="기본 이미지">
+                                        </div>
+
+                                        <div class="loc-card-body">
+                                            <div class="loc-name" th:text="${similarProduct.productName}">상품이름</div>
+
+                                            <div class="loc-price"
+                                                 th:text="${#numbers.formatInteger(similarProduct.productPrice, 3, 'COMMA')} + '원'">
+                                                60,000원
+                                            </div>
+
+                                            <div class="loc-meta">
+                                                <span th:text="${similarProduct.placeName != null and similarProduct.placeName != '' ? similarProduct.placeName : similarProduct.tradeMethod}">
+                                                    직거래
+                                                </span>
+                                                <span> | </span>
+                                                <span class="time-ago"
+                                                      th:data-regdate="${#dates.format(similarProduct.regDate,'yyyy-MM-dd HH:mm:ss')}">
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                    </article>
+
+                                </th:block>
+                            </th:block>
+
+                        </div>
+                    </th:block>
+
+                    <div class="loc-page"
+                         th:if="${similarProductList == null or #lists.isEmpty(similarProductList)}">
+                        <article class="loc-card">
+                            <div class="loc-card-body">
+                                <div class="loc-name">비슷한 거래물품이 없습니다.</div>
+                            </div>
+                        </article>
+                    </div>
+
+                </div>
+            </div>
+
+            <button class="loc-arrow" id="locNextBtn" type="button" aria-label="다음">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </section>
+    </section>
+
+    <!-- 상품 신고 오버레이 -->
+    <div id="productReportOverlay" class="product-report-overlay" onclick="closeProductReportModal()"></div>
+
+    <!-- 상품 신고 슬라이드 패널 -->
+    <div id="productReportPanel" class="product-report-panel">
+
+        <!-- 1단계 -->
+        <div id="productReportStep1" class="product-report-step is-active">
+            <div class="product-report-header">
+                <button type="button" class="product-report-header-btn" onclick="closeProductReportModal()">✕</button>
+                <h4>신고하기</h4>
+                <div style="width:24px;"></div>
+            </div>
+
+            <div class="product-report-notice">
+                신고는 신중하게 진행해 주세요. 허위 신고일 경우 서비스 이용이 제한될 수 있습니다.
+            </div>
+
+            <ul class="product-report-list">
+                <li onclick="goProductReportStep2('불법 행위')"><span>불법 행위</span><span>❯</span></li>
+                <li onclick="goProductReportStep2('사기 피해')"><span>사기 피해</span><span>❯</span></li>
+                <li onclick="goProductReportStep2('비매너 행위')"><span>비매너 행위</span><span>❯</span></li>
+                <li onclick="goProductReportStep2('스팸성 홍보')"><span>스팸성 홍보</span><span>❯</span></li>
+                <li onclick="goProductReportStep2('기타 사유')"><span>기타 사유</span><span>❯</span></li>
+            </ul>
+        </div>
+
+        <!-- 2단계 -->
+        <div id="productReportStep2" class="product-report-step">
+            <div class="product-report-header">
+                <button type="button" class="product-report-header-btn" onclick="backToProductReportStep1()">❮</button>
+                <h4 id="productReportMainTitle">불법 행위</h4>
+                <button type="button" class="product-report-header-btn" onclick="closeProductReportModal()">✕</button>
+            </div>
+
+            <div class="product-report-content">
+                <select id="productReportSubCategory" class="product-report-select"></select>
+
+                <textarea id="productReportText"
+                          placeholder="신고 사유를 자세히 적어주세요. (최대 150자)"
+                          maxlength="150"
+                          oninput="updateProductReportCharCount(this)"></textarea>
+
+                <div class="product-report-char-count">
+                    <span id="productReportCurrentCharCount">0</span>/150
+                </div>
+
+                <div class="product-report-photo-upload-section">
+                    <p>사진 첨부</p>
+                    <input type="file"
+                           id="productReportFileInput"
+                           accept="image/*"
+                           style="display:none;"
+                           onchange="onProductReportFileSelected(this)">
+
+                    <div class="product-report-photo-btn" onclick="document.getElementById('productReportFileInput').click()">
+                        <span style="font-size:20px;">📷</span>
+                        <span id="productReportPhotoCount">0/1</span>
+                    </div>
+
+                    <div id="productReportPhotoPreview" class="product-report-photo-preview"></div>
+                </div>
+
+                <button type="button" class="product-report-submit-btn" onclick="submitProductReport()">신고하기</button>
+            </div>
         </div>
     </div>
 
-    <button class="loc-arrow" id="locNextBtn" type="button" aria-label="다음">
-        <i class="fa-solid fa-chevron-right"></i>
-    </button>
-</section>
-</section>
-<script>
-	
-	let isChatLoading = false;
-	
-    // 페이지가 다 로딩된 후 실행
+</main>
+
+<script th:inline="javascript">
+    /* =========================================
+       상태 변수
+       ========================================= */
+    let isChatLoading = false;
+    let isSubmittingProductReport = false;
+    let productReportSelectedFile = null;
+
+    /* =========================================
+       신고 유형 데이터
+       ========================================= */
+    const productReportData = {
+        "불법 행위": ["판매 금지 품목 게시", "장물 및 습득물 판매", "가품(이미테이션) 판매", "청소년 유해물 게시"],
+        "사기 피해": ["직거래 유도 후 잠적", "외부 채널 유도", "물품 정보 허위 기재", "택배 사기"],
+        "비매너 행위": ["노쇼(No-Show)", "무리한 가격 제안", "반말 및 욕설", "거래 확정 후 변심"],
+        "스팸성 홍보": ["전문 업자의 반복 게시", "홍보 및 광고", "도배 게시물", "낚시성 키워드 사용"],
+        "기타 사유": ["기타 사유 직접 입력"]
+    };
+
+    /* =========================================
+       DOM 로드 후 채팅 버튼 바인딩
+       ========================================= */
     document.addEventListener('DOMContentLoaded', function() {
         const chatBtn = document.getElementById('btnStartChat');
-        
+
         if (chatBtn) {
             chatBtn.addEventListener('click', function() {
-                // 타임리프가 심어둔 data-* 속성에서 값을 꺼내옵니다.
                 const pNo = this.getAttribute('data-product-no');
                 const sEmail = this.getAttribute('data-seller-email');
                 const pName = this.getAttribute('data-product-name');
-                
-                // 아래의 통신 함수 호출
+
                 startChat(pNo, sEmail, pName);
             });
         }
     });
 
+    /* =========================================
+       채팅방 생성
+       ========================================= */
     function startChat(productNo, sellerEmail, productName) {
-        if (isChatLoading) return; 
-        isChatLoading = true; 
+        if (isChatLoading) return;
+        isChatLoading = true;
 
         fetch('/finalProject_3/api/chat/createRoom', {
             method: 'POST',
             headers: {
-                
-                'Content-Type': 'application/json' 
+                'Content-Type': 'application/json'
             },
-            // ★ URLSearchParams 대신 JSON.stringify 를 써야 합니다.
-            body: JSON.stringify({ 
-                productNo: parseInt(productNo), 
-                sellerEmail: sellerEmail 
+            body: JSON.stringify({
+                productNo: parseInt(productNo),
+                sellerEmail: sellerEmail
             })
         })
         .then(response => {
@@ -525,33 +843,247 @@
             return response.json();
         })
         .then(data => {
-            isChatLoading = false; 
+            isChatLoading = false;
+
             if (data.success) {
                 const modal = document.getElementById('chatModal');
+
                 if (!modal || modal.style.display === 'none' || modal.style.display === '') {
-                    if (typeof window.toggleChatPopup === 'function') window.toggleChatPopup();
+                    if (typeof window.toggleChatPopup === 'function') {
+                        window.toggleChatPopup();
+                    }
                 }
+
                 setTimeout(() => {
                     if (typeof window.openChatRoom === 'function') {
                         window.openChatRoom(data.roomId, sellerEmail, productName);
                     }
                 }, 300);
             } else {
-                alert(data.message); 
+                alert(data.message);
             }
         })
         .catch(error => {
-            isChatLoading = false; 
+            isChatLoading = false;
             console.error("방 생성 에러:", error);
         });
     }
+
+    /* =========================================
+       안전결제 이동
+       ========================================= */
     function goToPayment(btn) {
         const productNo = btn.getAttribute('data-product-no');
         location.href = '/finalProject_3/payment/checkout?productNo=' + productNo;
     }
-    
+
+    /* =========================================
+       신고 모달 열기
+       - 비로그인이면 로그인 페이지 이동
+       - 본인 게시글이면 경고만 출력
+       ========================================= */
+    window.openProductReportModal = function() {
+        const mainEl = document.querySelector('main');
+        const isLogin = mainEl ? mainEl.getAttribute('data-login') === 'true' : false;
+        const isOwner = mainEl ? mainEl.getAttribute('data-owner') === 'true' : false;
+
+        if (!isLogin) {
+            alert('로그인 후 신고할 수 있습니다.');
+            location.href = '/finalProject_3/login';
+            return;
+        }
+
+        if (isOwner) {
+            alert('본인 게시글은 신고할 수 없습니다.');
+            return;
+        }
+
+        const overlay = document.getElementById('productReportOverlay');
+        const panel = document.getElementById('productReportPanel');
+
+        if (!overlay || !panel) return;
+
+        overlay.classList.add('show');
+        panel.classList.add('show');
+        window.backToProductReportStep1();
+        document.body.style.overflow = 'hidden';
+    };
+
+    /* =========================================
+       신고 모달 닫기 + 초기화
+       ========================================= */
+    window.closeProductReportModal = function() {
+        const overlay = document.getElementById('productReportOverlay');
+        const panel = document.getElementById('productReportPanel');
+
+        if (!overlay || !panel) return;
+
+        overlay.classList.remove('show');
+        panel.classList.remove('show');
+        document.body.style.overflow = '';
+
+        document.getElementById('productReportText').value = '';
+        document.getElementById('productReportCurrentCharCount').innerText = '0';
+        document.getElementById('productReportFileInput').value = '';
+        document.getElementById('productReportPhotoCount').textContent = '0/1';
+        document.getElementById('productReportPhotoPreview').innerHTML = '';
+        productReportSelectedFile = null;
+
+        window.backToProductReportStep1();
+    };
+
+    /* =========================================
+       신고 2단계 이동
+       ========================================= */
+    window.goProductReportStep2 = function(typeName) {
+        document.getElementById('productReportStep1').classList.remove('is-active');
+        document.getElementById('productReportStep2').classList.add('is-active');
+        document.getElementById('productReportMainTitle').innerText = typeName;
+
+        const subSelect = document.getElementById('productReportSubCategory');
+        subSelect.innerHTML = '';
+
+        const subItems = productReportData[typeName] || [];
+        subItems.forEach(function(item) {
+            const option = document.createElement('option');
+            option.value = item;
+            option.text = item;
+            subSelect.appendChild(option);
+        });
+
+        document.getElementById('productReportText').value = '';
+        window.updateProductReportCharCount(document.getElementById('productReportText'));
+
+        productReportSelectedFile = null;
+        document.getElementById('productReportFileInput').value = '';
+        document.getElementById('productReportPhotoCount').textContent = '0/1';
+        document.getElementById('productReportPhotoPreview').innerHTML = '';
+    };
+
+    /* =========================================
+       신고 1단계 복귀
+       ========================================= */
+    window.backToProductReportStep1 = function() {
+        document.getElementById('productReportStep1').classList.add('is-active');
+        document.getElementById('productReportStep2').classList.remove('is-active');
+    };
+
+    /* =========================================
+       신고 글자 수 카운트
+       ========================================= */
+    window.updateProductReportCharCount = function(obj) {
+        document.getElementById('productReportCurrentCharCount').innerText = obj.value.length;
+    };
+
+    /* =========================================
+       신고 이미지 선택
+       ========================================= */
+    window.onProductReportFileSelected = function(input) {
+        if (!input.files || input.files.length === 0) return;
+
+        productReportSelectedFile = input.files[0];
+        input.value = '';
+        renderProductReportPhotoPreview();
+    };
+
+    /* =========================================
+       신고 이미지 미리보기
+       ========================================= */
+    function renderProductReportPhotoPreview() {
+        const preview = document.getElementById('productReportPhotoPreview');
+        preview.innerHTML = '';
+
+        if (!productReportSelectedFile) {
+            document.getElementById('productReportPhotoCount').textContent = '0/1';
+            return;
+        }
+
+        document.getElementById('productReportPhotoCount').textContent = '1/1';
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'position:relative; width:60px; height:60px;';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.cssText = 'width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #ddd;';
+
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.textContent = '✕';
+            del.style.cssText = 'position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; border:none; background:#e44; color:#fff; font-size:10px; cursor:pointer; padding:0; line-height:18px; text-align:center;';
+            del.onclick = function() {
+                productReportSelectedFile = null;
+                renderProductReportPhotoPreview();
+            };
+
+            wrap.appendChild(img);
+            wrap.appendChild(del);
+            preview.appendChild(wrap);
+        };
+        reader.readAsDataURL(productReportSelectedFile);
+    }
+
+    /* =========================================
+       신고 제출
+       ========================================= */
+    window.submitProductReport = function() {
+        if (isSubmittingProductReport) return;
+
+        const mainType = document.getElementById('productReportMainTitle').innerText;
+        const subType = document.getElementById('productReportSubCategory').value;
+        const content = document.getElementById('productReportText').value.trim();
+        const productNo = document.querySelector('main').getAttribute('data-product-no');
+
+        if (!subType) {
+            alert('상세 신고 유형을 선택해주세요.');
+            return;
+        }
+
+        if (!content) {
+            alert('신고 사유를 입력해주세요.');
+            return;
+        }
+
+        isSubmittingProductReport = true;
+
+        const formData = new FormData();
+        formData.append('productNo', productNo);
+        formData.append('reportMainCategory', mainType);
+        formData.append('reportSubCategory', subType);
+        formData.append('reportContent', content);
+
+        if (productReportSelectedFile) {
+            formData.append('image', productReportSelectedFile);
+        }
+
+        fetch('/finalProject_3/product/report', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('신고 접수 실패');
+            return response.json();
+        })
+        .then(data => {
+            isSubmittingProductReport = false;
+
+            if (data.success) {
+                alert('신고가 정상적으로 접수되었습니다.');
+                window.closeProductReportModal();
+            } else {
+                alert(data.message || '신고 접수에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            isSubmittingProductReport = false;
+            console.error('상품 신고 에러:', error);
+            alert('신고 처리 중 오류가 발생했습니다.');
+        });
+    };
 </script>
-</main>
+
 <script th:src="@{/js/product/product_detail.js}"></script>
 </body>
 </html>

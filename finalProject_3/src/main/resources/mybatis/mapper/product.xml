@@ -1140,4 +1140,68 @@
 
 </select>
 
+
+<!-- 게시글 신고하기 -->
+<!-- 상품번호로 판매자 이메일 찾기 -->
+<select id="selectSellerEmailByProductNo"
+        parameterType="int"
+        resultType="string">
+
+    SELECT PRODUCTS.SELLER_EMAIL
+    FROM PRODUCTS
+    WHERE PRODUCTS.PRODUCT_NO = #{productNo}
+
+</select>
+<!-- 대분류 + 소분류로 신고유형 번호 찾기 -->
+<select id="selectProductReportTypeId"
+        parameterType="com.spring.app.product.domain.ProductReportDTO"
+        resultType="int">
+
+    SELECT REPORT_TYPES.TYPE_ID
+    FROM REPORT_TYPES
+    WHERE REPORT_TYPES.MAIN_CATEGORY = #{reportMainCategory}
+      AND REPORT_TYPES.TYPE_NAME = #{reportSubCategory}
+
+</select>
+<!-- 신고 등록 -->
+<insert id="insertProductReport"
+        parameterType="com.spring.app.product.domain.ProductReportDTO">
+
+    <selectKey keyProperty="reportId" resultType="int" order="BEFORE">
+        SELECT SEQ_REPORT_ID.NEXTVAL
+        FROM DUAL
+    </selectKey>
+
+    INSERT INTO REPORTS (
+        REPORT_ID,
+        REPORTER_EMAIL,
+        TARGET_EMAIL,
+        TYPE_ID,
+        PRODUCT_NUM,
+        REVIEW_NUM,
+        ROOM_ID,
+        NOSQL_MSG_KEY,
+        REPORT_DETAIL,
+        REPORT_STATUS,
+        REPORT_DATE,
+        REPORT_IMG
+    )
+    VALUES (
+        #{reportId},
+        #{reporterEmail},
+        #{targetEmail},
+        #{typeId},
+        #{productNum},
+        #{reviewNum, jdbcType=NUMERIC},
+        #{roomId, jdbcType=VARCHAR},
+        #{nosqlMsgKey, jdbcType=VARCHAR},
+        #{reportDetail},
+        '접수',
+        SYSDATE,
+        #{reportImg, jdbcType=VARCHAR}
+    )
+
+</insert>
+
+
 </mapper>

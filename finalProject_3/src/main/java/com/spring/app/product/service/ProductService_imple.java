@@ -14,6 +14,7 @@ import com.spring.app.product.domain.ProductImageDTO;
 import com.spring.app.product.domain.ProductMeetLocationDTO;
 import com.spring.app.product.domain.ProductPriceStatsDTO;
 import com.spring.app.product.domain.ProductPriceTrendDTO;
+import com.spring.app.product.domain.ProductReportDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.domain.SearchKeywordDTO;
 import com.spring.app.product.domain.SearchLogDTO;
@@ -353,6 +354,20 @@ public class ProductService_imple implements ProductService {
         paraMap.put("memberEmail", memberEmail);
 
         return pdao.isBuyerOfProduct(paraMap) > 0;
+    }
+    
+    //게시글 신고하기
+    @Override
+    public String selectSellerEmailByProductNo(int productNo) {
+        return pdao.selectSellerEmailByProductNo(productNo);
+    }
+    @Override
+    public Integer selectProductReportTypeId(ProductReportDTO reportDto) {
+        return pdao.selectProductReportTypeId(reportDto);
+    }
+    @Override
+    public int insertProductReport(ProductReportDTO reportDto) {
+        return pdao.insertProductReport(reportDto);
     }
     
     

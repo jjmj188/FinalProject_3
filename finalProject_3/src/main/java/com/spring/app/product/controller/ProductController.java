@@ -28,6 +28,7 @@ import com.spring.app.product.domain.ProductImageDTO;
 import com.spring.app.product.domain.ProductMeetLocationDTO;
 import com.spring.app.product.domain.ProductPriceStatsDTO;
 import com.spring.app.product.domain.ProductPriceTrendDTO;
+import com.spring.app.product.domain.ProductReportDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.domain.SearchKeywordDTO;
 import com.spring.app.product.domain.SearchLogDTO;
@@ -53,6 +54,11 @@ public class ProductController {
     private String imagesDir;
 
     private static final String IMAGE_WEB_PREFIX = "/images/";
+    
+    @Value("${file.reports-dir}")
+    private String reportsDir;
+
+    private static final String REPORT_WEB_PREFIX = "/report_images/";
 
     private String getLoginEmail(Authentication authentication) {
         if (authentication == null) {
@@ -410,7 +416,8 @@ public class ProductController {
 
         boolean isSeller = memberEmail != null && memberEmail.equals(productDto.getSellerEmail());
         boolean isBuyer = memberEmail != null && pservice.isBuyerOfProduct(productNo, memberEmail);
-
+        boolean isOwner = memberEmail != null && memberEmail.equals(productDto.getSellerEmail());
+       
         if (("예약중".equals(tradeStatus) || "판매완료".equals(tradeStatus))
                 && !isSeller && !isBuyer) {
             redirectAttr.addFlashAttribute("message", "해당 상품은 거래 당사자만 조회할 수 있습니다.");
@@ -424,6 +431,7 @@ public class ProductController {
         model.addAttribute("product", productDto);
         model.addAttribute("similarProductList", similarProductList);
         model.addAttribute("isLogin", memberEmail != null);
+        model.addAttribute("isOwner", isOwner);
 
         return "product/product_detail";
     }
@@ -608,5 +616,119 @@ public class ProductController {
         }
 
         return mapList;
+    }
+    
+    //게시글 신고하기
+    @PostMapping("/report")
+    @ResponseBody
+    public Map<String, Object> reportProduct(
+            @RequestParam("productNo") int productNo,
+            @RequestParam("reportMainCategory") String reportMainCategory,
+            @RequestParam("reportSubCategory") String reportSubCategory,
+            @RequestParam("reportContent") String reportContent,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            Authentication authentication) {
+
+        String loginEmail = getLoginEmail(authentication);
+
+        if (loginEmail == null) {
+            return failResult("로그인이 필요합니다.");
+        }
+
+        if (reportMainCategory == null || reportMainCategory.trim().isEmpty()) {
+            return failResult("신고 대분류를 선택해주세요.");
+        }
+
+        if (reportSubCategory == null || reportSubCategory.trim().isEmpty()) {
+            return failResult("신고 유형을 선택해주세요.");
+        }
+
+        if (reportContent == null || reportContent.trim().isEmpty()) {
+            return failResult("신고 내용을 입력해주세요.");
+        }
+
+        reportMainCategory = reportMainCategory.trim();
+        reportSubCategory = reportSubCategory.trim();
+        reportContent = reportContent.trim();
+
+        if (reportContent.length() > 150) {
+            return failResult("신고 내용은 150자 이내로 입력해주세요.");
+        }
+
+        String targetEmail = pservice.selectSellerEmailByProductNo(productNo);
+
+        if (targetEmail == null || targetEmail.trim().isEmpty()) {
+            return failResult("신고 대상 상품을 찾을 수 없습니다.");
+        }
+
+        if (loginEmail.equals(targetEmail)) {
+            return failResult("본인 게시글은 신고할 수 없습니다.");
+        }
+
+        ProductReportDTO reportDto = new ProductReportDTO();
+        reportDto.setReporterEmail(loginEmail);
+        reportDto.setTargetEmail(targetEmail);
+        reportDto.setTypeId(null);
+
+        reportDto.setProductNum(productNo);
+        reportDto.setReviewNum(null);
+        reportDto.setRoomId(null);
+        reportDto.setNosqlMsgKey(null);
+
+        reportDto.setReportDetail(reportContent);
+        reportDto.setReportStatus("접수");
+        reportDto.setReportImg(null);
+
+        reportDto.setReportMainCategory(reportMainCategory);
+        reportDto.setReportSubCategory(reportSubCategory);
+
+        Integer typeId = pservice.selectProductReportTypeId(reportDto);
+
+        if (typeId == null) {
+            return failResult("유효하지 않은 신고 유형입니다.");
+        }
+
+        reportDto.setTypeId(typeId);
+
+        String savedFileName = null;
+
+        try {
+            if (image != null && !image.isEmpty()) {
+                String originalFilename = image.getOriginalFilename();
+                byte[] bytes = image.getBytes();
+
+                savedFileName = fileManager.doFileUpload(bytes, originalFilename, reportsDir);
+                reportDto.setReportImg(REPORT_WEB_PREFIX + savedFileName);
+            }
+
+            int n = pservice.insertProductReport(reportDto);
+
+            if (n != 1) {
+                if (savedFileName != null) {
+                    try {
+                        fileManager.doFileDelete(savedFileName, reportsDir);
+                    }
+                    catch (Exception ignore) {}
+                }
+                return failResult("신고 접수에 실패했습니다.");
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("success", true);
+            result.put("message", "신고가 정상적으로 접수되었습니다.");
+            return result;
+        }
+        catch (Exception e) {
+            log.error("상품 신고 등록 실패", e);
+
+            if (savedFileName != null) {
+                try {
+                    fileManager.doFileDelete(savedFileName, reportsDir);
+                }
+                catch (Exception ignore) {}
+            }
+
+            return failResult("신고 처리 중 오류가 발생했습니다.");
+        }
     }
 }

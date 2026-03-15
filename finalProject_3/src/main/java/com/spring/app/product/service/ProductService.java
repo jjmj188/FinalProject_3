@@ -8,6 +8,7 @@ import com.spring.app.product.domain.ProductImageDTO;
 import com.spring.app.product.domain.ProductMeetLocationDTO;
 import com.spring.app.product.domain.ProductPriceStatsDTO;
 import com.spring.app.product.domain.ProductPriceTrendDTO;
+import com.spring.app.product.domain.ProductReportDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.domain.SearchKeywordDTO;
 import com.spring.app.product.domain.SearchLogDTO;
@@ -76,7 +77,10 @@ public interface ProductService {
 	
 	boolean isBuyerOfProduct(int productNo, String memberEmail);
 
-	
+	//게시글 신고하기
+	String selectSellerEmailByProductNo(int productNo);
+	Integer selectProductReportTypeId(ProductReportDTO reportDto);
+	int insertProductReport(ProductReportDTO reportDto);
 
 	
 	

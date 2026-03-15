@@ -81,6 +81,7 @@ public class SecurityConfig {
                         "/product/sellRegister",
                         "/product/wishlist/**",
                         "/product/product_user_profile",
+                        "/product/report",
                         "/payment/**"
                     ).authenticated()
                 
