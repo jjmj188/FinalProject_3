@@ -53,6 +53,20 @@
 </head>
 <body>
   <div class="page">
+
+    <!-- 협력사 섹션 -->
+    <div style="text-align:center; margin-bottom:48px;">
+      <p style="font-size:13px; color:#999; font-weight:600; letter-spacing:.08em; text-transform:uppercase; margin-bottom:20px;">함께하는 파트너 브랜드</p>
+      <div style="display:flex; justify-content:center; align-items:center; gap:40px; flex-wrap:wrap;">
+        <span style="font-size:18px; font-weight:800; color:#bbb; letter-spacing:-0.5px;">NIKE</span>
+        <span style="font-size:18px; font-weight:800; color:#bbb; letter-spacing:-0.5px;">ADIDAS</span>
+        <span style="font-size:18px; font-weight:800; color:#bbb; letter-spacing:-0.5px;">ZARA</span>
+        <span style="font-size:18px; font-weight:800; color:#bbb; letter-spacing:-0.5px;">SAMSUNG</span>
+        <span style="font-size:18px; font-weight:800; color:#bbb; letter-spacing:-0.5px;">LG</span>
+        <span style="font-size:18px; font-weight:800; color:#bbb; letter-spacing:-0.5px;">APPLE</span>
+      </div>
+    </div>
+
    <div class="ad-container">
     <header>
       <h1>광고 제휴 제안 및 문의</h1>
@@ -69,18 +83,18 @@
             </div>
             <div class="field">
               <label>담당자명<span class="required-mark">*</span></label>
-              <input type="text" name="managerName" placeholder="담당자명을 입력해 주세요" required />
+              <input type="text" name="managerName" th:value="${loginUser != null ? loginUser.userName : ''}" placeholder="담당자명을 입력해 주세요" required />
             </div>
           </div>
 
           <div class="field-row">
             <div class="field">
               <label>이메일<span class="required-mark">*</span></label>
-              <input type="email" name="companyEmail" placeholder="이메일을 입력해 주세요" required />
+              <input type="email" name="companyEmail" th:value="${loginUser != null ? loginUser.email : ''}" placeholder="이메일을 입력해 주세요" required />
             </div>
             <div class="field">
               <label>전화번호</label>
-              <input type="text" name="phone" placeholder="전화번호를 입력해 주세요" />
+              <input type="text" name="phone" th:value="${loginUser != null ? loginUser.phone : ''}" placeholder="전화번호를 입력해 주세요" />
             </div>
           </div>
         </section>

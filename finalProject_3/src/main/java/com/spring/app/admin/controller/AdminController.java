@@ -40,10 +40,12 @@ public class AdminController {
     //관리자 메인페이지
     @GetMapping("/index")
     public String index(Model model) {
-        // 인기 검색어 상위 10개 가져오기
-        List<SearchDTO> popularKeywords = adminService.getPopularKeywords();
-        model.addAttribute("popularKeywords", popularKeywords);
-        
+        model.addAttribute("popularKeywords", adminService.getPopularKeywords());
+        model.addAttribute("reportsAndInquiries", adminService.countPendingReportsAndInquiries());
+        model.addAttribute("adInquiries", adminService.countPendingAds());
+        model.addAttribute("todayProducts", adminService.countTodayProducts());
+        model.addAttribute("dailyTradeAmount", adminService.getDailyTradeAmount());
+        model.addAttribute("withdrawStats", adminService.getWithdrawReasonStats());
         return "admin/index";
     }
     		
@@ -59,27 +61,89 @@ public class AdminController {
      //회원 관리 페이지
     @GetMapping("/member")
     public String memebrPage(Model model,
-                             @RequestParam(value = "page", defaultValue = "1") int page)  {
+                             @RequestParam(value = "page", defaultValue = "1") int page,
+                             @RequestParam(value = "status", defaultValue = "") String status,
+                             @RequestParam(value = "keyword", defaultValue = "") String keyword) {
         int size = 20;
-        int totalMembers = adminService.getTotalMembersCount();
+        int totalMembers = adminService.getMemberCount(status, keyword);
         int totalPages = (int) Math.ceil((double) totalMembers / size);
         if (totalPages == 0) totalPages = 1;
 
-        model.addAttribute("members", adminService.getMemberList(page, size));
+        model.addAttribute("members", adminService.getMemberList(page, size, status, keyword));
         model.addAttribute("newMembers", adminService.getNewMembersCount());
-        model.addAttribute("withdrawals", adminService.getWithdrawalsCount());
-        model.addAttribute("totalMembers", totalMembers);
+        model.addAttribute("suspendedMembers", adminService.getSuspendedMembersCount());
+        model.addAttribute("totalMembers", adminService.getTotalMembersCount());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("searchStatus", status);
+        model.addAttribute("searchKeyword", keyword);
+        model.addAttribute("searchCount", totalMembers);
 
         return "admin/member";
     }
-    
-    //회원 한명 보여주기
+
+    //회원 상세 보여주기 (멤버정보 + 거래중인 상품)
     @GetMapping("/member/detail")
     @ResponseBody
-    public MemberDTO getMemberDetail(@RequestParam("userNo")int userNo) {
-    return adminService.getMemberByNo(userNo);	
+    public Map<String, Object> getMemberDetail(@RequestParam("userNo") int userNo) {
+        MemberDTO member = adminService.getMemberByNo(userNo);
+        Map<String, Object> result = new HashMap<>();
+        if (member == null) return result;
+        result.put("userNo", member.getUserNo());
+        result.put("email", member.getEmail());
+        result.put("userName", member.getUserName());
+        result.put("nickname", member.getNickname());
+        result.put("phone", member.getPhone());
+        result.put("regDate", member.getRegDate());
+        result.put("status", member.getStatus());
+        result.put("suspended", member.getSuspended());
+        result.put("idle", member.getIdle());
+        result.put("mannerTemp", member.getMannerTemp());
+        result.put("profileImg", member.getProfileImg());
+        result.put("products", adminService.getMemberActiveProducts(userNo));
+        return result;
+    }
+
+    //일시정지
+    @PostMapping("/member/suspend")
+    @ResponseBody
+    public Map<String, Object> suspendMember(@RequestParam("userNo") int userNo) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            adminService.suspendMember(userNo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    //정지 해제
+    @PostMapping("/member/unsuspend")
+    @ResponseBody
+    public Map<String, Object> unsuspendMember(@RequestParam("userNo") int userNo) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            adminService.unsuspendMember(userNo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    //영구정지
+    @PostMapping("/member/ban")
+    @ResponseBody
+    public Map<String, Object> permanentBanMember(@RequestParam("userNo") int userNo) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            adminService.permanentBanMember(userNo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
     }
     
     //=====================================================================================//
@@ -142,7 +206,11 @@ public class AdminController {
     //=====================================================================================//  
     //광고 페이지 보여주기
     @GetMapping("/ad")
-    public String adPage() {
+    public String adPage(Model model, Principal principal) {
+        if (principal != null) {
+            MemberDTO loginUser = adminService.getMemberById(principal.getName());
+            model.addAttribute("loginUser", loginUser);
+        }
     	return "admin/ad";
     }
     
@@ -165,14 +233,13 @@ public class AdminController {
     //광고 등록하기
     @PostMapping("/ad/register")
     @ResponseBody
-    public Map<String,Object> registerAd(AdDTO adDto,
-                                         HttpSession session) {
+    public Map<String,Object> registerAd(AdDTO adDto, Principal principal) {
 
         Map<String,Object> result = new HashMap<>();
 
         try {
 
-            MemberDTO loginUser = (MemberDTO) session.getAttribute("loginUser");
+            MemberDTO loginUser = adminService.getMemberById(principal.getName());
 
             adDto.setUserNo(loginUser.getUserNo());
 
@@ -208,11 +275,14 @@ public class AdminController {
         List<List<LocalDate>> calendarWeeks = generateCalendar(firstDay);
 
         List<AdDTO> adList = adminService.getAdList();
+        Map<String, Object> dailyStats = adminService.getDailyProductStats();
 
         model.addAttribute("calendarWeeks", calendarWeeks);
         model.addAttribute("adList", adList);
         model.addAttribute("year", year);
         model.addAttribute("month", month);
+        model.addAttribute("chartLabels", dailyStats.get("labels"));
+        model.addAttribute("chartData", dailyStats.get("data"));
 
         return "admin/contents";
     }
@@ -306,29 +376,111 @@ public class AdminController {
         }
         return weeks;
     }
-    //문의 페이지 보여주기
-    @GetMapping("/inquiry")
-    public String inquiry() {
-    	return "admin/inquiry";
-    }
-    
-    
-    //신고 페이지 보여주기
-    @GetMapping("/complaint")
-    public String complaint() {
-    	return "admin/complaint";
-    }
-    
-    //신고 페이지 보여주기
-    @GetMapping("/transaction")
-    public String transaction() {
-    	return "admin/transaction";
-    }
-    
-    //신고 페이지 보여주기
+    // 리뷰 관리 페이지
     @GetMapping("/review")
-    public String review() {
-    	return "admin/review";
+    public String review(Model model,
+                         @RequestParam(value = "page", defaultValue = "1") int page,
+                         @RequestParam(value = "size", defaultValue = "20") int size,
+                         @RequestParam(value = "keyword", defaultValue = "") String keyword) {
+        Map<String, Object> data = adminService.getReviewListPaged(page, size, keyword);
+        model.addAttribute("reviewList", data.get("list"));
+        model.addAttribute("totalCount", data.get("total"));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", data.get("totalPages"));
+        model.addAttribute("searchKeyword", keyword);
+        return "admin/review";
+    }
+
+    @PostMapping("/review/delete")
+    @ResponseBody
+    public Map<String, Object> deleteReview(@RequestParam("reviewNo") int reviewNo) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            adminService.deleteReview(reviewNo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    // 거래 관리 페이지
+    @GetMapping("/transaction")
+    public String transaction(Model model,
+                              @RequestParam(value = "page", defaultValue = "1") int page,
+                              @RequestParam(value = "size", defaultValue = "20") int size) {
+        Map<String, Object> data = adminService.getTransactionListPaged(page, size);
+        model.addAttribute("tradeList", data.get("list"));
+        model.addAttribute("totalCount", data.get("total"));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", data.get("totalPages"));
+        return "admin/transaction";
+    }
+
+    // 신고 관리 페이지
+    @GetMapping("/complaint")
+    public String complaint(Model model,
+                            @RequestParam(value = "page", defaultValue = "1") int page,
+                            @RequestParam(value = "size", defaultValue = "20") int size,
+                            @RequestParam(value = "type", defaultValue = "ALL") String type) {
+        Map<String, Object> data = adminService.getReportListPaged(page, size, type);
+        model.addAttribute("reportList", data.get("list"));
+        model.addAttribute("totalCount", data.get("total"));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", data.get("totalPages"));
+        model.addAttribute("selectedType", type);
+        model.addAttribute("reportStats", adminService.getReportStats());
+        return "admin/complaint";
+    }
+
+    @PostMapping("/complaint/process")
+    @ResponseBody
+    public Map<String, Object> processReport(@RequestParam("reportId") int reportId,
+                                              @RequestParam("status") String status) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            adminService.updateReportStatus(reportId, status);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    // 문의 관리 페이지
+    @GetMapping("/inquiry")
+    public String inquiry(Model model,
+                          @RequestParam(value = "page", defaultValue = "1") int page,
+                          @RequestParam(value = "size", defaultValue = "20") int size,
+                          @RequestParam(value = "status", defaultValue = "ALL") String status) {
+        Map<String, Object> data = adminService.getAdminInquiryListPaged(page, size, status);
+        model.addAttribute("inquiryList", data.get("list"));
+        model.addAttribute("totalCount", data.get("total"));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", data.get("totalPages"));
+        model.addAttribute("selectedStatus", status);
+        return "admin/inquiry";
+    }
+
+    @PostMapping("/inquiry/answer")
+    @ResponseBody
+    public Map<String, Object> saveInquiryAnswer(@RequestParam("inquiryId") int inquiryId,
+                                                  @RequestParam("adminAnswer") String adminAnswer) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            adminService.saveInquiryAnswer(inquiryId, adminAnswer);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+        }
+        return result;
+    }
+
+    // 상품 상세 페이지
+    @GetMapping("/productDetail")
+    public String productDetail(@RequestParam("productNo") int productNo, Model model) {
+        model.addAttribute("product", adminService.getProductDetail(productNo));
+        return "admin/product_detail";
     }
     
     
@@ -350,13 +502,26 @@ public class AdminController {
 	 return "admin/user_inquiry";
 	 }
 	    
-	    //문의하기 글쓰기 페이지 
+	    //문의하기 글쓰기 페이지
 	 @GetMapping("/inquiry_write")
 	 public String write() {
 		 return "admin/inquiry_write";
 	 }
-		    
-    
-    
-    
+
+	// 회계관리
+	@GetMapping("/accounting")
+	public String getAccounting(
+	        @RequestParam(value="page", defaultValue="1") int page,
+	        Model model) {
+	    int size = 10;
+	    Map<String, Object> stats = adminService.getAccountingStats();
+	    Map<String, Object> listData = adminService.getAccountingList(page, size);
+	    model.addAttribute("stats", stats);
+	    model.addAttribute("list", listData.get("list"));
+	    model.addAttribute("total", listData.get("total"));
+	    model.addAttribute("totalPages", listData.get("totalPages"));
+	    model.addAttribute("currentPage", page);
+	    return "admin/accounting";
+	}
+
 }

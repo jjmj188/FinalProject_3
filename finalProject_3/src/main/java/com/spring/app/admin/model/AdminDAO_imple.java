@@ -11,8 +11,12 @@ import org.springframework.stereotype.Repository;
 
 import com.spring.app.admin.domain.AdDTO;
 import com.spring.app.admin.domain.InquiryDTO;
+import com.spring.app.admin.domain.ProductDetailDTO;
+import com.spring.app.admin.domain.ReportAdminDTO;
+import com.spring.app.admin.domain.ReviewAdminDTO;
 import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.admin.domain.StatDTO;
+import com.spring.app.admin.domain.TransactionAdminDTO;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.security.domain.MemberDTO;
 
@@ -60,6 +64,41 @@ public class AdminDAO_imple implements AdminDAO {
 	@Override
 	public List<MemberDTO> selectMemberListPaged(Map<String, Integer> params) {
 		return sqlsession.selectList(admin + ".selectMemberListPaged", params);
+	}
+
+	@Override
+	public List<MemberDTO> selectMemberListPagedSearch(Map<String, Object> params) {
+		return sqlsession.selectList(admin + ".selectMemberListPagedSearch", params);
+	}
+
+	@Override
+	public int countSearchMembers(Map<String, Object> params) {
+		return sqlsession.selectOne(admin + ".countSearchMembers", params);
+	}
+
+	@Override
+	public int countSuspendedMembers() {
+		return sqlsession.selectOne(admin + ".countSuspendedMembers");
+	}
+
+	@Override
+	public void suspendMember(int userNo) {
+		sqlsession.update(admin + ".suspendMember", userNo);
+	}
+
+	@Override
+	public void unsuspendMember(int userNo) {
+		sqlsession.update(admin + ".unsuspendMember", userNo);
+	}
+
+	@Override
+	public void permanentBanMember(int userNo) {
+		sqlsession.update(admin + ".permanentBanMember", userNo);
+	}
+
+	@Override
+	public List<ProductDTO> getMemberActiveProducts(int userNo) {
+		return sqlsession.selectList(admin + ".getMemberActiveProducts", userNo);
 	}
 
 	
@@ -171,10 +210,150 @@ public class AdminDAO_imple implements AdminDAO {
         return sqlsession.selectOne(admin + ".getMemberById", loginid);
     }
 
+    @Override
+    public int countPendingReportsAndInquiries() {
+        return sqlsession.selectOne(admin + ".countPendingReportsAndInquiries");
+    }
+
+    @Override
+    public int countPendingAds() {
+        return sqlsession.selectOne(admin + ".countPendingAds");
+    }
+
+    @Override
+    public int countTodayProducts() {
+        return sqlsession.selectOne(admin + ".countTodayProducts");
+    }
+
+    @Override
+    public long getDailyTradeAmount() {
+        return sqlsession.selectOne(admin + ".getDailyTradeAmount");
+    }
+
+    @Override
+    public List<Map<String, Object>> getWithdrawReasonStats() {
+        return sqlsession.selectList(admin + ".getWithdrawReasonStats");
+    }
+
 	@Override
 	public List<Map<String, Object>> getCategoryProdusctStats() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public List<ReviewAdminDTO> getReviewList(Map<String, Object> params) {
+		return sqlsession.selectList(admin + ".getReviewList", params);
+	}
+
+	@Override
+	public int countReviews() {
+		return sqlsession.selectOne(admin + ".countReviews");
+	}
+
+	@Override
+	public void deleteReview(int reviewNo) {
+		sqlsession.delete(admin + ".deleteReview", reviewNo);
+	}
+
+	@Override
+	public List<TransactionAdminDTO> getTransactionList(Map<String, Object> params) {
+		return sqlsession.selectList(admin + ".getTransactionList", params);
+	}
+
+	@Override
+	public int countTransactions() {
+		return sqlsession.selectOne(admin + ".countTransactions");
+	}
+
+	@Override
+	public List<ReportAdminDTO> getReportList(Map<String, Object> params) {
+		return sqlsession.selectList(admin + ".getReportList", params);
+	}
+
+	@Override
+	public int countReports(Map<String, Object> params) {
+		return sqlsession.selectOne(admin + ".countReports", params);
+	}
+
+	@Override
+	public void updateReportStatus(Map<String, Object> params) {
+		sqlsession.update(admin + ".updateReportStatus", params);
+	}
+
+	@Override
+	public List<InquiryDTO> getAdminInquiryList(Map<String, Object> params) {
+		return sqlsession.selectList(admin + ".getAdminInquiryList", params);
+	}
+
+	@Override
+	public int countAdminInquiries(Map<String, Object> params) {
+		return sqlsession.selectOne(admin + ".countAdminInquiries", params);
+	}
+
+	@Override
+	public void saveInquiryAnswer(Map<String, Object> params) {
+		sqlsession.update(admin + ".saveInquiryAnswer", params);
+	}
+
+	@Override
+	public ProductDetailDTO getProductDetail(int productNo) {
+		return sqlsession.selectOne(admin + ".getProductDetail", productNo);
+	}
+
+	@Override
+	public List<String> getProductImages(int productNo) {
+		return sqlsession.selectList(admin + ".getProductImages", productNo);
+	}
+
+	// 회계관리
+	@Override
+	public long getThisMonthAdRevenue() {
+		return sqlsession.selectOne(admin + ".getThisMonthAdRevenue");
+	}
+
+	@Override
+	public long getTotalAdRevenue() {
+		return sqlsession.selectOne(admin + ".getTotalAdRevenue");
+	}
+
+	@Override
+	public long getThisMonthTradeVolume() {
+		return sqlsession.selectOne(admin + ".getThisMonthTradeVolume");
+	}
+
+	@Override
+	public long getThisMonthRefundAmount() {
+		return sqlsession.selectOne(admin + ".getThisMonthRefundAmount");
+	}
+
+	@Override
+	public List<Map<String, Object>> getMonthlyAdRevenue() {
+		return sqlsession.selectList(admin + ".getMonthlyAdRevenue");
+	}
+
+	@Override
+	public List<Map<String, Object>> getAdRevenueList(Map<String, Object> params) {
+		return sqlsession.selectList(admin + ".getAdRevenueList", params);
+	}
+
+	@Override
+	public int countAdRevenue() {
+		return sqlsession.selectOne(admin + ".countAdRevenue");
+	}
+
+	@Override
+	public int getProductReportCount() {
+		return sqlsession.selectOne(admin + ".getProductReportCount");
+	}
+
+	@Override
+	public int getChatReportCount() {
+		return sqlsession.selectOne(admin + ".getChatReportCount");
+	}
+
+	@Override
+	public int getPendingReportCount() {
+		return sqlsession.selectOne(admin + ".getPendingReportCount");
 	}
 
 }

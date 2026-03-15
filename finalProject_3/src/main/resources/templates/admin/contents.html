@@ -10,9 +10,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-    body { background:#f8f9fc; font-family: 'Pretendard', sans-serif; color: #4a4a4a; }
-    .main-content { flex:1; padding:25px; }
-    .dashboard-card { background:white; border-radius:12px; box-shadow:0 0.15rem 1.75rem rgba(58,59,69,0.08); padding:20px; margin-bottom:24px; border: 1px solid #edf2f7; }
+    body { color: #4a4a4a; }
+    .dashboard-card { border: 1px solid #edf2f7; }
     
     /* 캘린더 스타일 */
     .calendar-table { width:100%; border-collapse:collapse; table-layout:fixed; }
@@ -162,6 +161,8 @@
     let year = /*[[${year}]]*/ 0;
     let month = /*[[${month}]]*/ 0;
     let selectedAdId = null;
+    const chartLabels = /*[[${chartLabels}]]*/ [];
+    const chartData = /*[[${chartData}]]*/ [];
 
     // [중요] 세련된 파스텔톤 색상 계산기
     function getBrandColor(str) {
@@ -234,18 +235,23 @@
 
         // 2. 진행중 리스트 (파스텔 스타일 적용)
         const runningList = document.getElementById("runningList");
-        runningList.innerHTML = ads.filter(a => a.status === 'CONFIRM').map(ad => {
-            const colors = getBrandColor(ad.brandName);
-            return `
-                <li class="list-group-item running-item p-3 mb-2 shadow-sm border-start" style="border-left: 6px solid ${colors.border} !important; background-color: ${colors.bg};">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <b style="color: ${colors.text}">${ad.brandName}</b>
-                        <span class="badge rounded-pill bg-white text-dark small border shadow-sm">진행중</span>
-                    </div>
-                    <small class="text-muted d-block mt-1"><i class="bi bi-calendar3 me-1"></i>${ad.startDate} ~ ${ad.endDate}</small>
-                </li>
-            `;
-        }).join("");
+        const confirmAds = ads.filter(a => a.status === 'CONFIRM');
+        if (confirmAds.length === 0) {
+            runningList.innerHTML = `<li class="list-group-item text-center text-muted py-4"><i class="bi bi-info-circle me-2"></i>진행중인 광고가 없습니다.</li>`;
+        } else {
+            runningList.innerHTML = confirmAds.map(ad => {
+                const colors = getBrandColor(ad.brandName);
+                return `
+                    <li class="list-group-item running-item p-3 mb-2 shadow-sm border-start" style="border-left: 6px solid ${colors.border} !important; background-color: ${colors.bg};">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <b style="color: ${colors.text}">${ad.brandName}</b>
+                            <span class="badge rounded-pill bg-white text-dark small border shadow-sm">진행중</span>
+                        </div>
+                        <small class="text-muted d-block mt-1"><i class="bi bi-calendar3 me-1"></i>${ad.startDate} ~ ${ad.endDate}</small>
+                    </li>
+                `;
+            }).join("");
+        }
 
         // 3. 달력 태그 색상 적용
         document.querySelectorAll('.ad-tag').forEach(tag => {
@@ -264,15 +270,15 @@
             if (target) loadAdDetail(target.dataset.adid);
         });
 
-        // 5. 차트 (색상 연하게 조정)
+        // 5. 차트 (실제 데이터)
         const chartCtx = document.getElementById("mainChart");
         new Chart(chartCtx, {
             type:'line',
             data:{
-                labels:['10월','11월','12월','1월','2월','3월'],
+                labels: chartLabels.length > 0 ? chartLabels : ['데이터 없음'],
                 datasets:[{
-                    label: '월별 매출액',
-                    data:[320, 550, 410, 720, 890, 650],
+                    label: '일별 상품 등록 수',
+                    data: chartData.length > 0 ? chartData : [0],
                     borderColor:'#4e73df',
                     backgroundColor:'rgba(78,115,223,0.05)',
                     pointBackgroundColor: '#fff',

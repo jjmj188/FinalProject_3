@@ -6,8 +6,12 @@ import java.util.Map;
 
 import com.spring.app.admin.domain.AdDTO;
 import com.spring.app.admin.domain.InquiryDTO;
+import com.spring.app.admin.domain.ProductDetailDTO;
+import com.spring.app.admin.domain.ReportAdminDTO;
+import com.spring.app.admin.domain.ReviewAdminDTO;
 import com.spring.app.admin.domain.SearchDTO;
 import com.spring.app.admin.domain.StatDTO;
+import com.spring.app.admin.domain.TransactionAdminDTO;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.security.domain.MemberDTO;
 public interface AdminDAO {
@@ -27,7 +31,21 @@ public interface AdminDAO {
     int countTotalMembers();//총멤버
 
     List<MemberDTO> selectMemberListPaged(Map<String, Integer> params);
-	
+
+    List<MemberDTO> selectMemberListPagedSearch(Map<String, Object> params);
+
+    int countSearchMembers(Map<String, Object> params);
+
+    int countSuspendedMembers();
+
+    void suspendMember(int userNo);
+
+    void unsuspendMember(int userNo);
+
+    void permanentBanMember(int userNo);
+
+    List<ProductDTO> getMemberActiveProducts(int userNo);
+
     //-------------------------------------------------------------------------
     List<ProductDTO> selectProductList(int offset, int size); //상품리스트 보기
 
@@ -58,8 +76,48 @@ public interface AdminDAO {
 	List<Map<String, Object>> getDailyProductStats();
 	List<Map<String, Object>> getCategoryProdusctStats();
 	MemberDTO getMemberById(String loginId);
-	
 
-	
+	int countPendingReportsAndInquiries();
+	int countPendingAds();
+	int countTodayProducts();
+	long getDailyTradeAmount();
+	List<Map<String, Object>> getWithdrawReasonStats();
+
+	// 리뷰 관리
+	List<ReviewAdminDTO> getReviewList(Map<String, Object> params);
+	int countReviews();
+	void deleteReview(int reviewNo);
+
+	// 거래 관리
+	List<TransactionAdminDTO> getTransactionList(Map<String, Object> params);
+	int countTransactions();
+
+	// 신고 관리
+	List<ReportAdminDTO> getReportList(Map<String, Object> params);
+	int countReports(Map<String, Object> params);
+	void updateReportStatus(Map<String, Object> params);
+
+	// 신고 유형별 통계
+	int getProductReportCount();
+	int getChatReportCount();
+	int getPendingReportCount();
+
+	// 문의 관리 (관리자)
+	List<InquiryDTO> getAdminInquiryList(Map<String, Object> params);
+	int countAdminInquiries(Map<String, Object> params);
+	void saveInquiryAnswer(Map<String, Object> params);
+
+	// 상품 상세
+	ProductDetailDTO getProductDetail(int productNo);
+	List<String> getProductImages(int productNo);
+
+	// 회계관리
+	long getThisMonthAdRevenue();
+	long getTotalAdRevenue();
+	long getThisMonthTradeVolume();
+	long getThisMonthRefundAmount();
+	List<Map<String, Object>> getMonthlyAdRevenue();
+	List<Map<String, Object>> getAdRevenueList(Map<String, Object> params);
+	int countAdRevenue();
 
 }

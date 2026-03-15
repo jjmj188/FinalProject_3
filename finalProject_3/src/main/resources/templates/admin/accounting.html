@@ -1,91 +1,178 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회계상태 - 관리자</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
+<meta charset="UTF-8">
+<title>회계관리</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    body { color: #4a4a4a; }
+    .stat-card { background:white; border-radius:12px; box-shadow:0 0.15rem 1.75rem rgba(58,59,69,0.08); padding:24px; border-left: 5px solid; }
+    .stat-card.blue { border-color: #4e73df; }
+    .stat-card.green { border-color: #1cc88a; }
+    .stat-card.red { border-color: #e74a3b; }
+    .stat-card.purple { border-color: #6f42c1; }
+    .stat-label { font-size:12px; font-weight:700; text-transform:uppercase; color:#858796; letter-spacing:.05em; }
+    .stat-value { font-size:1.5rem; font-weight:800; color:#2e3750; }
+    .dashboard-card { background:white; border-radius:12px; box-shadow:0 0.15rem 1.75rem rgba(58,59,69,0.08); padding:20px; margin-bottom:24px; }
+</style>
 </head>
 <body class="d-flex">
-   <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
-    <main class="main-content">
-        <div class="row g-3 mb-3">
-            <div class="col-md-5">
-                <div class="account-card">
-                    <div class="card-title">카테고리별 금액 내역</div>
-                    <div class="pie-wrap">
-                        <div class="pie-chart"></div>
-                        <div class="pie-legend-list">
-                            <div>전자기기(17%) <span th:text="${electronicsAmount != null ? electronicsAmount : '250000원'}">250000원</span></div>
-                            <div>의류(63%) <span th:text="${apparelAmount != null ? apparelAmount : '30000만원'}">30000만원</span></div>
-                        </div>
-                    </div>
+
+<aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
+
+<main class="main-content">
+    <div class="container-fluid">
+        <h4 class="fw-bold mb-4 text-dark"><i class="bi bi-cash-stack me-2"></i>회계관리</h4>
+
+        <!-- 요약 카드 -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card blue">
+                    <div class="stat-label mb-2"><i class="bi bi-megaphone me-1"></i>이번달 광고 수익</div>
+                    <div class="stat-value" th:text="${#numbers.formatInteger(stats.thisMonthAdRevenue, 3, 'COMMA')} + '원'"></div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stacked-card">
-                    <div class="label">미사용 예치금</div>
-                    <div class="value" th:text="${unusedDeposit != null ? unusedDeposit : '1,620,000원'}">1,620,000원</div>
-                </div>
-                <div class="stacked-card">
-                    <div class="label">이벤트 처리비용</div>
-                    <div class="value" th:text="${eventCost != null ? eventCost : '100,000원'}">100,000원</div>
+                <div class="stat-card purple">
+                    <div class="stat-label mb-2"><i class="bi bi-trophy me-1"></i>누적 광고 수익</div>
+                    <div class="stat-value" th:text="${#numbers.formatInteger(stats.totalAdRevenue, 3, 'COMMA')} + '원'"></div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stacked-card">
-                    <div class="label">이번달 광고수익</div>
-                    <div class="value" th:text="${adRevenue != null ? adRevenue : '4,000,000원'}">4,000,000원</div>
+            <div class="col-md-3">
+                <div class="stat-card green">
+                    <div class="stat-label mb-2"><i class="bi bi-arrow-left-right me-1"></i>이번달 거래 총액</div>
+                    <div class="stat-value" th:text="${#numbers.formatInteger(stats.thisMonthTradeVolume, 3, 'COMMA')} + '원'"></div>
                 </div>
-                <div class="stacked-card">
-                    <div class="label">다음달 수익 예정</div>
-                    <div class="value" th:text="${nextMonthRevenue != null ? nextMonthRevenue : '2,000,000원'}">2,000,000원</div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card red">
+                    <div class="stat-label mb-2"><i class="bi bi-x-circle me-1"></i>이번달 취소 거래액</div>
+                    <div class="stat-value" th:text="${#numbers.formatInteger(stats.thisMonthRefundAmount, 3, 'COMMA')} + '원'"></div>
                 </div>
             </div>
         </div>
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="account-card">
-                    <div class="card-title">월별 순수익 그래프</div>
-                    <div class="graph-subtitle">순수익: 광고비용-이벤트비용</div>
-                    <div class="month-bars">
-                        <div class="month-bar-item">
-                            <span class="month">1월</span>
-                            <div class="bar-track"><div class="bar-fill" style="width: 40%"></div></div>
-                        </div>
-                        <div class="month-bar-item">
-                            <span class="month">2월</span>
-                            <div class="bar-track"><div class="bar-fill" style="width: 65%"></div></div>
-                        </div>
-                        <div class="month-bar-item">
-                            <span class="month">3월</span>
-                            <div class="bar-track"><div class="bar-fill" style="width: 55%"></div></div>
-                        </div>
+        <div class="row g-3 mb-4">
+            <!-- 월별 광고 수익 차트 -->
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <h6 class="fw-bold mb-3 text-dark">월별 광고 수익 추이 (최근 6개월)</h6>
+                    <div style="height:250px">
+                        <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="account-card">
-                    <div class="card-title">현재 자산 상태</div>
-                    <div class="asset-status-title" th:text="${assetStatus != null ? assetStatus : '안전'}">안전</div>
-                    <div class="asset-list">
-                        <div>[순수익] <span th:text="${netProfit != null ? netProfit : '3,900,000원'}">3,900,000원</span></div>
-                        <div>[미사용 예치금] <span th:text="${unusedDeposit != null ? unusedDeposit : '1,620,000원'}">1,620,000원</span></div>
-                        <div>[이벤트 비용] <span th:text="${eventCost != null ? eventCost : '100,000원'}">100,000원</span></div>
-                        <div>[자산 상태 위험] <span th:text="${riskPercent != null ? riskPercent : '약 43%'}">약 43%</span></div>
+            <!-- 광고 정책 안내 -->
+            <div class="col-lg-4">
+                <div class="dashboard-card h-100">
+                    <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-info-circle me-1"></i>광고 수익 정책</h6>
+                    <div class="alert alert-light border mb-3">
+                        <div class="fw-bold text-primary mb-1">기본 단가</div>
+                        <div class="fs-5 fw-bold">1주 = 1,000,000원</div>
                     </div>
-                    <div class="risk-legend">
-                        <span>0~50% 초록: 안정</span>
-                        <span>50~80% 노랑: 주의</span>
-                        <span>-80~ 빨강: 위험</span>
-                    </div>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead class="table-light">
+                            <tr><th>기간</th><th>금액</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1주</td><td class="fw-bold">1,000,000원</td></tr>
+                            <tr><td>2주</td><td class="fw-bold">2,000,000원</td></tr>
+                            <tr><td>3주</td><td class="fw-bold">3,000,000원</td></tr>
+                            <tr><td>4주</td><td class="fw-bold">4,000,000원</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- 광고 수익 내역 테이블 -->
+        <div class="dashboard-card">
+            <h5 class="fw-bold mb-4 text-dark">광고 수익 내역 <span class="badge bg-primary rounded-pill ms-2" th:text="${total}"></span></h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr class="small text-uppercase text-muted">
+                            <th class="py-3">브랜드</th>
+                            <th>신청자</th>
+                            <th>광고 기간</th>
+                            <th>주수</th>
+                            <th>수익금액</th>
+                            <th>승인일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(list)}">
+                            <td colspan="6" class="text-center text-muted py-4">승인된 광고 내역이 없습니다.</td>
+                        </tr>
+                        <tr th:each="item : ${list}">
+                            <td class="fw-bold" th:text="${item.BRAND_NAME}"></td>
+                            <td class="text-muted small" th:text="${item.EMAIL}"></td>
+                            <td class="small" th:text="${item.START_DATE} + ' ~ ' + ${item.END_DATE}"></td>
+                            <td><span class="badge bg-light text-dark border" th:text="${item.DURATION_WEEKS} + '주'"></span></td>
+                            <td class="fw-bold text-primary" th:text="${#numbers.formatInteger(item.AMOUNT, 3, 'COMMA')} + '원'"></td>
+                            <td class="text-muted small" th:text="${item.APPROVED_AT}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 페이징 -->
+            <nav th:if="${totalPages > 1}" class="mt-3">
+                <ul class="pagination pagination-sm justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/accounting(page=${currentPage - 1})}">이전</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/accounting(page=${i})}" th:text="${i}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/accounting(page=${currentPage + 1})}">다음</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    const monthlyLabels = /*[[${stats.monthlyLabels}]]*/ [];
+    const monthlyRevenues = /*[[${stats.monthlyRevenues}]]*/ [];
+
+    const ctx = document.getElementById('revenueChart');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: monthlyLabels.length > 0 ? monthlyLabels : ['데이터 없음'],
+            datasets: [{
+                label: '광고 수익 (원)',
+                data: monthlyRevenues.length > 0 ? monthlyRevenues : [0],
+                backgroundColor: 'rgba(78,115,223,0.7)',
+                borderColor: '#4e73df',
+                borderRadius: 6,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    grid: { color: '#f1f1f1' },
+                    ticks: {
+                        callback: function(val) {
+                            return (val / 10000).toFixed(0) + '만';
+                        }
+                    }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
 </body>
 </html>

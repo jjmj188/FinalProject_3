@@ -6,10 +6,8 @@
     <insert id="insertAd" parameterType="com.spring.app.admin.domain.AdDTO">
     INSERT INTO ADS (
         AD_ID,
+        USER_NO,
         BRAND_NAME,
-        MANAGER_NAME,
-        COMPANY_EMAIL,
-        PHONE,
         CONTENT,
         START_DATE,
         END_DATE,
@@ -20,51 +18,52 @@
         STATUS,
         CREATED_AT
     ) VALUES (
-        SEQ_AD_ID.NEXTVAL,  #{brandName},       
-        #{managerName},     
-        #{companyEmail},
-        #{phone},
+        SEQ_AD_ID.NEXTVAL,
+        #{userNo},
+        #{brandName},
         #{content},
-        #{startDate},       
+        #{startDate},
         #{endDate},
         #{durationWeeks},
         #{amount},
-        #{filePath},        
-        #{agreedYn},        
-        'WAIT',             
-        SYSDATE             
+        #{filePath},
+        #{agreedYn},
+        'WAIT',
+        SYSDATE
     )
 </insert>
     
     
     <!-- AdList가져오기 -->
  <select id="selectAdList" resultType="com.spring.app.admin.domain.AdDTO">
-    SELECT 
-        AD_ID           as adId, 
-        BRAND_NAME      as brandName,
-        MANAGER_NAME    as managerName, 
-        COMPANY_EMAIL   as companyEmail, 
-        PHONE           as phone, 
-        CONTENT         as content, 
-        START_DATE      as startDate, 
-        END_DATE        as endDate, 
-        DURATION_WEEKS  as durationWeeks, 
-        AMOUNT          as amount, 
-        STATUS          as status, 
-        CREATED_AT      as createdAt,
-        APPROVED_AT     as approvedAt
-    FROM ADS
-    ORDER BY CREATED_AT DESC
+    SELECT
+        a.AD_ID          as adId,
+        a.BRAND_NAME     as brandName,
+        m.USER_NAME      as managerName,
+        m.EMAIL          as companyEmail,
+        m.PHONE          as phone,
+        a.CONTENT        as content,
+        a.START_DATE     as startDate,
+        a.END_DATE       as endDate,
+        a.DURATION_WEEKS as durationWeeks,
+        a.AMOUNT         as amount,
+        a.STATUS         as status,
+        a.CREATED_AT     as createdAt,
+        a.APPROVED_AT    as approvedAt,
+        a.FILE_PATH      as filePath
+    FROM ADS a
+    LEFT JOIN MEMBER m ON a.USER_NO = m.USER_NO
+    ORDER BY a.CREATED_AT DESC
 </select>
     
     <select id="getMemberById" parameterType="String" resultType="com.spring.app.security.domain.MemberDTO">
-        SELECT 
-            USER_NO as userNo, 
-            NAME as name, 
-            EMAIL as email, 
+        SELECT
+            USER_NO as userNo,
+            USER_NAME as userName,
+            EMAIL as email,
             PHONE as phone
         FROM MEMBER
-        WHERE LOGINID = #{loginid}
+        WHERE EMAIL = #{email}
     </select>
     
     <!--  회원 전체 목록 -->
@@ -91,6 +90,8 @@
 	    USER_NAME as userName,
 	    EMAIL as email,
 	    PHONE as phone,
+	    NICKNAME as nickname,
+	    PROFILE_IMG as profileImg,
 	    REG_DATE as regDate,
 	    STATUS as status,
 	    IDLE as idle,
@@ -112,6 +113,89 @@
                 ORDER BY REG_DATE DESC
             ) a WHERE ROWNUM &lt;= #{end}
         ) WHERE rn &gt; #{start}
+    </select>
+
+    <!-- 검색 조건 포함 페이징 회원 목록 -->
+    <select id="selectMemberListPagedSearch" parameterType="map"
+            resultType="com.spring.app.security.domain.MemberDTO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT USER_NO as userNo, USER_NAME as userName, EMAIL as email,
+                       PHONE as phone, REG_DATE as regDate, STATUS as status,
+                       IDLE as idle, SUSPENDED as suspended, MANNER_TEMP as mannerTemp,
+                       NICKNAME as nickname, PROFILE_IMG as profileImg
+                FROM MEMBER
+                <where>
+                    <if test="status != null and status == '1'">
+                        STATUS = 1 AND SUSPENDED = 0 AND IDLE = 0
+                    </if>
+                    <if test="status != null and status == '0'">
+                        (STATUS = 0 OR SUSPENDED = 1)
+                    </if>
+                    <if test="keyword != null and keyword != ''">
+                        AND (LOWER(EMAIL) LIKE '%' || LOWER(#{keyword}) || '%'
+                             OR LOWER(USER_NAME) LIKE '%' || LOWER(#{keyword}) || '%'
+                             OR LOWER(NICKNAME) LIKE '%' || LOWER(#{keyword}) || '%')
+                    </if>
+                </where>
+                ORDER BY REG_DATE DESC
+            ) a WHERE ROWNUM &lt;= #{end}
+        ) WHERE rn &gt; #{start}
+    </select>
+
+    <!-- 검색 조건 포함 회원 수 -->
+    <select id="countSearchMembers" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM MEMBER
+        <where>
+            <if test="status != null and status == '1'">
+                STATUS = 1 AND SUSPENDED = 0 AND IDLE = 0
+            </if>
+            <if test="status != null and status == '0'">
+                (STATUS = 0 OR SUSPENDED = 1)
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (LOWER(EMAIL) LIKE '%' || LOWER(#{keyword}) || '%'
+                     OR LOWER(USER_NAME) LIKE '%' || LOWER(#{keyword}) || '%'
+                     OR LOWER(NICKNAME) LIKE '%' || LOWER(#{keyword}) || '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 정지된 회원 수 -->
+    <select id="countSuspendedMembers" resultType="int">
+        SELECT COUNT(*) FROM MEMBER WHERE SUSPENDED = 1
+    </select>
+
+    <!-- 일시정지 -->
+    <update id="suspendMember" parameterType="int">
+        UPDATE MEMBER SET SUSPENDED = 1 WHERE USER_NO = #{userNo}
+    </update>
+
+    <!-- 정지 해제 -->
+    <update id="unsuspendMember" parameterType="int">
+        UPDATE MEMBER SET SUSPENDED = 0 WHERE USER_NO = #{userNo}
+    </update>
+
+    <!-- 영구정지 -->
+    <update id="permanentBanMember" parameterType="int">
+        UPDATE MEMBER SET STATUS = 0 WHERE USER_NO = #{userNo}
+    </update>
+
+    <!-- 회원의 거래중인 상품 조회 -->
+    <select id="getMemberActiveProducts" parameterType="int"
+            resultType="com.spring.app.product.domain.ProductDTO">
+        SELECT p.PRODUCT_NO as productNo,
+               p.PRODUCT_NAME as productName,
+               p.PRODUCT_PRICE as productPrice,
+               p.TRADE_STATUS as tradeStatus,
+               TO_CHAR(p.REG_DATE, 'YYYY-MM-DD') as regDate,
+               c.CATEGORY_NAME as categoryName
+        FROM PRODUCTS p
+        JOIN MEMBER m ON p.SELLER_EMAIL = m.EMAIL
+        LEFT JOIN CATEGORY c ON p.CATEGORY_NO = c.CATEGORY_NO
+        WHERE m.USER_NO = #{userNo}
+          AND p.TRADE_STATUS != '거래완료'
+        ORDER BY p.REG_DATE DESC
     </select>
 
 
@@ -168,20 +252,21 @@
             <!-- 컨텐츠 -->
    <select id="getAd" resultType="com.spring.app.admin.domain.AdDTO">
     SELECT
-        AD_ID AS adId,
-        BRAND_NAME AS brandName,
-        MANAGER_NAME AS managerName,
-        COMPANY_EMAIL AS companyEmail,
-        PHONE AS phone,
-        CONTENT AS content,
-        START_DATE AS startDate,
-        END_DATE AS endDate,
-        FILE_PATH AS filePath,
-        STATUS AS status,
-        CREATED_AT AS createdAt,
-        APPROVED_AT AS approvedAt
-    FROM ADS
-    WHERE AD_ID = #{adId}
+        a.AD_ID          AS adId,
+        a.BRAND_NAME     AS brandName,
+        m.USER_NAME      AS managerName,
+        m.EMAIL          AS companyEmail,
+        m.PHONE          AS phone,
+        a.CONTENT        AS content,
+        a.START_DATE     AS startDate,
+        a.END_DATE       AS endDate,
+        a.FILE_PATH      AS filePath,
+        a.STATUS         AS status,
+        a.CREATED_AT     AS createdAt,
+        a.APPROVED_AT    AS approvedAt
+    FROM ADS a
+    LEFT JOIN MEMBER m ON a.USER_NO = m.USER_NO
+    WHERE a.AD_ID = #{adId}
 </select>     
 		            
             <update id="approveAd">
@@ -281,6 +366,42 @@
     SELECT COUNT(*) FROM REPORTS
 </select>
 
+<!-- 미처리 신고+문의 건수 -->
+<select id="countPendingReportsAndInquiries" resultType="int">
+    SELECT
+        (SELECT COUNT(*) FROM REPORTS) +
+        (SELECT COUNT(*) FROM INQUIRIES WHERE INQUIRY_STATUS != '답변완료' AND IS_FAQ = 'N')
+    FROM DUAL
+</select>
+
+<!-- 광고 승인 대기 건수 -->
+<select id="countPendingAds" resultType="int">
+    SELECT COUNT(*) FROM ADS WHERE STATUS = 'WAIT'
+</select>
+
+<!-- 오늘 등록 상품 수 -->
+<select id="countTodayProducts" resultType="int">
+    SELECT COUNT(*) FROM PRODUCTS WHERE TRUNC(REG_DATE) = TRUNC(SYSDATE)
+</select>
+
+<!-- 일간 거래액 (오늘 거래완료된 상품 가격 합계) -->
+<select id="getDailyTradeAmount" resultType="long">
+    SELECT NVL(SUM(p.PRODUCT_PRICE), 0)
+    FROM PRODUCTS p
+    WHERE p.TRADE_STATUS = '거래완료'
+      AND TRUNC(p.REG_DATE) = TRUNC(SYSDATE)
+</select>
+
+<!-- 탈퇴 사유 분석 (상위 6개) -->
+<select id="getWithdrawReasonStats" resultType="map">
+    SELECT NVL(WITHDRAW_REASON, '기타') AS REASON, COUNT(*) AS CNT
+    FROM MEMBER
+    WHERE STATUS = 0
+    GROUP BY NVL(WITHDRAW_REASON, '기타')
+    ORDER BY CNT DESC
+    FETCH FIRST 6 ROWS ONLY
+</select>
+
 <select id="getDailyProductStats" resultType="map">
     SELECT TO_CHAR(REG_DATE, 'MM-DD') AS REG_DATE, COUNT(*) AS CNT
     FROM PRODUCTS
@@ -296,7 +417,239 @@
     GROUP BY C.CATEGORY_NAME
     ORDER BY CNT DESC
 </select>
-		
-		
-		
+
+    <!-- 리뷰 목록 페이징 -->
+    <select id="getReviewList" parameterType="map" resultType="com.spring.app.admin.domain.ReviewAdminDTO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT r.REVIEW_NO       as reviewNo,
+                       m.EMAIL           as email,
+                       m.NICKNAME        as nickname,
+                       r.RATING          as rating,
+                       r.REVIEW_CONTENT  as reviewContent,
+                       r.ONE_LINE_CAT    as oneLineCat,
+                       r.CREATED_AT      as createdAt,
+                       0                 as flagged
+                FROM REVIEWS r
+                JOIN MEMBER m ON r.EMAIL = m.EMAIL
+                <if test="keyword != null and keyword != ''">
+                WHERE (LOWER(m.NICKNAME) LIKE '%' || LOWER(#{keyword}) || '%'
+                   OR LOWER(r.REVIEW_CONTENT) LIKE '%' || LOWER(#{keyword}) || '%')
+                </if>
+                ORDER BY r.CREATED_AT DESC
+            ) a WHERE ROWNUM &lt;= #{end}
+        ) WHERE rn &gt; #{start}
+    </select>
+
+    <select id="countReviews" resultType="int">
+        SELECT COUNT(*) FROM REVIEWS
+    </select>
+
+    <delete id="deleteReview" parameterType="int">
+        DELETE FROM REVIEWS WHERE REVIEW_NO = #{reviewNo}
+    </delete>
+
+    <!-- 거래 목록 페이징 -->
+    <select id="getTransactionList" parameterType="map" resultType="com.spring.app.admin.domain.TransactionAdminDTO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT t.TRANSACTION_ID  as transactionId,
+                       p.PRODUCT_NAME    as productName,
+                       mb.NICKNAME       as buyerNickname,
+                       ms.NICKNAME       as sellerNickname,
+                       t.AMOUNT          as amount,
+                       t.TRADE_STATUS    as tradeStatus,
+                       t.TRADE_DATE      as tradeDate,
+                       ROUND((SYSDATE - CAST(t.TRADE_DATE AS DATE)) * 24, 1) as hoursElapsed
+                FROM TRANSACTIONS t
+                JOIN PRODUCTS p     ON t.PRODUCT_NO  = p.PRODUCT_NO
+                LEFT JOIN MEMBER mb ON t.BUYER_EMAIL  = mb.EMAIL
+                LEFT JOIN MEMBER ms ON t.SELLER_EMAIL = ms.EMAIL
+                ORDER BY t.TRADE_DATE DESC
+            ) a WHERE ROWNUM &lt;= #{end}
+        ) WHERE rn &gt; #{start}
+    </select>
+
+    <select id="countTransactions" resultType="int">
+        SELECT COUNT(*) FROM TRANSACTIONS
+    </select>
+
+    <!-- 신고 목록 페이징 -->
+    <select id="getReportList" parameterType="map" resultType="com.spring.app.admin.domain.ReportAdminDTO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT r.REPORT_ID      as reportId,
+                       r.REPORTER_EMAIL as reporterEmail,
+                       r.TARGET_EMAIL   as targetEmail,
+                       rt.TYPE_NAME     as typeName,
+                       rt.MAIN_CATEGORY as mainCategory,
+                       r.REPORT_DETAIL  as reportDetail,
+                       r.REPORT_DATE    as reportDate,
+                       r.REPORT_STATUS  as reportStatus
+                FROM REPORTS r
+                JOIN REPORT_TYPES rt ON r.TYPE_ID = rt.TYPE_ID
+                <if test="type != null and type != '' and type != 'ALL'">
+                WHERE rt.MAIN_CATEGORY = #{type}
+                </if>
+                ORDER BY r.REPORT_DATE DESC
+            ) a WHERE ROWNUM &lt;= #{end}
+        ) WHERE rn &gt; #{start}
+    </select>
+
+    <select id="countReports" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM REPORTS r
+        JOIN REPORT_TYPES rt ON r.TYPE_ID = rt.TYPE_ID
+        <if test="type != null and type != '' and type != 'ALL'">
+        WHERE rt.MAIN_CATEGORY = #{type}
+        </if>
+    </select>
+
+    <update id="updateReportStatus" parameterType="map">
+        UPDATE REPORTS SET REPORT_STATUS = #{status} WHERE REPORT_ID = #{reportId}
+    </update>
+
+    <!-- 문의 목록 페이징 (관리자용, IS_FAQ='N') -->
+    <select id="getAdminInquiryList" parameterType="map" resultType="com.spring.app.admin.domain.InquiryDTO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT INQUIRY_ID     as inquiryId,
+                       MEMBER_EMAIL   as memberEmail,
+                       TITLE          as title,
+                       CONTENT        as content,
+                       CREATED_AT     as createdAt,
+                       INQUIRY_STATUS as inquiryStatus,
+                       ADMIN_ANSWER   as adminAnswer,
+                       ANSWERED_AT    as answeredAt,
+                       IS_FAQ         as isFaq,
+                       IS_PRIVATE     as isPrivate
+                FROM INQUIRIES
+                WHERE IS_FAQ = 'N'
+                <if test="status != null and status != '' and status != 'ALL'">
+                  AND INQUIRY_STATUS = #{status}
+                </if>
+                ORDER BY CREATED_AT DESC
+            ) a WHERE ROWNUM &lt;= #{end}
+        ) WHERE rn &gt; #{start}
+    </select>
+
+    <select id="countAdminInquiries" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM INQUIRIES
+        WHERE IS_FAQ = 'N'
+        <if test="status != null and status != '' and status != 'ALL'">
+          AND INQUIRY_STATUS = #{status}
+        </if>
+    </select>
+
+    <update id="saveInquiryAnswer" parameterType="map">
+        UPDATE INQUIRIES
+        SET ADMIN_ANSWER    = #{adminAnswer},
+            ANSWERED_AT     = SYSDATE,
+            INQUIRY_STATUS  = '답변완료'
+        WHERE INQUIRY_ID = #{inquiryId}
+    </update>
+
+    <!-- 상품 상세 -->
+    <select id="getProductDetail" parameterType="int" resultType="com.spring.app.admin.domain.ProductDetailDTO">
+        SELECT p.PRODUCT_NO       as productNo,
+               p.PRODUCT_NAME     as productName,
+               p.PRODUCT_DESC     as productDesc,
+               p.PRODUCT_PRICE    as productPrice,
+               p.SELLER_EMAIL     as sellerEmail,
+               m.NICKNAME         as sellerNickname,
+               c.CATEGORY_NAME    as categoryName,
+               p.TRADE_STATUS     as tradeStatus,
+               p.TRADE_METHOD     as tradeMethod,
+               TO_CHAR(p.REG_DATE, 'YYYY-MM-DD') as regDate
+        FROM PRODUCTS p
+        JOIN MEMBER m        ON p.SELLER_EMAIL = m.EMAIL
+        LEFT JOIN CATEGORY c ON p.CATEGORY_NO  = c.CATEGORY_NO
+        WHERE p.PRODUCT_NO = #{productNo}
+    </select>
+
+    <select id="getProductImages" parameterType="int" resultType="string">
+        SELECT IMG_URL FROM PRODUCT_IMAGE
+        WHERE PRODUCT_NO = #{productNo}
+        ORDER BY SORT_NO ASC
+    </select>
+
+    <!-- 신고 유형별 통계 -->
+    <select id="getProductReportCount" resultType="int">
+        SELECT COUNT(*) FROM REPORTS WHERE PRODUCT_NUM IS NOT NULL
+    </select>
+
+    <select id="getChatReportCount" resultType="int">
+        SELECT COUNT(*) FROM REPORTS WHERE ROOM_ID IS NOT NULL
+    </select>
+
+    <select id="getPendingReportCount" resultType="int">
+        SELECT COUNT(*) FROM REPORTS WHERE REPORT_STATUS = '접수'
+    </select>
+
+    <!-- 회계관리: 이번달 광고 수익 -->
+    <select id="getThisMonthAdRevenue" resultType="long">
+        SELECT NVL(SUM(AMOUNT), 0)
+        FROM ADS
+        WHERE STATUS = 'CONFIRM'
+          AND TO_CHAR(APPROVED_AT, 'YYYY-MM') = TO_CHAR(SYSDATE, 'YYYY-MM')
+    </select>
+
+    <!-- 회계관리: 누적 총 광고 수익 -->
+    <select id="getTotalAdRevenue" resultType="long">
+        SELECT NVL(SUM(AMOUNT), 0)
+        FROM ADS
+        WHERE STATUS = 'CONFIRM'
+    </select>
+
+    <!-- 회계관리: 이번달 거래 총액 -->
+    <select id="getThisMonthTradeVolume" resultType="long">
+        SELECT NVL(SUM(AMOUNT), 0)
+        FROM TRANSACTIONS
+        WHERE PAY_STATUS = 'DONE'
+          AND TO_CHAR(TRADE_DATE, 'YYYY-MM') = TO_CHAR(SYSDATE, 'YYYY-MM')
+    </select>
+
+    <!-- 회계관리: 이번달 취소 거래액 -->
+    <select id="getThisMonthRefundAmount" resultType="long">
+        SELECT NVL(SUM(AMOUNT), 0)
+        FROM TRANSACTIONS
+        WHERE PAY_STATUS = 'CANCEL'
+          AND TO_CHAR(TRADE_DATE, 'YYYY-MM') = TO_CHAR(SYSDATE, 'YYYY-MM')
+    </select>
+
+    <!-- 회계관리: 월별 광고 수익 (최근 6개월) -->
+    <select id="getMonthlyAdRevenue" resultType="map">
+        SELECT TO_CHAR(APPROVED_AT, 'MM') AS MONTH_LABEL,
+               NVL(SUM(AMOUNT), 0) AS REVENUE
+        FROM ADS
+        WHERE STATUS = 'CONFIRM'
+          AND APPROVED_AT >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
+        GROUP BY TO_CHAR(APPROVED_AT, 'MM'), TRUNC(APPROVED_AT, 'MM')
+        ORDER BY TRUNC(APPROVED_AT, 'MM')
+    </select>
+
+    <!-- 회계관리: 승인된 광고 수익 목록 (페이징) -->
+    <select id="getAdRevenueList" parameterType="map" resultType="map">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.*
+            FROM (
+                SELECT A.AD_ID, A.BRAND_NAME, A.DURATION_WEEKS, A.AMOUNT,
+                       TO_CHAR(A.APPROVED_AT, 'YYYY-MM-DD') AS APPROVED_AT,
+                       TO_CHAR(A.START_DATE, 'YYYY-MM-DD') AS START_DATE,
+                       TO_CHAR(A.END_DATE, 'YYYY-MM-DD') AS END_DATE,
+                       M.EMAIL, M.USER_NAME
+                FROM ADS A
+                LEFT JOIN MEMBER M ON A.USER_NO = M.USER_NO
+                WHERE A.STATUS = 'CONFIRM'
+                ORDER BY A.APPROVED_AT DESC
+            ) T
+            WHERE ROWNUM &lt;= #{end}
+        )
+        WHERE RN &gt; #{start}
+    </select>
+
+    <!-- 회계관리: 승인 광고 총 건수 -->
+    <select id="countAdRevenue" resultType="int">
+        SELECT COUNT(*) FROM ADS WHERE STATUS = 'CONFIRM'
+    </select>
+
 </mapper>

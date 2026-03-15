@@ -1,43 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <title>거래 내역 관리</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
     <style>
-        body { background: #f8f9fc; font-family: 'Pretendard', sans-serif; }
-        .main-content { flex: 1; padding: 25px; }
-        .dashboard-card { background: white; border-radius: 12px; box-shadow: 0 0.15rem 1.75rem rgba(58, 59, 69, 0.1); padding: 20px; margin-bottom: 24px; }
-
-        /* 상태별 텍스트 및 배지 */
-        .status-pending { color: #4e73df; font-weight: bold; } /* 미체결 */
-        .status-urgent { color: #e74a3b; font-weight: bold; animation: blink 1.5s infinite; } /* 기한임박 */
-        
-        @keyframes blink {
-            50% { opacity: 0.5; }
-        }
-
-        .alert-banner {
-            background-color: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
     </style>
 </head>
-
 <body class="d-flex">
-
     <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
-
     <main class="main-content">
         <div class="container-fluid">
             <h4 class="fw-bold mb-4">거래 프로세스 관리</h4>
@@ -45,44 +18,14 @@
             <div class="row mb-4">
                 <div class="col-md-4">
                     <div class="dashboard-card border-start border-primary border-4">
-                        <div class="small text-muted fw-bold">현재 진행 중(미체결)</div>
-                        <div class="h3 fw-bold mb-0" id="pendingCount">0건</div>
+                        <div class="small text-muted fw-bold">전체 거래 수</div>
+                        <div class="h3 fw-bold mb-0" th:text="${totalCount + '건'}">0건</div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card border-start border-danger border-4">
-                        <div class="small text-muted fw-bold text-danger">거래완료 기한 임박 (24시간 이내)</div>
-                        <div class="h3 fw-bold mb-0 text-danger" id="urgentCount">0건</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card border-start border-success border-4">
-                        <div class="small text-muted fw-bold text-success">오늘 성사된 거래</div>
-                        <div class="h3 fw-bold mb-0 text-success">42건</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="alert-banner mb-4" id="urgentBanner" style="display: none;">
-                <div>
-                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                    <strong>기한 임박 거래가 있습니다!</strong> 미답변 유저들에게 일괄 독촉 푸시 알림을 보낼 수 있습니다.
-                </div>
-                <button class="btn btn-dark btn-sm" onclick="sendAllPush()">전체 푸시 알람 전송</button>
             </div>
 
             <div class="dashboard-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0">거래 내역 목록</h5>
-                    <div class="d-flex gap-2">
-                        <select class="form-select form-select-sm" style="width: 150px;">
-                            <option>전체 거래</option>
-                            <option>진행 중</option>
-                            <option>완료 임박</option>
-                        </select>
-                    </div>
-                </div>
-
+                <h5 class="fw-bold mb-4">거래 내역 목록</h5>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
@@ -92,70 +35,45 @@
                                 <th>구매자</th>
                                 <th>판매자</th>
                                 <th>거래 금액</th>
-                                <th>남은 시간</th>
+                                <th>거래일시</th>
                                 <th>상태</th>
-                                <th>관리</th>
                             </tr>
                         </thead>
-                        <tbody id="tradeTableBody">
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(tradeList)}">
+                                <td colspan="7" class="text-center text-muted">거래 내역이 없습니다.</td>
+                            </tr>
                             <tr th:each="trade : ${tradeList}">
-                                <td th:text="${trade.tradeId}">T-1004</td>
-                                <td th:text="${trade.productName}">아이패드 프로 11인치</td>
-                                <td th:text="${trade.buyerNickname}">구매왕루피</td>
-                                <td th:text="${trade.sellerNickname}">판매천사</td>
-                                <td th:text="${#numbers.formatInteger(trade.price, 0, 'COMMA') + '원'}">500,000원</td>
-                                <td>
-                                    <span th:class="${trade.hoursLeft <= 24 ? 'status-urgent' : ''}"
-                                          th:text="${trade.hoursLeft + '시간 남음'}">
-                                        12시간 남음
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="status-pending" th:text="${trade.status}">진행 중</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary" th:attr="onclick='remindUser(' + ${trade.tradeId} + ')'">알림발송</button>
-                                </td>
+                                <td th:text="${trade.transactionId}"></td>
+                                <td th:text="${trade.productName}"></td>
+                                <td th:text="${trade.buyerNickname != null ? trade.buyerNickname : '-'}"></td>
+                                <td th:text="${trade.sellerNickname != null ? trade.sellerNickname : '-'}"></td>
+                                <td th:text="${#numbers.formatInteger(trade.amount, 0, 'COMMA') + '원'}"></td>
+                                <td th:text="${#dates.format(trade.tradeDate, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td th:text="${trade.tradeStatus}"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <!-- 페이징 -->
+                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mt-3">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/transaction(page=${currentPage-1})}">이전</a>
+                        </li>
+                        <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
+                            th:classappend="${p == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/transaction(page=${p})}" th:text="${p}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/transaction(page=${currentPage+1})}">다음</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:inline="javascript">
-        // 에러 방지용 안전 문법 적용
-        const trades = /*[[${tradeList}]]*/ [];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (trades.length > 0) {
-                const pending = trades.length;
-                const urgent = trades.filter(t => t.hoursLeft <= 24).length;
-
-                document.getElementById('pendingCount').innerText = pending + "건";
-                document.getElementById('urgentCount').innerText = urgent + "건";
-
-                // 임박 거래가 있으면 배너 노출
-                if (urgent > 0) {
-                    document.getElementById('urgentBanner').style.display = 'flex';
-                }
-            }
-        });
-
-        // 개별 알림 전송
-        function remindUser(id) {
-            alert(id + "번 거래 유저에게 독촉 알림을 전송했습니다.");
-        }
-
-        // 전체 푸시 알람 전송
-        function sendAllPush() {
-            const confirmAction = confirm("기한 임박 거래 유저들에게 전체 알림을 보내시겠습니까?");
-            if(confirmAction) {
-                alert("전체 푸시 알림이 발송되었습니다!");
-            }
-        }
-    </script>
 </body>
 </html>

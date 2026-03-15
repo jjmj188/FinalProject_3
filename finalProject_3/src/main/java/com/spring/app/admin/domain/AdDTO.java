@@ -15,9 +15,12 @@ import java.time.LocalDateTime;
 public class AdDTO {
 
 	   private Long adId;
-	    private int userNo;  
+	    private int userNo;
 
 	    private String brandName;
+	    private String managerName;
+	    private String companyEmail;
+	    private String phone;
 	    private String content;
 
 	    private LocalDate startDate;

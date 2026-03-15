@@ -1,183 +1,157 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <title>문의 내역 관리</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        body {
-            background: #f8f9fc;
-            font-family: 'Pretendard', sans-serif;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 25px;
-        }
-
-        .dashboard-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 0.15rem 1.75rem rgba(58, 59, 69, 0.1);
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        /* 테이블 텍스트 말줄임 처리 */
-        .text-truncate-custom {
-            max-width: 250px;
-            display: inline-block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        /* 상태 배지 스타일 */
-        .badge-pending { background-color: #f6c23e; color: #fff; } /* 대기중 - 노랑 */
-        .badge-completed { background-color: #1cc88a; color: #fff; } /* 완료 - 초록 */
-
-        .stat-card-label { font-size: 0.8rem; font-weight: bold; color: #4e73df; text-transform: uppercase; }
-        .stat-card-number { font-size: 1.5rem; font-weight: 700; color: #5a5c69; }
+        .badge-pending { background-color: #f6c23e; color:#fff; }
+        .badge-completed { background-color: #1cc88a; color:#fff; }
+        .text-truncate-custom { max-width: 250px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
-
 <body class="d-flex">
-
     <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
-
     <main class="main-content">
         <div class="container-fluid">
-
             <h4 class="fw-bold mb-4">고객 문의 관리</h4>
 
-            <div class="row">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="dashboard-card border-start border-primary border-4 py-2">
-                        <div class="stat-card-label mb-1">전체 문의</div>
-                        <div class="stat-card-number" id="totalCount">0건</div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="dashboard-card border-start border-danger border-4 py-2">
-                        <div class="stat-card-label mb-1 text-danger">미답변 문의</div>
-                        <div class="stat-card-number text-danger" id="pendingCount">0건</div>
-                    </div>
-                </div>
-            </div>
+            <!-- 필터 폼 -->
+            <form method="get" th:action="@{/admin/inquiry}" class="mb-3 d-flex gap-2 align-items-center">
+                <label class="fw-bold me-2">상태:</label>
+                <select name="status" class="form-select form-select-sm" style="width:150px;" onchange="this.form.submit()">
+                    <option value="ALL" th:selected="${selectedStatus == 'ALL'}">전체</option>
+                    <option value="대기" th:selected="${selectedStatus == '대기'}">대기</option>
+                    <option value="답변완료" th:selected="${selectedStatus == '답변완료'}">답변완료</option>
+                </select>
+                <span class="text-muted small">전체 <strong th:text="${totalCount}"></strong>건</span>
+            </form>
 
             <div class="dashboard-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0">문의 리스트</h5>
-                    <div class="d-flex gap-2">
-                        <select id="statusFilter" class="form-select form-select-sm" style="width: 130px;">
-                            <option value="ALL">전체 보기</option>
-                            <option value="PENDING">미답변</option>
-                            <option value="COMPLETED">답변 완료</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 80px;">번호</th>
-                                <th style="width: 150px;">문의 날짜</th>
-                                <th style="width: 200px;">이메일</th>
-                                <th>문의 내용</th>
-                                <th style="width: 100px;">상태</th>
-                                <th style="width: 100px;">관리</th>
+                                <th style="width:80px;">번호</th>
+                                <th style="width:130px;">문의 날짜</th>
+                                <th style="width:200px;">이메일</th>
+                                <th>제목</th>
+                                <th style="width:100px;">상태</th>
+                                <th style="width:100px;">관리</th>
                             </tr>
                         </thead>
-                        <tbody id="inquiryTableBody">
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(inquiryList)}">
+                                <td colspan="6" class="text-center text-muted">문의가 없습니다.</td>
+                            </tr>
                             <tr th:each="inquiry : ${inquiryList}">
-                                <td th:text="${inquiry.id}">1</td>
-                                <td th:text="${#temporals.format(inquiry.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-08</td>
-                                <td th:text="${inquiry.email}">user@test.com</td>
+                                <td th:text="${inquiry.inquiryId}"></td>
+                                <td th:text="${#dates.format(inquiry.createdAt, 'yyyy-MM-dd')}"></td>
+                                <td th:text="${inquiry.memberEmail}"></td>
                                 <td>
-                                    <span class="text-truncate-custom" th:text="${inquiry.content}">
-                                        문의 내용이 들어가는 자리입니다.
-                                    </span>
+                                    <span class="text-truncate-custom" th:text="${inquiry.title}"></span>
                                 </td>
                                 <td>
-                                    <span class="badge" 
-                                          th:classappend="${inquiry.status == 'PENDING' ? 'badge-pending' : 'badge-completed'}"
-                                          th:text="${inquiry.status == 'PENDING' ? '대기중' : '완료'}">
-                                    </span>
+                                    <span class="badge"
+                                          th:classappend="${inquiry.inquiryStatus == '답변완료' ? 'badge-completed' : 'badge-pending'}"
+                                          th:text="${inquiry.inquiryStatus}"></span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-dark" 
-                                            th:attr="onclick='openInquiryModal(' + ${inquiry.id} + ')'">
-                                        상세보기
-                                    </button>
+                                    <button class="btn btn-sm btn-dark"
+                                            th:attr="data-id=${inquiry.inquiryId},
+                                                     data-title=${inquiry.title},
+                                                     data-content=${inquiry.content},
+                                                     data-answer=${inquiry.adminAnswer}"
+                                            onclick="openInquiryModal(this)">답변</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <!-- 페이징 -->
+                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mt-3">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/inquiry(page=${currentPage-1}, status=${selectedStatus})}">이전</a>
+                        </li>
+                        <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
+                            th:classappend="${p == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/inquiry(page=${p}, status=${selectedStatus})}" th:text="${p}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/inquiry(page=${currentPage+1}, status=${selectedStatus})}">다음</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </main>
 
-    <div class="modal fade" id="inquiryModal" tabindex="-1" aria-hidden="true">
+    <!-- 문의 답변 모달 -->
+    <div class="modal fade" id="inquiryModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">문의 상세 및 답변</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="form-label fw-bold">제목</label>
+                        <div id="modalTitle" class="p-2 bg-light border rounded"></div>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label fw-bold">문의 내용</label>
-                        <div id="modalContent" class="p-3 bg-light border rounded"></div>
+                        <div id="modalContent" class="p-3 bg-light border rounded" style="min-height:80px;"></div>
                     </div>
                     <hr>
                     <div class="mb-3">
                         <label class="form-label fw-bold">답변 작성</label>
-                        <textarea class="form-control" rows="5" placeholder="이메일로 전송될 답변 내용을 입력하세요."></textarea>
+                        <textarea id="modalAnswer" class="form-control" rows="5" placeholder="답변 내용을 입력하세요."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary">답변 전송</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAnswer()">답변 저장</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-   <script th:inline="javascript">
-    /* 서버 실행 시: reportList 데이터를 JSON으로 자동 변환하여 대입
-       파일 직접 실행 시: 뒤에 있는 [] (빈 배열)을 대입
-    */
-    const inquiries = /*[[${inquiryList}]]*/ [];
+    <script>
+        let currentInquiryId = null;
+        let inquiryModalInst = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        // 데이터가 잘 들어오는지 확인용
-        console.log("문의 리스트:", inquiries);
-        
-        const total = inquiries.length;
-        const pending = inquiries.filter(i => i.status === 'PENDING').length;
-
-        document.getElementById('totalCount').innerText = total + "건";
-        document.getElementById('pendingCount').innerText = pending + "건";
-    });
-
-    function openInquiryModal(id) {
-        const inquiry = inquiries.find(i => i.id === id);
-        if(inquiry) {
-            document.getElementById('modalContent').innerText = inquiry.content;
-            const modal = new bootstrap.Modal(document.getElementById('inquiryModal'));
-            modal.show();
+        function openInquiryModal(btn) {
+            currentInquiryId = btn.dataset.id;
+            document.getElementById('modalTitle').innerText = btn.dataset.title || '';
+            document.getElementById('modalContent').innerText = btn.dataset.content || '';
+            document.getElementById('modalAnswer').value = btn.dataset.answer || '';
+            inquiryModalInst = new bootstrap.Modal(document.getElementById('inquiryModal'));
+            inquiryModalInst.show();
         }
-    }
-</script>
+
+        function saveAnswer() {
+            const answer = document.getElementById('modalAnswer').value.trim();
+            if (!answer) { alert('답변 내용을 입력하세요.'); return; }
+            fetch('/admin/inquiry/answer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'inquiryId=' + currentInquiryId + '&adminAnswer=' + encodeURIComponent(answer)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('답변이 저장되었습니다.');
+                    inquiryModalInst.hide();
+                    location.reload();
+                } else alert('저장 실패');
+            });
+        }
+    </script>
 </body>
 </html>

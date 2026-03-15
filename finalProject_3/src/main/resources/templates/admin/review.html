@@ -1,139 +1,111 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <title>리뷰 내역 관리</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
     <style>
-        body { background: #f8f9fc; font-family: 'Pretendard', sans-serif; }
-        .main-content { flex: 1; padding: 25px; }
-        .dashboard-card { background: white; border-radius: 12px; box-shadow: 0 0.15rem 1.75rem rgba(58, 59, 69, 0.1); padding: 20px; margin-bottom: 24px; }
-
-        /* 리뷰 전용 스타일 */
         .rating-star { color: #f6c23e; }
-        .bad-word-highlight { color: #e74a3b; font-weight: bold; background-color: #ffeaea; padding: 0 4px; border-radius: 4px; }
-        
-        /* 썸네일 스타일 */
-        .review-img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; cursor: pointer; }
-        
-        /* 상태 배지 */
-        .badge-reported { background-color: #e74a3b; } /* 신고됨 */
-        .badge-checked { background-color: #858796; }  /* 확인됨 */
     </style>
 </head>
-
 <body class="d-flex">
-
     <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
-
     <main class="main-content">
         <div class="container-fluid">
             <h4 class="fw-bold mb-4">리뷰 콘텐츠 관리</h4>
 
             <div class="row mb-4">
                 <div class="col-md-4">
-                    <div class="dashboard-card border-left-primary">
+                    <div class="dashboard-card">
                         <div class="small text-muted fw-bold">전체 리뷰 수</div>
-                        <div class="h3 fw-bold mb-0">1,248건</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card border-left-danger">
-                        <div class="small text-muted fw-bold text-danger">금칙어 의심 리뷰</div>
-                        <div class="h3 fw-bold mb-0 text-danger" id="badWordCount">0건</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card border-left-warning">
-                        <div class="small text-muted fw-bold text-warning">미답변 낮은 별점(★2 이하)</div>
-                        <div class="h3 fw-bold mb-0 text-warning" id="lowRatingCount">0건</div>
+                        <div class="h3 fw-bold mb-0" th:text="${totalCount + '건'}">0건</div>
                     </div>
                 </div>
             </div>
 
-            <div class="dashboard-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0">리뷰 목록</h5>
-                    <div class="d-flex gap-2">
-                        <input type="text" class="form-control form-control-sm" placeholder="작성자/내용 검색" style="width: 200px;">
-                        <select class="form-select form-select-sm" style="width: 130px;">
-                            <option value="all">전체 별점</option>
-                            <option value="low">낮은 별점순</option>
-                            <option value="badword">금칙어 의심</option>
-                        </select>
-                    </div>
-                </div>
+            <!-- 검색 폼 -->
+            <form method="get" th:action="@{/admin/review}" class="mb-3 d-flex gap-2">
+                <input type="text" class="form-control form-control-sm" name="keyword"
+                       th:value="${searchKeyword}" placeholder="작성자/내용 검색" style="width:220px;">
+                <button class="btn btn-sm btn-primary">검색</button>
+            </form>
 
+            <div class="dashboard-card">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 80px;">작성자</th>
-                                <th style="width: 120px;">별점</th>
+                                <th>번호</th>
+                                <th>작성자</th>
+                                <th>별점</th>
+                                <th>한줄평</th>
                                 <th>리뷰 내용</th>
-                                <th style="width: 80px;">첨부</th>
-                                <th style="width: 120px;">작성일</th>
-                                <th style="width: 100px;">상태</th>
-                                <th style="width: 100px;">관리</th>
+                                <th>작성일</th>
+                                <th>관리</th>
                             </tr>
                         </thead>
-                        <tbody id="reviewTableBody">
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(reviewList)}">
+                                <td colspan="7" class="text-center text-muted">리뷰가 없습니다.</td>
+                            </tr>
                             <tr th:each="review : ${reviewList}">
-                                <td th:text="${review.writerNickname}">지민이</td>
+                                <td th:text="${review.reviewNo}"></td>
+                                <td th:text="${review.nickname}"></td>
                                 <td>
                                     <span class="rating-star">
-                                        <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, review.rating)}"></i>
+                                        <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                            <i th:class="${i <= review.rating ? 'bi bi-star-fill' : 'bi bi-star'}"></i>
+                                        </th:block>
                                     </span>
+                                    <small th:text="${review.rating}"></small>
                                 </td>
+                                <td th:text="${review.oneLineCat}"></td>
+                                <td th:text="${#strings.abbreviate(review.reviewContent, 50)}"></td>
+                                <td th:text="${#dates.format(review.createdAt, 'yyyy-MM-dd')}"></td>
                                 <td>
-                                    <span th:utext="${review.highlightedContent}">리뷰 내용...</span>
-                                </td>
-                                <td>
-                                    <img th:if="${review.imageUrl != null}" th:src="${review.imageUrl}" class="review-img" alt="리뷰이미지">
-                                    <span th:unless="${review.imageUrl != null}" class="text-muted small">-</span>
-                                </td>
-                                <td th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}">2026-03-08</td>
-                                <td>
-                                    <span class="badge" 
-                                          th:classappend="${review.isFlagged ? 'badge-reported' : 'badge-checked'}"
-                                          th:text="${review.isFlagged ? '의심건' : '정상'}">의심건</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-danger" th:attr="onclick='deleteReview(' + ${review.id} + ')'">삭제</button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            th:attr="onclick='deleteReview(' + ${review.reviewNo} + ')'">삭제</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <!-- 페이징 -->
+                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mt-3">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/review(page=${currentPage-1}, keyword=${searchKeyword})}">이전</a>
+                        </li>
+                        <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
+                            th:classappend="${p == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/review(page=${p}, keyword=${searchKeyword})}" th:text="${p}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/review(page=${currentPage+1}, keyword=${searchKeyword})}">다음</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:inline="javascript">
-        // 안전한 타임리프 데이터 수신
-        const reviews = /*[[${reviewList}]]*/ [];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (reviews.length > 0) {
-                const badWordCount = reviews.filter(r => r.isFlagged).length;
-                const lowRatingCount = reviews.filter(r => r.rating <= 2).length;
-
-                document.getElementById('badWordCount').innerText = badWordCount + "건";
-                document.getElementById('lowRatingCount').innerText = lowRatingCount + "건";
-            }
-        });
-
-        function deleteReview(id) {
-            if(confirm("이 리뷰를 블라인드(삭제) 처리하시겠습니까? 작성자에게도 알림이 전송됩니다.")) {
-                alert(id + "번 리뷰가 삭제되었습니다.");
-                // 실제 구현 시 fetch()를 사용하여 서버에 삭제 요청을 보냅니다.
-            }
+    <script>
+        function deleteReview(reviewNo) {
+            if (!confirm("이 리뷰를 삭제 처리하시겠습니까?")) return;
+            fetch('/admin/review/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'reviewNo=' + reviewNo
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) { alert('삭제되었습니다.'); location.reload(); }
+                else alert('삭제 실패');
+            });
         }
     </script>
 </body>

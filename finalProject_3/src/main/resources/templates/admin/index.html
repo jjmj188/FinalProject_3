@@ -8,370 +8,454 @@
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        /* [보내주신 설정값 적용] */
         :root {
-            --sidebar-bg: #f5f5f0;
-            --sidebar-border: #e5e5e0;
-            --nav-hover: #ebebeb;
-            --nav-active-bg: #6c757d;
-            --card-bg: #f8f8f8;
-            --card-border: #e8e8e8;
-            --main-accent: #4dabf7; /* 생기를 불어넣을 블루 포인트 */
+            --card-bg: #ffffff;
+            --card-border: #eaeaea;
         }
+        .main-content { flex: 1; min-width: 0; padding: 2rem 2.5rem; }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-            font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-            display: flex; /* 가로 배치 */
-            min-height: 100vh;
+        /* 상단 헤더 */
+        .dashboard-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            border-radius: 16px;
+            padding: 1.8rem 2rem;
+            color: white;
+            margin-bottom: 1.8rem;
         }
+        .dashboard-header h3 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+        .dashboard-header p { font-size: 0.85rem; opacity: 0.85; margin: 0.3rem 0 0; }
+        .dashboard-header .current-time { font-size: 0.9rem; opacity: 0.9; font-weight: 600; }
 
-        /* [사이드바 수정] 늘어나지 않게 너비 강제 고정 */
-        aside {
-            width: 220px !important;
-            min-width: 220px !important;
-            max-width: 220px !important;
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--sidebar-border);
-            flex-shrink: 0;
-            height: 100vh;
-            position: sticky; /* fixed 대신 sticky를 써야 메인 콘텐츠와 안 겹칩니다 */
-            top: 0;
-            z-index: 100;
-        }
-
-        /* [메인 콘텐츠] 사이드바 마진을 220px로 고정 */
-        .main-content {
-            flex: 1;
-            min-width: 0;
-            padding: 2.5rem;
-        }
-
-        /* 화사한 대시보드 카드 디자인 */
-        .stat-card {
-            background-color: #fff;
-            border: 1px solid var(--card-border);
+        /* 시스템 상태 카드 */
+        .sys-card {
+            background: white;
             border-radius: 12px;
+            padding: 1.2rem 1.4rem;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .sys-card .icon-wrap {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .sys-card .val { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+        .sys-card .lbl { font-size: 0.75rem; color: #888; margin-top: 2px; }
+
+        /* 주요 지표 카드 */
+        .kpi-card {
+            background: white;
+            border-radius: 14px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transition: transform 0.2s;
-            border-top: 4px solid var(--main-accent);
-        }
-        .stat-card:hover { transform: translateY(-5px); }
-        
-        /* 노션 스타일 Todo */
-        .panel-box {
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
             border: 1px solid var(--card-border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .kpi-card .accent-bar {
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 4px; border-radius: 14px 14px 0 0;
+        }
+        .kpi-card .kpi-icon {
+            font-size: 2rem; margin-bottom: 0.8rem;
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .kpi-card .kpi-val { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+        .kpi-card .kpi-lbl { font-size: 0.78rem; color: #888; margin-top: 0.3rem; font-weight: 500; }
+        .kpi-card .kpi-link { font-size: 0.75rem; color: #aaa; text-decoration: none; }
+        .kpi-card .kpi-link:hover { color: #666; }
+
+        /* 패널 박스 */
+        .panel-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
             height: 100%;
         }
-        
-        .todo-item { 
-            padding: 8px;
-            border-radius: 8px;
-            transition: background 0.2s;
+        .panel-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
-        .todo-item:hover { background: var(--nav-hover); }
-        .todo-item input:checked + label { text-decoration: line-through; color: #adb5bd; }
 
-        /* 차트 높이 고정 */
-        .chart-container { position: relative; height: 250px; width: 100%; }
+        /* Todo 스타일 */
+        .todo-item {
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+        }
+        .todo-item:hover { background: #f8f9fa; }
+        .todo-item input:checked + label { text-decoration: line-through; color: #adb5bd; }
+        .todo-label { flex: 1; margin-left: 8px; font-size: 0.88rem; cursor: pointer; }
+        .todo-del {
+            background: none; border: none; color: #ccc;
+            font-size: 1rem; padding: 0 4px; line-height: 1;
+            cursor: pointer; border-radius: 4px;
+        }
+        .todo-del:hover { color: #e74c3c; background: #fff0f0; }
+
+        /* 인기 검색어 뱃지 */
+        .rank-badge {
+            width: 26px; height: 26px; border-radius: 6px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700;
+        }
+        .rank-1 { background: #fff3cd; color: #856404; }
+        .rank-2 { background: #e2e3e5; color: #41464b; }
+        .rank-3 { background: #fde2e4; color: #842029; }
+        .rank-n { background: #f8f9fa; color: #666; }
+
+        .chart-container { position: relative; height: 240px; width: 100%; }
+        .chart-sm { position: relative; height: 180px; width: 100%; }
     </style>
 </head>
-<body>
+<body class="d-flex">
+<aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
 
-    <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
+<main class="main-content">
 
-    <main class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-                <h3 class="fw-bold mb-1">📊 서비스 현황</h3>
-                <p class="text-muted small mb-0">관리자님, 현재 플랫폼의 실시간 상태입니다.</p>
-            </div>
-            <div class="text-muted small">[[${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd HH:mm')}]]</div>
+    <!-- 헤더 -->
+    <div class="dashboard-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3><i class="bi bi-speedometer2 me-2"></i>서비스 현황 대시보드</h3>
+            <p>관리자님, 플랫폼의 실시간 현황을 확인하세요.</p>
         </div>
-<div class="row g-4 mb-5">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="text-muted small fw-bold mb-2">API 요청 수</div>
-            <div class="h4 fw-bold mb-0" id="apiRequests">-</div>
-        </div>
+        <div class="current-time" id="liveTime">--:--:--</div>
     </div>
 
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="text-muted small fw-bold mb-2">CPU 사용률</div>
-            <div class="h4 fw-bold mb-0" id="cpuUsage">-</div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="text-muted small fw-bold mb-2">메모리 사용량</div>
-            <div class="h4 fw-bold mb-0" id="memoryUsage">-</div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="text-muted small fw-bold mb-2">DB 커넥션</div>
-            <div class="h4 fw-bold mb-0" id="dbConnections">-</div>
-        </div>
-    </div>
-</div>
-        <div class="row g-4 mb-5">
-            <div class="col-md-3">
-                <div class="stat-card" style="border-top-color: #ff6b6b;">
-                    <div class="text-muted small fw-bold mb-2">신고 및 문의</div>
-                    <div class="h4 fw-bold text-danger mb-0">[[${reportsAndInquiries ?: 20}]]건</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card" style="border-top-color: #4dabf7;">
-                    <div class="text-muted small fw-bold mb-2">광고 승인 대기</div>
-                    <div class="h4 fw-bold text-primary mb-0">[[${adInquiries ?: 2}]]건</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card" style="border-top-color: #51cf66;">
-                    <div class="text-muted small fw-bold mb-2">오늘 등록 상품</div>
-                    <div class="h4 fw-bold text-success mb-0">53건</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card" style="border-top-color: #fcc419;">
-                    <div class="text-muted small fw-bold mb-2">일간 거래액</div>
-                    <div class="h4 fw-bold mb-0">3,820,000</div>
+    <!-- 시스템 상태 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="sys-card">
+                <div class="icon-wrap" style="background:#e8f4ff; color:#3498db;"><i class="bi bi-lightning-charge-fill"></i></div>
+                <div>
+                    <div class="val" id="apiRequests">-</div>
+                    <div class="lbl">API 요청 수</div>
                 </div>
             </div>
         </div>
-<div class="row g-4 mb-4">
-    <div class="col-lg-7">
-        <div class="panel-box" style="height: 400px;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h6 class="fw-bold mb-0 text-primary">
-                    <i class="bi bi-person-plus-fill me-2"></i>사용자 유입 추이
-                </h6>
-                <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-outline-primary active" id="btnWeek" onclick="updateUserChart('week')">주간</button>
-                    <button type="button" class="btn btn-outline-primary" id="btnMonth" onclick="updateUserChart('month')">월간</button>
+        <div class="col-6 col-md-3">
+            <div class="sys-card">
+                <div class="icon-wrap" style="background:#fff0e8; color:#e67e22;"><i class="bi bi-cpu-fill"></i></div>
+                <div>
+                    <div class="val" id="cpuUsage">-</div>
+                    <div class="lbl">CPU 사용률</div>
                 </div>
-            </div>
-            <div class="chart-container" style="height: 300px;">
-                <canvas id="userChart"></canvas>
             </div>
         </div>
-    </div>
-
-    <div class="col-lg-5">
-        <div class="panel-box" style="height: 400px;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h6 class="fw-bold mb-0">📝 오늘 할 일</h6>
-                <button class="btn btn-sm btn-light border" onclick="addTodo()">+ 추가</button>
-            </div>
-            <div id="todoContainer" style="max-height: 300px; overflow-y: auto;">
-                <div class="todo-item d-flex align-items-center mb-2">
-                    <input type="checkbox" id="t1" class="form-check-input">
-                    <label for="t1" class="ms-2">미답변 문의내역 <b>30</b>건 확인</label>
+        <div class="col-6 col-md-3">
+            <div class="sys-card">
+                <div class="icon-wrap" style="background:#edfff4; color:#27ae60;"><i class="bi bi-memory"></i></div>
+                <div>
+                    <div class="val" id="memoryUsage">-</div>
+                    <div class="lbl">메모리 사용</div>
                 </div>
-                <div class="todo-item d-flex align-items-center mb-2">
-                    <input type="checkbox" id="t2" class="form-check-input">
-                    <label for="t2" class="ms-2">신규 광고 승인 요청 처리</label>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="sys-card">
+                <div class="icon-wrap" style="background:#f5eeff; color:#9b59b6;"><i class="bi bi-database-fill"></i></div>
+                <div>
+                    <div class="val" id="dbConnections">-</div>
+                    <div class="lbl">DB 커넥션</div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row g-4">
-    <div class="col-lg-7">
-        <div class="panel-box" style="min-height: 300px;">
-            <h6 class="fw-bold mb-4"><i class="bi bi-fire text-danger me-2"></i>인기 검색어 (24h)</h6>
-            <div class="table-responsive">
-                <table class="table table-hover table-sm mb-0" style="font-size: 0.9rem;">
-                    <thead class="table-light text-center">
-                        <tr>
-                            <th style="width: 80px;">순위</th>
-                            <th class="text-start">키워드</th>
-                            <th>검색수</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:if="${#lists.isEmpty(popularKeywords)}">
-                            <td colspan="3" class="text-center text-muted py-4">최근 검색 기록이 없습니다.</td>
-                        </tr>
-                        <tr th:each="search, stat : ${popularKeywords}" class="text-center align-middle">
-                            <td class="fw-bold" th:text="${stat.count}">1</td>
-                            <td class="text-start" th:text="${search.keyword}">패딩</td>
-                            <td>
-                                <span class="badge rounded-pill bg-light text-primary border" th:text="${search.count}">0</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!-- 주요 KPI 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="accent-bar" style="background:#e74c3c;"></div>
+                <div class="kpi-icon" style="background:#fdecea; color:#e74c3c;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="kpi-val text-danger" th:text="${reportsAndInquiries != null ? reportsAndInquiries : 0}">0</div>
+                <div class="kpi-lbl">신고 및 미처리 문의</div>
+                <a th:href="@{/admin/complaint}" class="kpi-link">바로가기 →</a>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="accent-bar" style="background:#3498db;"></div>
+                <div class="kpi-icon" style="background:#e8f4ff; color:#3498db;">
+                    <i class="bi bi-megaphone-fill"></i>
+                </div>
+                <div class="kpi-val text-primary" th:text="${adInquiries != null ? adInquiries : 0}">0</div>
+                <div class="kpi-lbl">광고 승인 대기</div>
+                <a th:href="@{/admin/contents}" class="kpi-link">바로가기 →</a>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="accent-bar" style="background:#27ae60;"></div>
+                <div class="kpi-icon" style="background:#edfff4; color:#27ae60;">
+                    <i class="bi bi-box-seam-fill"></i>
+                </div>
+                <div class="kpi-val text-success" th:text="${todayProducts != null ? todayProducts : 0}">0</div>
+                <div class="kpi-lbl">오늘 등록 상품</div>
+                <a th:href="@{/admin/product}" class="kpi-link">바로가기 →</a>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="accent-bar" style="background:#f39c12;"></div>
+                <div class="kpi-icon" style="background:#fff8e1; color:#f39c12;">
+                    <i class="bi bi-currency-exchange"></i>
+                </div>
+                <div class="kpi-val" id="tradeAmountVal"
+                     th:text="${dailyTradeAmount != null ? #numbers.formatInteger(dailyTradeAmount, 0, 'COMMA') + '원' : '0원'}">0원</div>
+                <div class="kpi-lbl">일간 거래액 (추정)</div>
+                <a th:href="@{/admin/transaction}" class="kpi-link">바로가기 →</a>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <div class="panel-box" style="min-height: 300px;">
-            <h6 class="fw-bold mb-4"><i class="bi bi-pie-chart-fill me-2 text-warning"></i>탈퇴 사유 분석</h6>
-            <div class="chart-container" style="height: 200px;">
-                <canvas id="exitChart"></canvas>
+    <!-- 가입자 추이 + 오늘 할 일 -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <div class="panel-box">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="panel-title"><i class="bi bi-person-plus-fill text-primary"></i>사용자 유입 추이</div>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary active" id="btnWeek" onclick="updateUserChart('week')">주간</button>
+                        <button type="button" class="btn btn-outline-primary" id="btnMonth" onclick="updateUserChart('month')">월간</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="userChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="panel-box">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="panel-title mb-0"><i class="bi bi-check2-square text-success"></i>오늘 할 일</div>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="addTodo()">
+                        <i class="bi bi-plus"></i> 추가
+                    </button>
+                </div>
+                <div id="todoContainer" style="max-height: 270px; overflow-y: auto;">
+                    <div class="todo-item" id="todo-1">
+                        <input type="checkbox" id="t1" class="form-check-input flex-shrink-0">
+                        <label for="t1" class="todo-label">미답변 문의내역 확인</label>
+                        <button class="todo-del" onclick="deleteTodo('todo-1')" title="삭제">×</button>
+                    </div>
+                    <div class="todo-item" id="todo-2">
+                        <input type="checkbox" id="t2" class="form-check-input flex-shrink-0">
+                        <label for="t2" class="todo-label">신규 광고 승인 요청 처리</label>
+                        <button class="todo-del" onclick="deleteTodo('todo-2')" title="삭제">×</button>
+                    </div>
+                </div>
+                <div id="todoEmpty" class="text-center text-muted py-3 small" style="display:none;">
+                    <i class="bi bi-emoji-smile"></i> 오늘 할 일이 없습니다!
+                </div>
             </div>
         </div>
     </div>
-</div>
-    </main>
 
-    <script th:inline="javascript">
-    
-    const base = "/finalProject_3/actuator/metrics";
+    <!-- 인기 검색어 + 탈퇴 사유 -->
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="panel-box">
+                <div class="panel-title"><i class="bi bi-fire text-danger"></i>인기 검색어 (24h)</div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0" style="font-size: 0.88rem;">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:60px;">순위</th>
+                                <th class="text-start">키워드</th>
+                                <th style="width:80px;">검색수</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(popularKeywords)}">
+                                <td colspan="3" class="text-center text-muted py-4">최근 검색 기록이 없습니다.</td>
+                            </tr>
+                            <tr th:each="s, st : ${popularKeywords}" class="align-middle">
+                                <td class="text-center">
+                                    <span th:classappend="${st.count == 1} ? 'rank-1' : (${st.count == 2} ? 'rank-2' : (${st.count == 3} ? 'rank-3' : 'rank-n'))"
+                                          class="rank-badge" th:text="${st.count}">1</span>
+                                </td>
+                                <td th:text="${s.keyword}">키워드</td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-primary border" th:text="${s.count}">0</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
- // API 요청수
- fetch(base + "/http.server.requests", {
-     method: "GET",
-     credentials: "same-origin"
- })
- .then(res => res.json())
- .then(data => {
-     const count = data.measurements.find(m => m.statistic === "COUNT").value;
-     document.getElementById("apiRequests").innerText = count;
- });
+        <div class="col-lg-5">
+            <div class="panel-box">
+                <div class="panel-title"><i class="bi bi-pie-chart-fill text-warning"></i>탈퇴 사유 분석</div>
+                <div class="chart-sm">
+                    <canvas id="exitChart"></canvas>
+                </div>
+                <div id="exitNoData" class="text-center text-muted small py-2" style="display:none;">
+                    탈퇴 회원이 없습니다.
+                </div>
+            </div>
+        </div>
+    </div>
 
- // CPU
- fetch(base + "/system.cpu.usage", {
-     credentials: "same-origin"
- })
- .then(res => res.json())
- .then(data => {
-     const cpu = data.measurements[0].value * 100;
-     document.getElementById("cpuUsage").innerText = cpu.toFixed(1) + "%";
- });
+</main>
 
- // 메모리
- fetch(base + "/jvm.memory.used", {
-     credentials: "same-origin"
- })
- .then(res => res.json())
- .then(data => {
-     const mem = data.measurements[0].value / (1024*1024);
-     document.getElementById("memoryUsage").innerText = mem.toFixed(0) + " MB";
- });
-
- // DB connection
- fetch(base + "/hikaricp.connections.active", {
-     credentials: "same-origin"
- })
- .then(res => res.json())
- .then(data => {
-     const db = data.measurements[0].value;
-     document.getElementById("dbConnections").innerText = db;
- });
-        // 가입자 차트 (블루)
-        let userChart; // 차트 인스턴스 전역 변수
-
-// 차트 생성 및 업데이트 함수
-function renderUserChart(labels, data) {
-    const ctx = document.getElementById('userChart').getContext('2d');
-    
-    // 세련된 그라데이션 생성
-    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(77, 171, 247, 0.8)'); // 상단 블루
-    gradient.addColorStop(1, 'rgba(77, 171, 247, 0.1)'); // 하단 투명
-
-    // 기존 차트가 있으면 삭제 (갱신을 위함)
-    if (userChart) {
-        userChart.destroy();
+<script th:inline="javascript">
+    // 실시간 시계
+    function updateClock() {
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('liveTime').innerText =
+            `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-    userChart = new Chart(ctx, {
-        type: 'bar', 
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '신규 가입',
-                data: data,
-                backgroundColor: gradient,
-                borderColor: '#4dabf7',
-                borderWidth: 2,
-                borderRadius: 5,
-                barPercentage: 0.5
-            }]
-        },
-        options: { 
-            maintainAspectRatio: false, 
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#f5f5f5' } },
-                x: { grid: { display: false } }
-            },
-            animation: {
-                duration: 800,
-                easing: 'easeOutQuart'
-            }
-        }
+    // 시스템 메트릭 (actuator)
+    const base = /*[[@{/admin}]]*/ '/admin';
+    const actuator = "/finalProject_3/actuator/metrics";
+    [
+        { url: actuator + "/http.server.requests", el: "apiRequests", fn: d => Math.round(d.measurements.find(m=>m.statistic==="COUNT").value) },
+        { url: actuator + "/system.cpu.usage",     el: "cpuUsage",    fn: d => (d.measurements[0].value*100).toFixed(1) + "%" },
+        { url: actuator + "/jvm.memory.used",      el: "memoryUsage", fn: d => (d.measurements[0].value/(1024*1024)).toFixed(0) + " MB" },
+        { url: actuator + "/hikaricp.connections.active", el: "dbConnections", fn: d => d.measurements[0].value }
+    ].forEach(({url, el, fn}) => {
+        fetch(url, {credentials:"same-origin"})
+            .then(r => r.ok ? r.json() : null)
+            .then(d => { if(d) document.getElementById(el).innerText = fn(d); })
+            .catch(() => {});
     });
-}
 
-// 버튼 클릭 시 데이터를 가져오는 함수
-function updateUserChart(type) {
-    // 버튼 활성화 상태 변경
-    if(type === 'week') {
-        document.getElementById('btnWeek').classList.add('active');
-        document.getElementById('btnMonth').classList.remove('active');
-    } else {
-        document.getElementById('btnMonth').classList.add('active');
-        document.getElementById('btnWeek').classList.remove('active');
+    // 가입자 차트
+    let userChart;
+    function renderUserChart(labels, data) {
+        const canvas = document.getElementById('userChart');
+        const ctx = canvas.getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 240);
+        grad.addColorStop(0, 'rgba(52,152,219,0.6)');
+        grad.addColorStop(1, 'rgba(52,152,219,0.05)');
+        if (userChart) userChart.destroy();
+        userChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '신규 가입',
+                    data: data,
+                    backgroundColor: grad,
+                    borderColor: '#3498db',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    barPercentage: 0.55
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                },
+                animation: { duration: 600, easing: 'easeOutQuart' }
+            }
+        });
     }
 
-    // 서버 API 호출
-   fetch(`/finalProject_3/admin/user-stats?type=${type}`)
-        .then(res => res.json())
-        .then(data => {
-            // 서버에서 받은 labels와 data로 차트 렌더링
-            renderUserChart(data.labels, data.data);
-        })
-        .catch(err => {
-            console.error("데이터 로드 실패:", err);
-            // 에러 시 임시 더미 데이터 (테스트용)
-            if(type === 'week') renderUserChart(['월','화','수','목','금','토','일'], [15, 25, 12, 40, 30, 60, 45]);
-            else renderUserChart(['10월','11월','12월','1월','2월','3월'], [300, 450, 200, 550, 480, 600]);
-        });
-}
+    function updateUserChart(type) {
+        document.getElementById('btnWeek').classList.toggle('active', type === 'week');
+        document.getElementById('btnMonth').classList.toggle('active', type === 'month');
+        fetch(`/finalProject_3/admin/user-stats?type=${type}`)
+            .then(r => r.json())
+            .then(d => renderUserChart(d.labels, d.data))
+            .catch(() => {
+                if(type==='week') renderUserChart(['월','화','수','목','금','토','일'],[0,0,0,0,0,0,0]);
+                else renderUserChart(['10월','11월','12월','1월','2월','3월'],[0,0,0,0,0,0]);
+            });
+    }
+    document.addEventListener('DOMContentLoaded', () => updateUserChart('week'));
 
-// 페이지 로드 시 최초 실행 (주간)
-document.addEventListener('DOMContentLoaded', () => {
-    updateUserChart('week');
-});
-
-        // 탈퇴 차트
+    // 탈퇴 사유 차트 (실제 DB 데이터)
+    const withdrawStats = /*[[${withdrawStats}]]*/ {labels:[], data:[]};
+    if (withdrawStats && withdrawStats.labels && withdrawStats.labels.length > 0) {
         new Chart(document.getElementById('exitChart'), {
             type: 'doughnut',
             data: {
-                labels: ['불편', '부족', '비쌈', '기타'],
+                labels: withdrawStats.labels,
                 datasets: [{
-                    data: [35, 25, 20, 20],
-                    backgroundColor: ['#4dabf7', '#ff6b6b', '#51cf66', '#fcc419'],
-                    borderWidth: 0
+                    data: withdrawStats.data,
+                    backgroundColor: ['#3498db','#e74c3c','#2ecc71','#f39c12','#9b59b6','#1abc9c'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }]
             },
-            options: { maintainAspectRatio: false, cutout: '70%' }
+            options: {
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } }
+                }
+            }
         });
+    } else {
+        document.getElementById('exitChart').style.display = 'none';
+        document.getElementById('exitNoData').style.display = 'block';
+    }
 
-        function addTodo() {
-            const text = prompt("할 일을 입력하세요.");
-            if (!text) return;
-            const id = Date.now();
-            const html = `<div class="todo-item d-flex align-items-center mb-2"><input type="checkbox" id="${id}" class="form-check-input"><label for="${id}" class="ms-2">${text}</label></div>`;
-            document.getElementById('todoContainer').insertAdjacentHTML('beforeend', html);
+    // Todo: 삭제
+    function deleteTodo(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.transition = 'opacity 0.2s';
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.remove();
+                checkTodoEmpty();
+            }, 200);
         }
-    </script>
+    }
+    function checkTodoEmpty() {
+        const items = document.querySelectorAll('#todoContainer .todo-item');
+        document.getElementById('todoEmpty').style.display = items.length === 0 ? 'block' : 'none';
+    }
+
+    // Todo: 추가
+    let todoCount = 100;
+    function addTodo() {
+        const text = prompt("할 일을 입력하세요.");
+        if (!text || !text.trim()) return;
+        todoCount++;
+        const id = `todo-${todoCount}`;
+        const html = `
+            <div class="todo-item" id="${id}">
+                <input type="checkbox" id="tc${todoCount}" class="form-check-input flex-shrink-0">
+                <label for="tc${todoCount}" class="todo-label">${text.trim()}</label>
+                <button class="todo-del" onclick="deleteTodo('${id}')" title="삭제">×</button>
+            </div>`;
+        document.getElementById('todoContainer').insertAdjacentHTML('beforeend', html);
+        document.getElementById('todoEmpty').style.display = 'none';
+    }
+</script>
 </body>
 </html>

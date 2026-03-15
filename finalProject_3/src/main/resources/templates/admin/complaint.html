@@ -1,89 +1,74 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <title>신고 내역 관리</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
     <style>
-        body { background: #f8f9fc; font-family: 'Pretendard', sans-serif; }
-        .main-content { flex: 1; padding: 25px; }
-        .dashboard-card { background: white; border-radius: 12px; box-shadow: 0 0.15rem 1.75rem rgba(58, 59, 69, 0.1); padding: 20px; margin-bottom: 24px; }
-
-        /* 신고 유형별 뱃지 스타일 */
-        .badge-chat { background-color: #4e73df; }    /* 채팅 - 파랑 */
-        .badge-trade { background-color: #1cc88a; }   /* 거래 - 초록 */
-        .badge-product { background-color: #36b9cc; } /* 상품 - 하늘 */
-        .badge-review { background-color: #f6c23e; }  /* 리뷰 - 노랑 */
-        
-        /* 처리 상태 */
-        .status-unsolved { color: #e74a3b; font-weight: bold; } /* 미처리 - 빨강 */
-        .status-solved { color: #858796; }                      /* 처리완료 - 회색 */
-
+        .status-pending { color: #e74a3b; font-weight: bold; }
+        .status-solved { color: #858796; }
         .text-truncate-custom { max-width: 200px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .report-stat-card { background: white; border-radius: 12px; padding: 20px 24px; border-left: 5px solid; box-shadow: 0 0.15rem 1.75rem rgba(58,59,69,.08); }
+        .report-stat-card.blue { border-color: #4e73df; }
+        .report-stat-card.orange { border-color: #f6c23e; }
+        .report-stat-card.red { border-color: #e74a3b; }
+        .report-stat-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #858796; letter-spacing: .05em; }
+        .report-stat-value { font-size: 1.5rem; font-weight: 800; color: #2e3750; }
     </style>
 </head>
-
 <body class="d-flex">
-
     <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
-
     <main class="main-content">
         <div class="container-fluid">
             <h4 class="fw-bold mb-4">신고 내역 관리</h4>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="dashboard-card border-bottom border-primary border-4 text-center">
-                        <div class="small text-muted">채팅 신고</div>
-                        <div class="h4 fw-bold mb-0">5건</div>
+            <!-- 신고 유형 대시보드 카드 -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="report-stat-card blue">
+                        <div class="report-stat-label mb-2"><i class="bi bi-box-seam me-1"></i>상품 신고</div>
+                        <div class="report-stat-value" th:text="${reportStats != null ? reportStats.productReportCount : 0}">0</div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="dashboard-card border-bottom border-success border-4 text-center">
-                        <div class="small text-muted">거래 신고</div>
-                        <div class="h4 fw-bold mb-0">2건</div>
+                <div class="col-md-4">
+                    <div class="report-stat-card orange">
+                        <div class="report-stat-label mb-2"><i class="bi bi-chat-dots me-1"></i>채팅 신고</div>
+                        <div class="report-stat-value" th:text="${reportStats != null ? reportStats.chatReportCount : 0}">0</div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="dashboard-card border-bottom border-info border-4 text-center">
-                        <div class="small text-muted">상품 신고</div>
-                        <div class="h4 fw-bold mb-0">8건</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="dashboard-card border-bottom border-warning border-4 text-center">
-                        <div class="small text-muted">리뷰 신고</div>
-                        <div class="h4 fw-bold mb-0">3건</div>
+                <div class="col-md-4">
+                    <div class="report-stat-card red">
+                        <div class="report-stat-label mb-2"><i class="bi bi-exclamation-triangle me-1"></i>미처리 신고</div>
+                        <div class="report-stat-value text-danger" th:text="${reportStats != null ? reportStats.pendingReportCount : 0}">0</div>
                     </div>
                 </div>
             </div>
 
-            <div class="dashboard-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0">전체 신고 목록</h5>
-                    <div class="d-flex gap-2">
-                        <select id="typeFilter" class="form-select form-select-sm" style="width: 150px;">
-                            <option value="ALL">모든 유형</option>
-                            <option value="CHAT">채팅 신고</option>
-                            <option value="TRADE">거래 신고</option>
-                            <option value="PRODUCT">상품 신고</option>
-                            <option value="REVIEW">리뷰 신고</option>
-                        </select>
-                    </div>
-                </div>
+            <!-- 필터 폼 -->
+            <form method="get" th:action="@{/admin/complaint}" class="mb-3 d-flex gap-2 align-items-center">
+                <label class="fw-bold me-2">유형 필터:</label>
+                <select name="type" class="form-select form-select-sm" style="width:160px;" onchange="this.form.submit()">
+                    <option value="ALL" th:selected="${selectedType == 'ALL'}">전체</option>
+                    <option value="채팅" th:selected="${selectedType == '채팅'}">채팅 신고</option>
+                    <option value="거래" th:selected="${selectedType == '거래'}">거래 신고</option>
+                    <option value="상품" th:selected="${selectedType == '상품'}">상품 신고</option>
+                    <option value="리뷰" th:selected="${selectedType == '리뷰'}">리뷰 신고</option>
+                </select>
+                <span class="text-muted small">전체 <strong th:text="${totalCount}"></strong>건</span>
+            </form>
 
+            <div class="dashboard-card">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
+                                <th>신고번호</th>
                                 <th>유형</th>
+                                <th>세부유형</th>
                                 <th>신고자</th>
-                                <th>피신고자(대상)</th>
+                                <th>피신고자</th>
                                 <th>신고 사유</th>
                                 <th>날짜</th>
                                 <th>상태</th>
@@ -91,79 +76,106 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr th:if="${#lists.isEmpty(reportList)}">
+                                <td colspan="9" class="text-center text-muted">신고 내역이 없습니다.</td>
+                            </tr>
                             <tr th:each="report : ${reportList}">
+                                <td th:text="${report.reportId}"></td>
+                                <td th:text="${report.mainCategory}"></td>
+                                <td th:text="${report.typeName}"></td>
+                                <td th:text="${report.reporterEmail}"></td>
+                                <td th:text="${report.targetEmail}"></td>
                                 <td>
-                                    <span class="badge" 
-                                          th:classappend="${report.type == 'CHAT' ? 'badge-chat' : 
-                                                           (report.type == 'TRADE' ? 'badge-trade' : 
-                                                           (report.type == 'PRODUCT' ? 'badge-product' : 'badge-review'))}"
-                                          th:text="${report.typeText}">채팅</span>
+                                    <span class="text-truncate-custom" th:text="${report.reportDetail}"></span>
                                 </td>
-                                <td th:text="${report.reporterId}">user01</td>
-                                <td th:text="${report.targetId}">bad_user</td>
+                                <td th:text="${#dates.format(report.reportDate, 'yyyy-MM-dd')}"></td>
                                 <td>
-                                    <span class="text-truncate-custom" th:text="${report.reason}">
-                                        욕설 및 비방을 지속적으로 합니다.
-                                    </span>
-                                </td>
-                                <td th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}">03-08 22:10</td>
-                                <td>
-                                    <span th:class="${report.processStatus == 'PENDING' ? 'status-unsolved' : 'status-solved'}"
-                                          th:text="${report.processStatus == 'PENDING' ? '처리대기' : '처리완료'}">
-                                        처리대기
-                                    </span>
+                                    <span th:class="${report.reportStatus == '처리완료' or report.reportStatus == '기각' ? 'status-solved' : 'status-pending'}"
+                                          th:text="${report.reportStatus}"></span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-dark" 
-                                            th:attr="onclick='openReportModal(' + ${report.id} + ')'">
-                                        조사하기
-                                    </button>
+                                    <button class="btn btn-sm btn-outline-dark"
+                                            th:attr="data-id=${report.reportId},
+                                                     data-category=${report.mainCategory},
+                                                     data-detail=${report.reportDetail},
+                                                     data-status=${report.reportStatus}"
+                                            onclick="openReportModal(this)">처리</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <!-- 페이징 -->
+                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mt-3">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/complaint(page=${currentPage-1}, type=${selectedType})}">이전</a>
+                        </li>
+                        <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
+                            th:classappend="${p == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/complaint(page=${p}, type=${selectedType})}" th:text="${p}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/complaint(page=${currentPage+1}, type=${selectedType})}">다음</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </main>
 
+    <!-- 처리 모달 -->
     <div class="modal fade" id="reportModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">신고 상세 조사</h5>
+                    <h5 class="modal-title fw-bold">신고 처리</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>신고 유형:</strong> <span id="modalType"></span></p>
-                    <p><strong>상세 사유:</strong></p>
-                    <div id="modalReason" class="p-3 bg-light rounded mb-3"></div>
-                    
-                    <label class="form-label fw-bold">처리 결과 선택</label>
-                    <select class="form-select mb-3">
-                        <option value="warn">경고 조치</option>
-                        <option value="suspend">계정 정지</option>
-                        <option value="dismiss">신고 기각 (허위 신고)</option>
+                    <p><strong>유형:</strong> <span id="modalCategory"></span></p>
+                    <p><strong>사유:</strong></p>
+                    <div id="modalDetail" class="p-3 bg-light rounded mb-3"></div>
+                    <label class="form-label fw-bold">처리 상태</label>
+                    <select id="modalStatus" class="form-select mb-2">
+                        <option value="처리대기">처리대기</option>
+                        <option value="처리완료">처리완료</option>
+                        <option value="기각">기각</option>
                     </select>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger">처리 완료</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger" onclick="processReport()">처리 완료</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:inline="javascript">
-    const reports = /*[[${reportList}]]*/ [];
-        
-        function openReportModal(id) {
-            const report = reports.find(r => r.id === id);
-            if(report) {
-                document.getElementById('modalType').innerText = report.typeText;
-                document.getElementById('modalReason').innerText = report.reason;
-                new bootstrap.Modal(document.getElementById('reportModal')).show();
-            }
+    <script>
+        let currentReportId = null;
+
+        function openReportModal(btn) {
+            currentReportId = btn.dataset.id;
+            document.getElementById('modalCategory').innerText = btn.dataset.category;
+            document.getElementById('modalDetail').innerText = btn.dataset.detail;
+            document.getElementById('modalStatus').value = btn.dataset.status || '처리대기';
+            new bootstrap.Modal(document.getElementById('reportModal')).show();
+        }
+
+        function processReport() {
+            const status = document.getElementById('modalStatus').value;
+            fetch('/admin/complaint/process', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'reportId=' + currentReportId + '&status=' + encodeURIComponent(status)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) { alert('처리되었습니다.'); location.reload(); }
+                else alert('처리 실패');
+            });
         }
     </script>
 </body>
