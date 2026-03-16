@@ -370,7 +370,22 @@ public class AdminController {
 
         return "ok";
     }
-    
+
+    @PostMapping("/ad/withdraw")
+    @ResponseBody
+    public String withdrawAd(@RequestParam("adId") Long adId,
+            @RequestParam("reason") String reason) {
+        adminService.withdrawAd(adId, reason);
+        return "ok";
+    }
+
+    @PostMapping("/banner/update")
+    @ResponseBody
+    public String updateBanner(@RequestParam("text") String text) {
+        adminService.updateBanner(text);
+        return "ok";
+    }
+
  // ---------------------------------------------------------
     // [추가할 부분] 달력 데이터를 만드는 로직 (에러 해결용)
     // ---------------------------------------------------------

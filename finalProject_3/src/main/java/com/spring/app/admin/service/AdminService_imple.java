@@ -180,9 +180,31 @@ public class AdminService_imple implements AdminService {
 		@Override
 		public void rejectAd(Long adId, String reason) {
 		dao.rejectAd(adId, reason);
-			
+
 		}
-		//예정광고 있는지 확인 
+
+		@Override
+		public String getBanner() {
+		    return dao.getBanner();
+		}
+
+		@Override
+		public void updateBanner(String text) {
+		    dao.updateBanner(text);
+		}
+
+		//광고 조기 철회
+		@Override
+		public void withdrawAd(Long adId, String reason) {
+		dao.withdrawAd(adId, reason);
+		}
+
+		@Override
+		public List<AdDTO> getActiveAds() {
+		    return dao.getActiveAds();
+		}
+
+		//예정광고 있는지 확인
 		@Override
 		public List<AdDTO> getConflictAds(LocalDate startDate, LocalDate endDate, Long adId) {
 

@@ -38,60 +38,35 @@
 
             <div class="best-viewport" id="bestViewport">
               <div class="best-track" id="bestTrack">
-                <article class="best-card">
+                <!-- 승인된 광고가 있을 때 -->
+                <article class="best-card ad-card" th:each="ad : ${activeAds}">
                   <div class="best-card-inner">
-                    <a class="best-card-link" href="#">
-                      <div class="best-event">
-                        <div class="best-event-title">3월 한정 봄맞이 할인 이벤트</div>
+                    <img th:if="${ad.filePath != null and !#strings.isEmpty(ad.filePath)}"
+                         th:src="@{${ad.filePath}}"
+                         alt=""
+                         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+                    <a class="best-card-link" th:href="@{/ad/{id}(id=${ad.adId})}">
+                      <div class="best-event" style="position:relative;z-index:1;">
+                        <div class="best-event-title" th:text="${ad.brandName}"></div>
                         <span class="best-event-btn">자세히보기 <i class="fa-solid fa-arrow-right"></i></span>
                       </div>
                     </a>
                   </div>
                 </article>
 
-                <article class="best-card">
-                  <div class="best-card-inner">
-                    <a class="best-card-link" href="#">
-                      <div class="best-event">
-                        <div class="best-event-title">신규 가입자 2,000P 지급</div>
-                        <span class="best-event-btn">자세히보기 <i class="fa-solid fa-arrow-right"></i></span>
-                      </div>
-                    </a>
-                  </div>
-                </article>
-
-                <article class="best-card">
-                  <div class="best-card-inner">
-                    <a class="best-card-link" href="#">
-                      <div class="best-event">
-                        <div class="best-event-title">경매 수수료 0원 프로모션</div>
-                        <span class="best-event-btn">자세히보기 <i class="fa-solid fa-arrow-right"></i></span>
-                      </div>
-                    </a>
-                  </div>
-                </article>
-
-                <article class="best-card">
-                  <div class="best-card-inner">
-                    <a class="best-card-link" href="#">
-                      <div class="best-event">
-                        <div class="best-event-title">무료나눔 참여하면 쿠폰 증정</div>
-                        <span class="best-event-btn">자세히보기 <i class="fa-solid fa-arrow-right"></i></span>
-                      </div>
-                    </a>
-                  </div>
-                </article>
-
-                <article class="best-card">
-                  <div class="best-card-inner">
-                    <a class="best-card-link" href="#">
-                      <div class="best-event">
-                        <div class="best-event-title">이번 주 BEST 판매자 혜택</div>
-                        <span class="best-event-btn">자세히보기 <i class="fa-solid fa-arrow-right"></i></span>
-                      </div>
-                    </a>
-                  </div>
-                </article>
+                <!-- 광고가 없을 때 기본 카드 표시 -->
+                <th:block th:if="${#lists.isEmpty(activeAds)}">
+                  <article class="best-card">
+                    <div class="best-card-inner">
+                      <a class="best-card-link" href="#">
+                        <div class="best-event">
+                          <div class="best-event-title">진행 중인 광고가 없습니다</div>
+                          <span class="best-event-btn">광고 신청하기 <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                      </a>
+                    </div>
+                  </article>
+                </th:block>
               </div>
             </div>
           </div>

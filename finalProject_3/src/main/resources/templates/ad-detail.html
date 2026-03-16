@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="ko">
+<head>
+  <style>
+    .ad-detail-wrap {
+      max-width: 760px;
+      margin: 60px auto 80px;
+      padding: 0 20px;
+    }
+    .ad-detail-img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      margin-bottom: 32px;
+    }
+    .ad-detail-brand {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 12px;
+    }
+    .ad-detail-period {
+      font-size: 0.88rem;
+      color: #999;
+      margin-bottom: 24px;
+    }
+    .ad-detail-content {
+      font-size: 1rem;
+      color: #444;
+      line-height: 1.85;
+      white-space: pre-line;
+    }
+    .ad-detail-back {
+      display: inline-block;
+      margin-top: 40px;
+      padding: 10px 24px;
+      background: #333;
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .ad-detail-back:hover { background: #555; }
+  </style>
+</head>
+
+<body>
+<main>
+  <div class="ad-detail-wrap">
+    <!-- 브랜드명 (제목) -->
+    <div class="ad-detail-brand" th:text="${ad.brandName}"></div>
+
+    <!-- 이미지 -->
+    <img class="ad-detail-img"
+         th:if="${ad.filePath != null and !#strings.isEmpty(ad.filePath)}"
+         th:src="@{${ad.filePath}}"
+         th:alt="${ad.brandName}">
+
+    <!-- 광고 기간 -->
+    <div class="ad-detail-period"
+         th:text="|광고 기간: ${#temporals.format(ad.startDate, 'yyyy.MM.dd')} ~ ${#temporals.format(ad.endDate, 'yyyy.MM.dd')}|">
+    </div>
+
+    <!-- 광고 내용 -->
+    <div class="ad-detail-content" th:text="${ad.content}"></div>
+
+    <a class="ad-detail-back" th:href="@{/}">← 메인으로</a>
+  </div>
+</main>
+<script></script>
+</html>

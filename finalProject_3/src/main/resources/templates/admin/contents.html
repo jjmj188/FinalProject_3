@@ -63,6 +63,7 @@
     .badge-confirm { background:#e8faf4; color:#1cc88a; padding:3px 10px; border-radius:6px; font-weight:700; font-size:.78rem; }
     .badge-wait    { background:#fff9e6; color:#d4a200; padding:3px 10px; border-radius:6px; font-weight:700; font-size:.78rem; }
     .badge-reject  { background:#fff2f1; color:#e74a3b; padding:3px 10px; border-radius:6px; font-weight:700; font-size:.78rem; }
+    .badge-cancel { background:#fd7e14; color:#fff; padding:3px 10px; border-radius:20px; font-size:.78rem; font-weight:600; }
 
     /* 테이블 */
     .ad-table th  { font-size:11px; text-transform:uppercase; color:#858796; letter-spacing:.05em; font-weight:700; }
@@ -107,7 +108,7 @@
 
     <!-- 요약 통계 카드 -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col">
             <div class="stat-card blue">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -118,7 +119,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col">
             <div class="stat-card yellow">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -129,7 +130,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col">
             <div class="stat-card green">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -140,7 +141,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col">
             <div class="stat-card red">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -148,6 +149,38 @@
                         <div class="stat-value" id="statReject">-</div>
                     </div>
                     <i class="bi bi-x-circle stat-icon text-danger"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card" style="border-left:5px solid #fd7e14;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label mb-1">조기철회</div>
+                        <div class="stat-value" id="statCancel">-</div>
+                    </div>
+                    <i class="bi bi-stop-circle stat-icon" style="color:#fd7e14;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상단 배너 관리 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="section-card">
+                <div class="section-header">
+                    <h6><i class="bi bi-megaphone me-2 text-warning"></i>상단 배너 관리</h6>
+                </div>
+                <div class="section-body">
+                    <div class="d-flex gap-2">
+                        <input type="text" id="bannerInput" class="form-control"
+                               th:value="${promoBanner}"
+                               placeholder="배너 문구를 입력하세요">
+                        <button class="btn btn-warning fw-bold px-4" onclick="saveBanner()" style="white-space:nowrap;">
+                            <i class="bi bi-save me-1"></i>저장
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -243,9 +276,11 @@
                                     <td class="amount-cell" th:text="${#numbers.formatInteger(ad.amount, 3, 'COMMA')} + '원'"></td>
                                     <td>
                                         <span th:class="${ad.status == 'CONFIRM' ? 'badge-confirm' :
-                                                          (ad.status == 'WAIT'    ? 'badge-wait'    : 'badge-reject')}"
+                                                          (ad.status == 'WAIT'   ? 'badge-wait'   :
+                                                          (ad.status == 'CANCEL' ? 'badge-cancel' : 'badge-reject'))}"
                                               th:text="${ad.status == 'CONFIRM' ? '확정' :
-                                                         (ad.status == 'WAIT'    ? '대기' : '반려')}"></span>
+                                                         (ad.status == 'WAIT'   ? '대기' :
+                                                         (ad.status == 'CANCEL' ? '조기철회' : '반려'))}"></span>
                                     </td>
                                     <td class="pe-4">
                                         <button class="detail-btn"
@@ -352,6 +387,7 @@
 
                 // 확정/반려 시 액션 잠금
                 const actionArea      = document.getElementById('actionArea');
+                const withdrawArea    = document.getElementById('withdrawArea');
                 const statusCompleted = document.getElementById('statusCompleted');
                 const statusIcon      = document.getElementById('statusIcon');
                 const statusText      = document.getElementById('statusText');
@@ -362,6 +398,7 @@
 
                 if (ad.status === 'CONFIRM') {
                     actionArea.classList.add('d-none');
+                    if (withdrawArea) withdrawArea.classList.remove('d-none');
                     rejectReasonBox.classList.add('d-none');
                     statusCompleted.classList.remove('d-none');
                     statusCompleted.style.background = '#e8faf4';
@@ -369,8 +406,24 @@
                     statusText.textContent  = '광고 확정 완료';
                     statusText.style.color  = '#1cc88a';
                     processedAtText.textContent = ad.approvedAt ? '승인일시: ' + ad.approvedAt : '';
+                } else if (ad.status === 'CANCEL') {
+                    actionArea.classList.add('d-none');
+                    if (withdrawArea) withdrawArea.classList.add('d-none');
+                    statusCompleted.classList.remove('d-none');
+                    statusCompleted.style.background = '#fff8e1';
+                    statusIcon.textContent  = '🚫';
+                    statusText.textContent  = '조기 철회됨';
+                    statusText.style.color  = '#f6c23e';
+                    processedAtText.textContent = '';
+                    if (ad.rejectedReason) {
+                        rejectReasonBox.classList.remove('d-none');
+                        rejectReasonText.textContent = ad.rejectedReason;
+                    } else {
+                        rejectReasonBox.classList.add('d-none');
+                    }
                 } else if (ad.status === 'REJECT') {
                     actionArea.classList.add('d-none');
+                    if (withdrawArea) withdrawArea.classList.add('d-none');
                     statusCompleted.classList.remove('d-none');
                     statusCompleted.style.background = '#fff2f1';
                     statusIcon.textContent  = '❌';
@@ -385,6 +438,7 @@
                     }
                 } else {
                     actionArea.classList.remove('d-none');
+                    if (withdrawArea) withdrawArea.classList.add('d-none');
                     statusCompleted.classList.add('d-none');
                     rejectReasonBox.classList.add('d-none');
                     document.getElementById('mailTitle').value   = '';
@@ -409,10 +463,12 @@
         const waiting = ads.filter(a => a.status === 'WAIT').length;
         const confirm = ads.filter(a => a.status === 'CONFIRM').length;
         const reject  = ads.filter(a => a.status === 'REJECT').length;
+        const cancel  = ads.filter(a => a.status === 'CANCEL').length;
         document.getElementById('statTotal').textContent   = total;
         document.getElementById('statWait').textContent    = waiting;
         document.getElementById('statConfirm').textContent = confirm;
         document.getElementById('statReject').textContent  = reject;
+        document.getElementById('statCancel').textContent  = cancel;
         document.getElementById('confirmCount').textContent = confirm;
 
         // 진행중 리스트
@@ -487,6 +543,28 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'adId=' + selectedAdId
+        }).then(() => location.reload());
+    }
+
+    function saveBanner() {
+        const text = document.getElementById('bannerInput').value.trim();
+        if (!text) return alert('배너 문구를 입력해주세요.');
+        fetch(base + '/admin/banner/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'text=' + encodeURIComponent(text)
+        }).then(res => res.text()).then(() => alert('배너가 저장되었습니다.'));
+    }
+
+    function withdrawAd() {
+        if (!selectedAdId) return alert('광고를 선택해주세요.');
+        const reason = document.getElementById('withdrawReason').value.trim();
+        if (!reason) return alert('철회 사유를 입력해주세요.');
+        if (!confirm('광고를 조기 철회하시겠습니까? 메인 페이지에서 즉시 내려갑니다.')) return;
+        fetch(base + '/admin/ad/withdraw', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'adId=' + selectedAdId + '&reason=' + encodeURIComponent(reason)
         }).then(() => location.reload());
     }
 

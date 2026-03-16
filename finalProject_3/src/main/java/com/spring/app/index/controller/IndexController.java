@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.spring.app.admin.service.AdminService;
 import com.spring.app.index.service.IndexService;
 import com.spring.app.product.domain.ProductDTO;
 
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class IndexController {
 
     private final IndexService service;
+    private final AdminService adminService;
 
     @GetMapping("/")
     public String index(Model model, Authentication authentication) {
@@ -35,6 +37,7 @@ public class IndexController {
         model.addAttribute("recommendList", recommendList);
         model.addAttribute("freeList", freeList);
         model.addAttribute("isLogin", isLogin);
+        model.addAttribute("activeAds", adminService.getActiveAds());
 
         return "index";
     }

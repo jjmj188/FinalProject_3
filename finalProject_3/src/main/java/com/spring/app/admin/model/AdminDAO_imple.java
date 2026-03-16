@@ -169,6 +169,30 @@ public class AdminDAO_imple implements AdminDAO {
 	}
 
 	@Override
+	public String getBanner() {
+	    return sqlsession.selectOne(admin + ".getBanner");
+	}
+
+	@Override
+	public void updateBanner(String text) {
+	    sqlsession.update(admin + ".updateBanner", text);
+	}
+
+	//광고 조기 철회
+	@Override
+	public void withdrawAd(Long adId, String reason) {
+		Map<String,Object> map = new HashMap<>();
+		map.put("adId", adId);
+		map.put("reason", reason);
+		sqlsession.update(admin + ".withdrawAd", map);
+	}
+
+	@Override
+	public List<AdDTO> getActiveAds() {
+	    return sqlsession.selectList(admin + ".getActiveAds");
+	}
+
+	@Override
 	public List<AdDTO> getConflictAds(Map<String,Object> map) {
 	    return sqlsession.selectList("admin.getConflictAds", map);
 	}

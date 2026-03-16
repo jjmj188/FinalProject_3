@@ -69,7 +69,14 @@ public interface AdminDAO {
 	void approveAd(Long adId);
 
 	void rejectAd(Long adId, String reason);
-	 
+
+	void withdrawAd(Long adId, String reason);
+
+	String getBanner();
+	void updateBanner(String text);
+
+	List<AdDTO> getActiveAds();
+
 	List<AdDTO> getConflictAds(Map<String, Object> map); //예정 광고 있는지확인
 	 //-------------------------------------------------------------------------
 	List<StatDTO> getUserStats(String type);
