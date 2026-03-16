@@ -74,7 +74,12 @@ public interface AdminService {
 
 	 void rejectAd(Long adId, String reason);//광고반려하기
 
+	 void withdrawAd(Long adId, String reason);//광고 조기 철회
 
+	 String getBanner();
+	 void updateBanner(String text);
+
+	 List<AdDTO> getActiveAds();
 
 	 List<AdDTO> getConflictAds(LocalDate startDate, LocalDate endDate, Long adId);
 
@@ -132,5 +137,7 @@ public interface AdminService {
 	 // 회계관리
 	 Map<String, Object> getAccountingStats();
 	 Map<String, Object> getAccountingList(int page, int size);
+
+
 
 }

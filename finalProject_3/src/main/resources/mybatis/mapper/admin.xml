@@ -317,15 +317,45 @@
 		</update>
             
 		<update id="rejectAd">
-		
+
 		UPDATE ads
 		SET status='REJECT',
 		    rejected_reason = #{reason},
 		    approved_at = SYSDATE
 		WHERE ad_id = #{adId}
-		
+
 		</update>
-		
+
+		<update id="withdrawAd" parameterType="map">
+		UPDATE ads
+		SET status='CANCEL',
+		    rejected_reason = #{reason}
+		WHERE ad_id = #{adId}
+		</update>
+
+		<select id="getBanner" resultType="String">
+		    SELECT CONFIG_VALUE FROM SITE_CONFIG WHERE CONFIG_KEY = 'PROMO_BANNER'
+		</select>
+
+		<update id="updateBanner" parameterType="String">
+		    UPDATE SITE_CONFIG SET CONFIG_VALUE = #{text} WHERE CONFIG_KEY = 'PROMO_BANNER'
+		</update>
+
+    <!-- 현재 유효한 승인 광고 (메인 페이지 표시용) -->
+    <select id="getActiveAds" resultType="com.spring.app.admin.domain.AdDTO">
+        SELECT
+            a.AD_ID       AS adId,
+            a.BRAND_NAME  AS brandName,
+            a.CONTENT     AS content,
+            a.START_DATE  AS startDate,
+            a.END_DATE    AS endDate,
+            a.FILE_PATH   AS filePath
+        FROM ADS a
+        WHERE a.STATUS = 'CONFIRM'
+          AND SYSDATE BETWEEN a.START_DATE AND a.END_DATE
+        ORDER BY a.APPROVED_AT DESC
+    </select>
+
 		<select id="getConflictAds" resultType="com.spring.app.admin.domain.AdDTO">
 
 			SELECT *
