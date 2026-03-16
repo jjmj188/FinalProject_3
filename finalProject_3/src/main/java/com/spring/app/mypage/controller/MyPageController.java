@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.app.mypage.domain.AccountDTO;
 import com.spring.app.mypage.domain.DeliveryAddressDTO;
+import com.spring.app.mypage.domain.MyPurchaseDTO;
+import com.spring.app.mypage.domain.MyReportDTO;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.mypage.service.MyPageService;
 import com.spring.app.security.domain.MemberDTO;
@@ -73,6 +75,47 @@ public class MyPageController {
     public List<ProductDTO> getMyProducts(Principal principal) {
         if (principal == null) return List.of();
         return myPageService.getMyProducts(principal.getName());
+    }
+
+    @PostMapping("/product/update")
+    @ResponseBody
+    public Map<String, Object> updateMyProduct(@RequestBody Map<String, Object> params, Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        if (principal == null) { result.put("success", false); return result; }
+        params.put("email", principal.getName());
+        myPageService.updateMyProduct(params);
+        result.put("success", true);
+        return result;
+    }
+
+    @PostMapping("/product/delete")
+    @ResponseBody
+    public Map<String, Object> deleteMyProduct(@RequestParam("productNo") int productNo, Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        if (principal == null) { result.put("success", false); return result; }
+
+        int txnCount = myPageService.getProductTransactionCount(productNo);
+        if (txnCount > 0) {
+            result.put("success", false);
+            result.put("message", "거래 내역이 있는 상품은 삭제할 수 없습니다.");
+            return result;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("productNo", productNo);
+        params.put("email", principal.getName());
+        myPageService.deleteMyProduct(params);
+        result.put("success", true);
+        return result;
+    }
+
+    // ===== 내 구매상품 =====
+
+    @GetMapping("/my-purchases")
+    @ResponseBody
+    public List<MyPurchaseDTO> getMyPurchases(Principal principal) {
+        if (principal == null) return List.of();
+        return myPageService.getMyPurchases(principal.getName());
     }
 
     // ===== 계좌 관리 =====
@@ -245,5 +288,21 @@ public class MyPageController {
         myPageService.setPrimaryDelivery(params);
         result.put("success", true);
         return result;
+    }
+
+    // ===== 신고관리 =====
+
+    @GetMapping("/reports/sent")
+    @ResponseBody
+    public List<MyReportDTO> getMyReportsSent(Principal principal) {
+        if (principal == null) return List.of();
+        return myPageService.getMyReportsSent(principal.getName());
+    }
+
+    @GetMapping("/reports/received")
+    @ResponseBody
+    public List<MyReportDTO> getMyReportsReceived(Principal principal) {
+        if (principal == null) return List.of();
+        return myPageService.getMyReportsReceived(principal.getName());
     }
 }

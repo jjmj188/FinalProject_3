@@ -16,7 +16,6 @@
             <nav class="mp-nav">
                 <ul>
                     <li><a href="#" id="nav-info" class="active" onclick="switchSection('info'); return false;">내 정보</a></li>
-                    <li><a href="#" id="nav-purchase" onclick="switchSection('purchase'); return false;">구매관리</a></li>
                     <li><a href="#" id="nav-account" onclick="switchSection('account'); return false;">계좌/배송지 관리</a></li>
                     <li><a href="#" id="nav-review" onclick="switchSection('review'); return false;">후기관리</a></li>
                     <li><a href="#" id="nav-wish" onclick="switchSection('wish'); return false;">찜내역</a></li>
@@ -70,8 +69,8 @@
 
             <div class="mp-tabs">
                 <div class="mp-tab-header">
-                    <button class="tab-btn active">내 판매상품</button>
-                    <button class="tab-btn">내 경매상품</button>
+                    <button class="tab-btn active" onclick="switchInfoTab(this, 'sell')">내 판매상품</button>
+                    <button class="tab-btn" onclick="switchInfoTab(this, 'purchase')">내 구매상품</button>
                 </div>
                 <div class="mp-tab-sub-header" id="myProductFilterHeader">
                     <span class="active" onclick="switchMyProductFilter(this, '전체')">전체</span>
@@ -83,6 +82,10 @@
                     <div class="mp-empty"><p>선택된 조건에 해당하는 상품이 없습니다.</p></div>
                 </div>
                 <div id="myProductPaging" class="mp-paging"></div>
+                <div id="myPurchaseContent" class="mp-tab-content" style="display:none;">
+                    <div class="mp-empty"><p>구매한 상품이 없습니다.</p></div>
+                </div>
+                <div id="myPurchasePaging" class="mp-paging" style="display:none;"></div>
             </div>
             </div><!-- /mp-info-section -->
 
@@ -112,22 +115,6 @@
                     <button onclick="openDeliveryModal(null)" class="mp-add-btn" id="addDeliveryBtn">+ 배송지 추가</button>
                 </div>
             </div><!-- /mp-account-section -->
-
-            <!-- 구매관리 섹션 -->
-            <div id="mp-purchase-section" style="display:none;">
-                <div class="mp-section-title">구매관리</div>
-                <div class="mp-tabs">
-                    <div class="mp-tab-header">
-                        <button class="tab-btn active" onclick="switchPurchaseTab(this, 'all')">전체</button>
-                        <button class="tab-btn" onclick="switchPurchaseTab(this, 'progress')">진행중</button>
-                        <button class="tab-btn" onclick="switchPurchaseTab(this, 'done')">거래완료</button>
-                        <button class="tab-btn" onclick="switchPurchaseTab(this, 'cancel')">취소/환불</button>
-                    </div>
-                    <div id="purchaseContent" class="mp-tab-content">
-                        <div class="mp-empty"><p>구매 내역이 없습니다.</p></div>
-                    </div>
-                </div>
-            </div><!-- /mp-purchase-section -->
 
             <!-- 후기관리 섹션 -->
             <div id="mp-review-section" style="display:none;">
@@ -172,8 +159,11 @@
                         <button class="tab-btn active" onclick="switchReportTab(this, 'sent')">신고한 내역</button>
                         <button class="tab-btn" onclick="switchReportTab(this, 'received')">신고받은 내역</button>
                     </div>
-                    <div id="reportContent" class="mp-tab-content">
+                    <div id="reportSentContent" class="mp-tab-content">
                         <div class="mp-empty"><p>신고 내역이 없습니다.</p></div>
+                    </div>
+                    <div id="reportReceivedContent" class="mp-tab-content" style="display:none;">
+                        <div class="mp-empty"><p>신고받은 내역이 없습니다.</p></div>
                     </div>
                 </div>
             </div><!-- /mp-report-section -->
@@ -192,6 +182,50 @@
                 </div>
             </div><!-- /mp-noti-section -->
         </section>
+    </div>
+
+    <!-- 판매상품 수정 모달 -->
+    <div id="productEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:440px; max-height:85vh; overflow-y:auto; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h3 style="margin:0; font-size:18px; font-weight:bold;">판매상품 수정</h3>
+                <button onclick="closeProductEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
+            </div>
+            <input type="hidden" id="editProductNo">
+            <input type="hidden" id="editProductSaleType">
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">상품명</label>
+                <input type="text" id="editProductName" maxlength="50"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+
+            <div id="editPriceWrap" style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">가격 (원)</label>
+                <input type="number" id="editProductPrice" min="0"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">거래 상태</label>
+                <select id="editProductStatus"
+                        style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none;">
+                    <option value="판매중">판매중</option>
+                    <option value="예약중">예약중</option>
+                    <option value="판매완료">판매완료</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">상품 설명</label>
+                <textarea id="editProductDesc" rows="4" maxlength="2000"
+                          style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box; resize:vertical;"></textarea>
+            </div>
+
+            <button onclick="saveProductEdit()" style="width:100%; padding:14px; background:#222; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer;">
+                저장하기
+            </button>
+        </div>
     </div>
 
     <!-- 탈퇴 확인 모달 -->
@@ -526,7 +560,7 @@
     }
 
     // ===== 섹션 전환 =====
-    const sectionIds = ['info', 'account', 'purchase', 'review', 'wish', 'report', 'noti'];
+    const sectionIds = ['info', 'account', 'review', 'wish', 'report', 'noti'];
 
     window.switchSection = function(section) {
         sectionIds.forEach(id => {
@@ -542,6 +576,7 @@
         if (section === 'wish') { loadWishlist(); }
         if (section === 'noti') { loadNotiPreview(); }
         if (section === 'info') { loadMyProducts(); }
+        if (section === 'report') { loadMyReportsSent(); }
     }
 
     // ===== 내 판매상품 =====
@@ -558,6 +593,141 @@
             myProductPage = 1;
             renderMyProductsPage(1);
         });
+    }
+
+    // ===== 내 판매상품 수정/삭제 =====
+
+    window.openProductEditModal = function(productNo) {
+        const p = myProductAllData.find(function(item) { return item.productNo === productNo; });
+        if (!p) return;
+
+        document.getElementById('editProductNo').value = p.productNo;
+        document.getElementById('editProductSaleType').value = p.saleType || '';
+        document.getElementById('editProductName').value = p.productName || '';
+        document.getElementById('editProductPrice').value = p.productPrice || 0;
+        document.getElementById('editProductStatus').value = p.tradeStatus || '판매중';
+        document.getElementById('editProductDesc').value = p.productDesc || '';
+
+        const priceWrap = document.getElementById('editPriceWrap');
+        priceWrap.style.display = (p.saleType === '나눔' || p.saleType === '경매') ? 'none' : '';
+
+        document.getElementById('productEditModal').style.display = 'block';
+    }
+
+    window.closeProductEditModal = function() {
+        document.getElementById('productEditModal').style.display = 'none';
+    }
+
+    window.saveProductEdit = function() {
+        const productNo = parseInt(document.getElementById('editProductNo').value);
+        const saleType = document.getElementById('editProductSaleType').value;
+        const productName = document.getElementById('editProductName').value.trim();
+        const productPrice = parseInt(document.getElementById('editProductPrice').value) || 0;
+        const tradeStatus = document.getElementById('editProductStatus').value;
+        const productDesc = document.getElementById('editProductDesc').value.trim();
+
+        if (!productName) { alert('상품명을 입력하세요.'); return; }
+
+        const body = { productNo, productName, tradeStatus, productDesc };
+        if (saleType !== '나눔' && saleType !== '경매') body.productPrice = productPrice;
+
+        fetch(`${ctxPath}mypage/product/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeProductEditModal();
+                loadMyProducts();
+            } else {
+                alert(data.message || '수정에 실패했습니다.');
+            }
+        })
+        .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    window.deleteMyProduct = function(productNo) {
+        if (!confirm('정말 이 상품을 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.')) return;
+
+        fetch(`${ctxPath}mypage/product/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `productNo=${productNo}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                loadMyProducts();
+            } else {
+                alert(data.message || '삭제에 실패했습니다.');
+            }
+        })
+        .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    // ===== 내 구매상품 =====
+    const MY_PURCHASE_PAGE_SIZE = 6;
+    let myPurchaseAllData = [];
+    let myPurchasePage = 1;
+
+    window.loadMyPurchases = function() {
+        fetch(`${ctxPath}mypage/my-purchases`)
+        .then(r => r.json())
+        .then(data => {
+            myPurchaseAllData = data;
+            myPurchasePage = 1;
+            renderMyPurchasesPage(1);
+        });
+    }
+
+    function renderMyPurchasesPage(page) {
+        myPurchasePage = page;
+        const total = myPurchaseAllData.length;
+        const start = (page - 1) * MY_PURCHASE_PAGE_SIZE;
+        const pageItems = myPurchaseAllData.slice(start, start + MY_PURCHASE_PAGE_SIZE);
+
+        const container = document.getElementById('myPurchaseContent');
+        if (total === 0) {
+            container.innerHTML = '<div class="mp-empty"><p>구매한 상품이 없습니다.</p></div>';
+            document.getElementById('myPurchasePaging').innerHTML = '';
+            return;
+        }
+
+        const statusMap = {
+            '거래중':   { cls: 'rp-status-review',   label: '거래중' },
+            '거래완료': { cls: 'rp-status-done',     label: '거래완료' },
+            '취소':     { cls: 'rp-status-rejected', label: '취소' },
+            '환불':     { cls: 'rp-status-pending',  label: '환불' },
+            '환불완료': { cls: 'rp-status-rejected', label: '환불완료' },
+        };
+
+        container.innerHTML = `<div class="mp-wish-grid">${pageItems.map(p => {
+            const imgSrc = p.imgUrl
+                ? (p.imgUrl.startsWith('http') ? p.imgUrl : ctxPath.replace(/\/$/, '') + p.imgUrl)
+                : `${ctxPath}images/no_image.png`;
+            const priceText = p.amount != null ? p.amount.toLocaleString() + '원' : (p.productPrice ? p.productPrice.toLocaleString() + '원' : '가격 미정');
+            const st = statusMap[p.tradeStatus] || { cls: 'rp-status-pending', label: p.tradeStatus || '-' };
+            return `
+                <div class="mp-wish-card">
+                    <a href="${ctxPath}product/product_detail/${p.productNo}" class="mp-wish-img-wrap">
+                        <img src="${imgSrc}" alt="${p.productName}" onerror="this.src='${ctxPath}images/no_image.png'">
+                        <span class="mp-wish-status" style="background:#444;">${p.saleType || ''}</span>
+                    </a>
+                    <div class="mp-wish-info">
+                        <p class="mp-wish-name">${p.productName}</p>
+                        <p class="mp-wish-price">${priceText}</p>
+                        <p style="margin:4px 0 0; font-size:12px; color:#999;">${p.tradeDate || ''}</p>
+                    </div>
+                    <div style="margin:0 12px 12px; display:flex; align-items:center; justify-content:space-between;">
+                        <span class="rp-status-badge ${st.cls}">${st.label}</span>
+                        <span style="font-size:11px; color:#aaa;">${p.paymentType || ''}</span>
+                    </div>
+                </div>`;
+        }).join('')}</div>`;
+
+        renderPaging('myPurchasePaging', total, page, MY_PURCHASE_PAGE_SIZE, renderMyPurchasesPage);
     }
 
     window.switchMyProductFilter = function(el, filter) {
@@ -604,6 +774,10 @@
                     <div class="mp-wish-info">
                         <p class="mp-wish-name">${p.productName}</p>
                         <p class="mp-wish-price">${priceText}</p>
+                    </div>
+                    <div class="mp-product-actions">
+                        <button class="mp-product-edit-btn" onclick="openProductEditModal(${p.productNo})">수정</button>
+                        <button class="mp-product-delete-btn" onclick="deleteMyProduct(${p.productNo})">삭제</button>
                     </div>
                 </div>`;
         }).join('')}</div>`;
@@ -739,9 +913,16 @@
         if (groupEnd < totalPages) container.appendChild(makeBtn('다음', groupEnd + 1));
     }
 
-    window.switchPurchaseTab = function(btn, tab) {
+    window.switchInfoTab = function(btn, tab) {
         btn.closest('.mp-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        const isSell = tab === 'sell';
+        document.getElementById('myProductFilterHeader').style.display = isSell ? '' : 'none';
+        document.getElementById('myProductContent').style.display = isSell ? '' : 'none';
+        document.getElementById('myProductPaging').style.display = isSell ? '' : 'none';
+        document.getElementById('myPurchaseContent').style.display = isSell ? 'none' : '';
+        document.getElementById('myPurchasePaging').style.display = isSell ? 'none' : '';
+        if (!isSell) loadMyPurchases();
     }
 
     window.switchReviewTab = function(btn, tab) {
@@ -752,6 +933,102 @@
     window.switchReportTab = function(btn, tab) {
         btn.closest('.mp-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        document.getElementById('reportSentContent').style.display = tab === 'sent' ? '' : 'none';
+        document.getElementById('reportReceivedContent').style.display = tab === 'received' ? '' : 'none';
+        if (tab === 'sent') loadMyReportsSent();
+        else loadMyReportsReceived();
+    }
+
+    // ===== 신고관리 =====
+
+    function getReportStatusBadge(status) {
+        const map = {
+            '접수':    { cls: 'rp-status-pending',  label: '접수' },
+            '검토중':  { cls: 'rp-status-review',   label: '검토중' },
+            '처리완료':{ cls: 'rp-status-done',     label: '처리완료' },
+            '기각':    { cls: 'rp-status-rejected', label: '기각' },
+        };
+        const s = map[status] || { cls: 'rp-status-pending', label: status || '접수' };
+        return `<span class="rp-status-badge ${s.cls}">${s.label}</span>`;
+    }
+
+    function getAdminAnswerText(status) {
+        if (status === '처리완료' || status === '기각') return `<span class="rp-admin-answered">답변 완료</span>`;
+        if (status === '검토중') return `<span class="rp-admin-reviewing">검토 중</span>`;
+        return `<span class="rp-admin-waiting">답변 대기 중</span>`;
+    }
+
+    function renderReportList(reports, containerId, emptyMsg) {
+        const container = document.getElementById(containerId);
+        if (!reports || reports.length === 0) {
+            container.innerHTML = `<div class="mp-empty"><p>${emptyMsg}</p></div>`;
+            return;
+        }
+        container.innerHTML = reports.map(r => {
+            const imgSrc = r.imgUrl
+                ? (r.imgUrl.startsWith('http') ? r.imgUrl : ctxPath.replace(/\/$/, '') + r.imgUrl)
+                : `${ctxPath}images/no_image.png`;
+            const productLink = r.productNo
+                ? `<a href="${ctxPath}product/product_detail/${r.productNo}" class="rp-product-name">${r.productName || '상품 정보 없음'}</a>`
+                : `<span class="rp-product-name" style="color:#999;">${r.typeName ? '[' + r.typeName + '] 채팅/리뷰 신고' : '신고 대상 정보 없음'}</span>`;
+            return `
+            <div class="rp-card">
+                <div class="rp-card-img">
+                    ${r.productNo
+                        ? `<a href="${ctxPath}product/product_detail/${r.productNo}">
+                               <img src="${imgSrc}" alt="${r.productName || ''}" onerror="this.src='${ctxPath}images/no_image.png'">
+                           </a>`
+                        : `<img src="${imgSrc}" alt="이미지 없음" onerror="this.src='${ctxPath}images/no_image.png'">`
+                    }
+                </div>
+                <div class="rp-card-body">
+                    <div class="rp-card-row">
+                        <span class="rp-label">신고 상품</span>
+                        ${productLink}
+                    </div>
+                    <div class="rp-card-row">
+                        <span class="rp-label">신고 유형</span>
+                        <span class="rp-value">${r.mainCategory ? r.mainCategory + ' > ' : ''}${r.typeName || '-'}</span>
+                    </div>
+                    <div class="rp-card-row rp-detail-row">
+                        <span class="rp-label">신고 내용</span>
+                        <span class="rp-value rp-detail-text">${r.reportDetail || '-'}</span>
+                    </div>
+                    <div class="rp-card-row">
+                        <span class="rp-label">신고 일시</span>
+                        <span class="rp-value">${r.reportDate || '-'}</span>
+                    </div>
+                    <div class="rp-card-footer">
+                        <div class="rp-footer-item">
+                            <span class="rp-label">처리 상태</span>
+                            ${getReportStatusBadge(r.reportStatus)}
+                        </div>
+                        <div class="rp-footer-item">
+                            <span class="rp-label">관리자 답변</span>
+                            ${getAdminAnswerText(r.reportStatus)}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    window.loadMyReportsSent = function() {
+        fetch(`${ctxPath}mypage/reports/sent`)
+        .then(r => r.json())
+        .then(data => renderReportList(data, 'reportSentContent', '신고한 내역이 없습니다.'))
+        .catch(() => {
+            document.getElementById('reportSentContent').innerHTML = '<div class="mp-empty"><p>신고 내역을 불러올 수 없습니다.</p></div>';
+        });
+    }
+
+    window.loadMyReportsReceived = function() {
+        fetch(`${ctxPath}mypage/reports/received`)
+        .then(r => r.json())
+        .then(data => renderReportList(data, 'reportReceivedContent', '신고받은 내역이 없습니다.'))
+        .catch(() => {
+            document.getElementById('reportReceivedContent').innerHTML = '<div class="mp-empty"><p>신고받은 내역을 불러올 수 없습니다.</p></div>';
+        });
     }
 
     // ===== 계좌 관리 =====

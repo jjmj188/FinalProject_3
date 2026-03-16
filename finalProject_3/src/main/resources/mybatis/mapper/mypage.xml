@@ -56,12 +56,36 @@
                p.PRODUCT_PRICE AS productPrice,
                p.SALE_TYPE     AS saleType,
                p.TRADE_STATUS  AS tradeStatus,
+               p.PRODUCT_DESC  AS productDesc,
                pi.IMG_URL      AS imgUrl
         FROM PRODUCTS p
         LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
         WHERE p.SELLER_EMAIL = #{email}
         ORDER BY p.PRODUCT_NO DESC
     </select>
+
+    <!-- ===== 내 판매상품 수정 ===== -->
+    <update id="updateMyProduct" parameterType="map">
+        UPDATE PRODUCTS
+        SET PRODUCT_NAME  = #{productName},
+            PRODUCT_PRICE = #{productPrice, jdbcType=NUMERIC},
+            TRADE_STATUS  = #{tradeStatus},
+            PRODUCT_DESC  = #{productDesc, jdbcType=VARCHAR}
+        WHERE PRODUCT_NO   = #{productNo}
+          AND SELLER_EMAIL = #{email}
+    </update>
+
+    <!-- ===== 내 판매상품 거래 건수 조회 (삭제 가능 여부 확인) ===== -->
+    <select id="getProductTransactionCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM TRANSACTIONS WHERE PRODUCT_NO = #{productNo}
+    </select>
+
+    <!-- ===== 내 판매상품 삭제 ===== -->
+    <delete id="deleteMyProduct" parameterType="map">
+        DELETE FROM PRODUCTS
+        WHERE PRODUCT_NO   = #{productNo}
+          AND SELLER_EMAIL = #{email}
+    </delete>
 
     <!-- ===== 찜 목록 ===== -->
     <select id="getWishlist" parameterType="String" resultType="com.spring.app.product.domain.ProductDTO">
@@ -171,5 +195,61 @@
         SET IS_PRIMARY = CASE WHEN DELIVERY_NO = #{deliveryNo} THEN 'Y' ELSE 'N' END
         WHERE MEMBER_EMAIL = #{email}
     </update>
+
+    <!-- ===== 내 구매상품 ===== -->
+    <select id="getMyPurchases" parameterType="String" resultType="com.spring.app.mypage.domain.MyPurchaseDTO">
+        SELECT p.PRODUCT_NO    AS productNo,
+               p.PRODUCT_NAME  AS productName,
+               p.PRODUCT_PRICE AS productPrice,
+               p.SALE_TYPE     AS saleType,
+               t.AMOUNT        AS amount,
+               t.PAYMENT_TYPE  AS paymentType,
+               t.TRADE_STATUS  AS tradeStatus,
+               TO_CHAR(t.TRADE_DATE, 'YYYY-MM-DD HH24:MI') AS tradeDate,
+               pi.IMG_URL      AS imgUrl
+        FROM TRANSACTIONS t
+        JOIN PRODUCTS p ON t.PRODUCT_NO = p.PRODUCT_NO
+        LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+        WHERE t.BUYER_EMAIL = #{email}
+        ORDER BY t.TRADE_DATE DESC
+    </select>
+
+    <!-- ===== 신고관리 ===== -->
+
+    <select id="getMyReportsSent" parameterType="String" resultType="com.spring.app.mypage.domain.MyReportDTO">
+        SELECT r.REPORT_ID          AS reportId,
+               r.REPORT_DETAIL      AS reportDetail,
+               r.REPORT_STATUS      AS reportStatus,
+               TO_CHAR(r.REPORT_DATE, 'YYYY-MM-DD HH24:MI') AS reportDate,
+               rt.TYPE_NAME         AS typeName,
+               rt.MAIN_CATEGORY     AS mainCategory,
+               p.PRODUCT_NAME       AS productName,
+               p.PRODUCT_NO         AS productNo,
+               pi.IMG_URL           AS imgUrl
+        FROM REPORTS r
+        LEFT JOIN REPORT_TYPES rt ON r.TYPE_ID = rt.TYPE_ID
+        LEFT JOIN PRODUCTS p ON r.PRODUCT_NUM = p.PRODUCT_NO
+        LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+        WHERE r.REPORTER_EMAIL = #{email}
+        ORDER BY r.REPORT_DATE DESC
+    </select>
+
+    <select id="getMyReportsReceived" parameterType="String" resultType="com.spring.app.mypage.domain.MyReportDTO">
+        SELECT r.REPORT_ID          AS reportId,
+               r.REPORT_DETAIL      AS reportDetail,
+               r.REPORT_STATUS      AS reportStatus,
+               TO_CHAR(r.REPORT_DATE, 'YYYY-MM-DD HH24:MI') AS reportDate,
+               rt.TYPE_NAME         AS typeName,
+               rt.MAIN_CATEGORY     AS mainCategory,
+               p.PRODUCT_NAME       AS productName,
+               p.PRODUCT_NO         AS productNo,
+               pi.IMG_URL           AS imgUrl
+        FROM REPORTS r
+        LEFT JOIN REPORT_TYPES rt ON r.TYPE_ID = rt.TYPE_ID
+        LEFT JOIN PRODUCTS p ON r.PRODUCT_NUM = p.PRODUCT_NO
+        LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+        WHERE r.TARGET_EMAIL = #{email}
+        ORDER BY r.REPORT_DATE DESC
+    </select>
 
 </mapper>

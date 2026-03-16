@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.spring.app.mypage.domain.AccountDTO;
 import com.spring.app.mypage.domain.DeliveryAddressDTO;
+import com.spring.app.mypage.domain.MyPurchaseDTO;
+import com.spring.app.mypage.domain.MyReportDTO;
 import com.spring.app.mypage.domain.NotificationDTO;
 import com.spring.app.product.domain.ProductDTO;
 import com.spring.app.mypage.model.MyPageDAO;
@@ -44,6 +46,27 @@ public class MyPageService_imple implements MyPageService {
     @Override
     public List<ProductDTO> getMyProducts(String email) {
         return myPageDAO.getMyProducts(email);
+    }
+
+    @Override
+    public int updateMyProduct(Map<String, Object> params) {
+        return myPageDAO.updateMyProduct(params);
+    }
+
+    @Override
+    public int getProductTransactionCount(int productNo) {
+        return myPageDAO.getProductTransactionCount(productNo);
+    }
+
+    @Override
+    public int deleteMyProduct(Map<String, Object> params) {
+        return myPageDAO.deleteMyProduct(params);
+    }
+
+    // 내 구매상품
+    @Override
+    public List<MyPurchaseDTO> getMyPurchases(String email) {
+        return myPageDAO.getMyPurchases(email);
     }
 
     // 계좌
@@ -106,5 +129,16 @@ public class MyPageService_imple implements MyPageService {
     @Override
     public int setPrimaryDelivery(Map<String, Object> params) {
         return myPageDAO.setPrimaryDelivery(params);
+    }
+
+    // 신고관리
+    @Override
+    public List<MyReportDTO> getMyReportsSent(String email) {
+        return myPageDAO.getMyReportsSent(email);
+    }
+
+    @Override
+    public List<MyReportDTO> getMyReportsReceived(String email) {
+        return myPageDAO.getMyReportsReceived(email);
     }
 }

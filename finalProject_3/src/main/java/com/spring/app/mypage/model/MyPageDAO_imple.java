@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 
 import com.spring.app.mypage.domain.AccountDTO;
 import com.spring.app.mypage.domain.DeliveryAddressDTO;
+import com.spring.app.mypage.domain.MyPurchaseDTO;
+import com.spring.app.mypage.domain.MyReportDTO;
 import com.spring.app.mypage.domain.NotificationDTO;
 import com.spring.app.product.domain.ProductDTO;
 
@@ -48,6 +50,27 @@ public class MyPageDAO_imple implements MyPageDAO {
     @Override
     public List<ProductDTO> getMyProducts(String email) {
         return sqlsession.selectList(ns + ".getMyProducts", email);
+    }
+
+    @Override
+    public int updateMyProduct(Map<String, Object> params) {
+        return sqlsession.update(ns + ".updateMyProduct", params);
+    }
+
+    @Override
+    public int getProductTransactionCount(int productNo) {
+        return sqlsession.selectOne(ns + ".getProductTransactionCount", productNo);
+    }
+
+    @Override
+    public int deleteMyProduct(Map<String, Object> params) {
+        return sqlsession.delete(ns + ".deleteMyProduct", params);
+    }
+
+    // 내 구매상품
+    @Override
+    public List<MyPurchaseDTO> getMyPurchases(String email) {
+        return sqlsession.selectList(ns + ".getMyPurchases", email);
     }
 
     // 계좌
@@ -110,5 +133,16 @@ public class MyPageDAO_imple implements MyPageDAO {
     @Override
     public int setPrimaryDelivery(Map<String, Object> params) {
         return sqlsession.update(ns + ".setPrimaryDelivery", params);
+    }
+
+    // 신고관리
+    @Override
+    public List<MyReportDTO> getMyReportsSent(String email) {
+        return sqlsession.selectList(ns + ".getMyReportsSent", email);
+    }
+
+    @Override
+    public List<MyReportDTO> getMyReportsReceived(String email) {
+        return sqlsession.selectList(ns + ".getMyReportsReceived", email);
     }
 }
