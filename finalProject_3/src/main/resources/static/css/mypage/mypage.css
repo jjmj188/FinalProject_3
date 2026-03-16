@@ -397,3 +397,77 @@
 .rp-admin-waiting   { color: #999; font-size: 13px; }
 .rp-admin-reviewing { color: #0066cc; font-size: 13px; font-weight: bold; }
 .rp-admin-answered  { color: #28a745; font-size: 13px; font-weight: bold; }
+/* ===== 내 구매상품 버튼 ===== */
+.mp-purchase-btn {
+    flex: 1;
+    padding: 7px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f7f7f7;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #444;
+    transition: background 0.15s;
+}
+.mp-purchase-btn:hover { background: #eee; }
+
+/* ===== 배송현황 스텝 ===== */
+.ds-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 10px 0;
+}
+.ds-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.ds-step-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ddd;
+    border: 2px solid #ddd;
+    transition: background 0.2s;
+}
+.ds-step-label {
+    font-size: 12px;
+    color: #aaa;
+    white-space: nowrap;
+}
+.ds-step-active .ds-step-dot { background: #ff6b35; border-color: #ff6b35; }
+.ds-step-active .ds-step-label { color: #ff6b35; font-weight: bold; }
+.ds-step-done .ds-step-dot { background: #28a745; border-color: #28a745; }
+.ds-step-done .ds-step-label { color: #28a745; }
+.ds-line {
+    flex: 1;
+    height: 2px;
+    background: #ddd;
+    min-width: 40px;
+    margin-bottom: 22px;
+}
+
+/* ===== 리뷰 작성 별점/카테고리 ===== */
+.rw-star {
+    font-size: 28px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.1s;
+    user-select: none;
+}
+.rw-star.active { color: #f5a623; }
+.rw-star:hover { color: #f5a623; }
+.rw-cat-btn {
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: #f9f9f9;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.rw-cat-btn.active { background: #ff6b35; color: #fff; border-color: #ff6b35; }

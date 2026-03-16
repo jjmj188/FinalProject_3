@@ -13,6 +13,9 @@ import com.spring.app.mypage.domain.MyPurchaseDTO;
 import com.spring.app.mypage.domain.MyReportDTO;
 import com.spring.app.mypage.domain.NotificationDTO;
 import com.spring.app.product.domain.ProductDTO;
+import com.spring.app.product.domain.ProductImageDTO;
+import com.spring.app.product.domain.ProductShippingOptionDTO;
+import com.spring.app.product.domain.ProductMeetLocationDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -53,6 +56,11 @@ public class MyPageDAO_imple implements MyPageDAO {
     }
 
     @Override
+    public ProductDTO getMyProductByNo(Map<String, Object> params) {
+        return sqlsession.selectOne(ns + ".getMyProductByNo", params);
+    }
+
+    @Override
     public int updateMyProduct(Map<String, Object> params) {
         return sqlsession.update(ns + ".updateMyProduct", params);
     }
@@ -67,10 +75,60 @@ public class MyPageDAO_imple implements MyPageDAO {
         return sqlsession.delete(ns + ".deleteMyProduct", params);
     }
 
+    @Override
+    public ProductImageDTO getProductImageByNo(int prdImgNo) {
+        return sqlsession.selectOne(ns + ".getProductImageByNo", prdImgNo);
+    }
+
+    @Override
+    public int deleteProductImageByNo(int prdImgNo) {
+        return sqlsession.delete(ns + ".deleteProductImageByNo", prdImgNo);
+    }
+
+    @Override
+    public int insertProductImageEdit(ProductImageDTO img) {
+        return sqlsession.insert(ns + ".insertProductImageEdit", img);
+    }
+
+    @Override
+    public int resetMainImages(int productNo) {
+        return sqlsession.update(ns + ".resetMainImages", productNo);
+    }
+
+    @Override
+    public int setFirstImageAsMain(int productNo) {
+        return sqlsession.update(ns + ".setFirstImageAsMain", productNo);
+    }
+
+    @Override
+    public int deleteProductShippingOptions(int productNo) {
+        return sqlsession.delete(ns + ".deleteProductShippingOptions", productNo);
+    }
+
+    @Override
+    public int insertShippingOptionEdit(ProductShippingOptionDTO opt) {
+        return sqlsession.insert(ns + ".insertShippingOptionEdit", opt);
+    }
+
+    @Override
+    public int deleteProductMeetLocations(int productNo) {
+        return sqlsession.delete(ns + ".deleteProductMeetLocations", productNo);
+    }
+
+    @Override
+    public int insertMeetLocationEdit(ProductMeetLocationDTO loc) {
+        return sqlsession.insert(ns + ".insertMeetLocationEdit", loc);
+    }
+
     // 내 구매상품
     @Override
     public List<MyPurchaseDTO> getMyPurchases(String email) {
         return sqlsession.selectList(ns + ".getMyPurchases", email);
+    }
+
+    @Override
+    public int insertReview(Map<String, Object> params) {
+        return sqlsession.insert(ns + ".insertReview", params);
     }
 
     // 계좌

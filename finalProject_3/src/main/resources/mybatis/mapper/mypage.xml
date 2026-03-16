@@ -64,16 +64,94 @@
         ORDER BY p.PRODUCT_NO DESC
     </select>
 
+    <!-- ===== 내 판매상품 단건 조회 (수정 페이지용) ===== -->
+    <select id="getMyProductByNo" parameterType="map" resultType="com.spring.app.product.domain.ProductDTO">
+        SELECT p.PRODUCT_NO         AS productNo,
+               p.PRODUCT_NAME       AS productName,
+               p.PRODUCT_PRICE      AS productPrice,
+               p.SALE_TYPE          AS saleType,
+               p.TRADE_STATUS       AS tradeStatus,
+               p.PRODUCT_DESC       AS productDesc,
+               p.CATEGORY_NO        AS categoryNo,
+               p.PRODUCT_CONDITION  AS productCondition,
+               p.TRADE_METHOD       AS tradeMethod
+        FROM PRODUCTS p
+        WHERE p.PRODUCT_NO   = #{productNo}
+          AND p.SELLER_EMAIL = #{email}
+    </select>
+
     <!-- ===== 내 판매상품 수정 ===== -->
     <update id="updateMyProduct" parameterType="map">
         UPDATE PRODUCTS
-        SET PRODUCT_NAME  = #{productName},
-            PRODUCT_PRICE = #{productPrice, jdbcType=NUMERIC},
-            TRADE_STATUS  = #{tradeStatus},
-            PRODUCT_DESC  = #{productDesc, jdbcType=VARCHAR}
+        SET PRODUCT_NAME      = #{productName},
+            PRODUCT_PRICE     = #{productPrice, jdbcType=NUMERIC},
+            TRADE_STATUS      = #{tradeStatus},
+            PRODUCT_DESC      = #{productDesc, jdbcType=VARCHAR},
+            CATEGORY_NO       = #{categoryNo, jdbcType=NUMERIC},
+            PRODUCT_CONDITION = #{productCondition, jdbcType=VARCHAR},
+            TRADE_METHOD      = #{tradeMethod, jdbcType=VARCHAR}
         WHERE PRODUCT_NO   = #{productNo}
           AND SELLER_EMAIL = #{email}
     </update>
+
+    <!-- ===== 이미지 단건 조회 ===== -->
+    <select id="getProductImageByNo" parameterType="int" resultType="com.spring.app.product.domain.ProductImageDTO">
+        SELECT PRD_IMG_NO AS prdImgNo, PRODUCT_NO AS productNo,
+               IMG_URL AS imgUrl, ORGFILENAME AS orgfilename, FILENAME AS filename,
+               SORT_NO AS sortNo, IS_MAIN AS isMain
+        FROM PRODUCT_IMAGE WHERE PRD_IMG_NO = #{prdImgNo}
+    </select>
+
+    <!-- ===== 이미지 삭제 ===== -->
+    <delete id="deleteProductImageByNo" parameterType="int">
+        DELETE FROM PRODUCT_IMAGE WHERE PRD_IMG_NO = #{prdImgNo}
+    </delete>
+
+    <!-- ===== 이미지 삽입 ===== -->
+    <insert id="insertProductImageEdit" parameterType="com.spring.app.product.domain.ProductImageDTO">
+        <selectKey keyProperty="prdImgNo" resultType="int" order="BEFORE">
+            SELECT SEQ_PRODUCT_IMAGE_NO.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PRODUCT_IMAGE (PRD_IMG_NO, PRODUCT_NO, IMG_URL, ORGFILENAME, FILENAME, SORT_NO, IS_MAIN)
+        VALUES (#{prdImgNo}, #{productNo}, #{imgUrl,jdbcType=VARCHAR}, #{orgfilename,jdbcType=VARCHAR},
+                #{filename,jdbcType=VARCHAR}, #{sortNo}, #{isMain,jdbcType=CHAR})
+    </insert>
+
+    <!-- ===== 대표이미지 리셋 / 첫 이미지를 대표로 ===== -->
+    <update id="resetMainImages" parameterType="int">
+        UPDATE PRODUCT_IMAGE SET IS_MAIN = 'N' WHERE PRODUCT_NO = #{productNo}
+    </update>
+    <update id="setFirstImageAsMain" parameterType="int">
+        UPDATE PRODUCT_IMAGE SET IS_MAIN = 'Y'
+        WHERE PRD_IMG_NO = (
+            SELECT MIN(PRD_IMG_NO) FROM PRODUCT_IMAGE WHERE PRODUCT_NO = #{productNo}
+        )
+    </update>
+
+    <!-- ===== 배송 옵션 삭제 / 삽입 ===== -->
+    <delete id="deleteProductShippingOptions" parameterType="int">
+        DELETE FROM PRODUCT_SHIPPING_OPTION WHERE PRODUCT_NO = #{productNo}
+    </delete>
+    <insert id="insertShippingOptionEdit" parameterType="com.spring.app.product.domain.ProductShippingOptionDTO">
+        <selectKey keyProperty="optionNo" resultType="int" order="BEFORE">
+            SELECT SEQ_PSO_NO.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PRODUCT_SHIPPING_OPTION (OPTION_NO, PRODUCT_NO, PARCEL_TYPE, SHIPPING_FEE)
+        VALUES (#{optionNo}, #{productNo}, #{parcelType,jdbcType=VARCHAR}, #{shippingFee})
+    </insert>
+
+    <!-- ===== 직거래 위치 삭제 / 삽입 ===== -->
+    <delete id="deleteProductMeetLocations" parameterType="int">
+        DELETE FROM PRODUCT_MEET_LOCATION WHERE PRODUCT_NO = #{productNo}
+    </delete>
+    <insert id="insertMeetLocationEdit" parameterType="com.spring.app.product.domain.ProductMeetLocationDTO">
+        <selectKey keyProperty="locationNo" resultType="int" order="BEFORE">
+            SELECT SEQ_PML_NO.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PRODUCT_MEET_LOCATION (LOCATION_NO, PRODUCT_NO, PLACE_NAME, FULL_ADDRESS, LATITUDE, LONGITUDE, SORT_NO)
+        VALUES (#{locationNo}, #{productNo}, #{placeName,jdbcType=VARCHAR}, #{fullAddress,jdbcType=VARCHAR},
+                #{latitude}, #{longitude}, #{sortNo})
+    </insert>
 
     <!-- ===== 내 판매상품 거래 건수 조회 (삭제 가능 여부 확인) ===== -->
     <select id="getProductTransactionCount" parameterType="int" resultType="int">
@@ -206,13 +284,27 @@
                t.PAYMENT_TYPE  AS paymentType,
                t.TRADE_STATUS  AS tradeStatus,
                TO_CHAR(t.TRADE_DATE, 'YYYY-MM-DD HH24:MI') AS tradeDate,
-               pi.IMG_URL      AS imgUrl
+               pi.IMG_URL      AS imgUrl,
+               t.TRANSACTION_ID AS transactionId,
+               t.SELLER_EMAIL   AS sellerEmail,
+               CASE WHEN EXISTS (
+                   SELECT 1 FROM REVIEWS r WHERE r.TRANSACTION_ID = t.TRANSACTION_ID
+               ) THEN 1 ELSE 0 END AS hasReview
         FROM TRANSACTIONS t
         JOIN PRODUCTS p ON t.PRODUCT_NO = p.PRODUCT_NO
         LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
         WHERE t.BUYER_EMAIL = #{email}
         ORDER BY t.TRADE_DATE DESC
     </select>
+
+    <!-- ===== 리뷰 작성 ===== -->
+    <insert id="insertReview" parameterType="map">
+        <selectKey keyProperty="reviewNo" resultType="int" order="BEFORE">
+            SELECT SEQ_REVIEW_NO.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO REVIEWS (REVIEW_NO, WRITER_EMAIL, TARGET_EMAIL, TRANSACTION_ID, RATING, ONE_LINE_CAT, REVIEW_CONTENT, CREATED_AT)
+        VALUES (#{reviewNo}, #{writerEmail}, #{targetEmail}, #{transactionId}, #{rating}, #{oneLineCat}, #{reviewContent, jdbcType=VARCHAR}, SYSDATE)
+    </insert>
 
     <!-- ===== 신고관리 ===== -->
 

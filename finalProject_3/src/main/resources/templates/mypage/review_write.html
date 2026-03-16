@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>거래 후기 남기기</title>
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;color:#222;}
+.review-wrap{width:min(680px,calc(100% - 32px));margin:40px auto;overflow:hidden;}
+.review-head{padding:22px 20px 18px;border-bottom:1px solid #f0f0f0;}
+.review-title{margin:0;font-size:22px;font-weight:bold;}
+.partner-box{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid #f1f1f1;background:#fcfcfc;}
+.partner-left{display:flex;align-items:center;gap:14px;}
+.partner-profile{width:56px;height:56px;border-radius:50%;overflow:hidden;border:1px solid #ececec;background:#f2f2f2;}
+.partner-profile img{width:100%;height:100%;object-fit:cover;}
+.partner-name{font-size:16px;font-weight:bold;margin:0;}
+.partner-role{display:inline-flex;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:bold;background:#f3f4f6;color:#444;margin-left:6px;}
+.partner-desc{font-size:13px;color:#666;}
+.trade-complete{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:#f3f4f6;color:#6b7280;font-size:13px;font-weight:bold;}
+.product-box{display:flex;gap:14px;padding:18px 20px;border-bottom:1px solid #f1f1f1;align-items:center;}
+.product-img{width:96px;height:96px;overflow:hidden;border:1px solid #e9e9e9;border-radius:12px;background:#f5f5f5;}
+.product-img img{width:100%;height:100%;object-fit:cover;}
+.product-meta{flex:1;}
+.product-name{margin:0 0 10px;font-size:16px;font-weight:bold;}
+.product-sub{display:flex;gap:8px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:#f7f7f8;font-size:13px;color:#444;}
+form{padding:22px 20px;}
+.rating-title{margin:0 0 6px;font-size:20px;font-weight:bold;}
+.rating-desc{margin:0 0 12px;font-size:14px;color:#666;}
+.rating-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;}
+fieldset{border:0;direction:rtl;margin:0;padding:0;}
+input[type=radio]{display:none;}
+label i{font-size:34px;color:#e0e0e0;cursor:pointer;transition:0.2s;}
+label:hover i,label:hover ~ label i{color:#f7c600;}
+input[name="reviewStar"]:checked ~ label i{color:#f7c600;}
+.rating-text{font-size:17px;font-weight:bold;}
+.rating-state{font-size:13px;color:#666;margin-top:4px;}
+.review-tags{margin-bottom:16px;}
+.tag-title{font-size:14px;margin-bottom:8px;}
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;}
+.tag-item{cursor:pointer;}
+.tag-item input{display:none;}
+.tag-item span{display:inline-block;padding:8px 12px;border:1px solid #ddd;border-radius:999px;font-size:13px;background:#fafafa;transition:0.2s;}
+.tag-item input:checked + span{background:#222;color:#fff;border-color:#222;}
+.review-textarea-wrap{position:relative;}
+textarea{width:100%;height:140px;padding:12px;border:1.5px solid #d3d3d3;border-radius:8px;font-size:15px;resize:none;box-sizing:border-box;}
+textarea:focus{border-color:#222;outline:none;}
+.char-count{position:absolute;right:10px;bottom:8px;font-size:12px;color:#666;}
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+.btn{padding:10px 16px;border-radius:10px;border:1px solid #222;font-size:14px;cursor:pointer;}
+.btn-cancel{background:#fff;border-color:#cfcfcf;}
+.btn-cancel:hover{background:#f3f3f3;}
+.btn-submit{background:#222;color:#fff;}
+.btn-submit:hover{background:#000;}
+</style>
+</head>
+<body>
+
+<div class="review-wrap">
+
+<div class="review-head">
+<h2 class="review-title">거래 후기 남기기</h2>
+</div>
+
+<div class="partner-box">
+<div class="partner-left">
+<div class="partner-profile">
+    <img th:if="${sellerProfileImg != null and !#strings.isEmpty(sellerProfileImg)}"
+         th:src="${sellerProfileImg.startsWith('http') ? sellerProfileImg : '/finalProject_3/resources/profile_images/' + sellerProfileImg}"
+         onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=seller'">
+    <img th:unless="${sellerProfileImg != null and !#strings.isEmpty(sellerProfileImg)}"
+         src="https://api.dicebear.com/7.x/bottts/svg?seed=seller">
+</div>
+<div>
+<p class="partner-name">
+    <span th:text="${sellerNickname != null ? sellerNickname : targetEmail}">판매자</span>
+    <span class="partner-role">판매자</span>
+</p>
+</div>
+</div>
+<div class="trade-complete">
+<i class="fa-solid fa-circle-check"></i>
+판매 완료
+</div>
+</div>
+
+<div class="product-box">
+<div class="product-img">
+    <img th:if="${imgUrl != null and !#strings.isEmpty(imgUrl)}"
+         th:src="${imgUrl.startsWith('http') ? imgUrl : '/finalProject_3' + imgUrl}"
+         onerror="this.src='/finalProject_3/images/no_image.png'">
+    <img th:unless="${imgUrl != null and !#strings.isEmpty(imgUrl)}"
+         src="/finalProject_3/images/no_image.png">
+</div>
+<div class="product-meta">
+<p class="product-name" th:text="${productName}">상품명</p>
+<div class="product-sub">
+    <span class="badge" th:if="${amount != null}">
+        <i class="fa-solid fa-won-sign"></i>
+        <span th:text="${amount}">0</span>원
+    </span>
+    <span class="badge" th:if="${paymentType != null and !#strings.isEmpty(paymentType)}">
+        <i class="fa-solid fa-handshake"></i>
+        <span th:text="${paymentType}"></span>
+    </span>
+    <span class="badge" th:if="${saleType != null and !#strings.isEmpty(saleType)}">
+        <span th:text="${saleType}"></span>
+    </span>
+</div>
+</div>
+</div>
+
+<form id="myform">
+<input type="hidden" id="transactionId" th:value="${transactionId}">
+<input type="hidden" id="targetEmail" th:value="${targetEmail}">
+
+<h3 class="rating-title">이번 거래는 어떠셨나요?</h3>
+<p class="rating-desc">상대방의 거래 매너와 거래 경험을 평가해주세요.</p>
+
+<div class="rating-row">
+<fieldset>
+<input type="radio" name="reviewStar" value="5" id="rate1">
+<label for="rate1"><i class="fa-solid fa-star"></i></label>
+
+<input type="radio" name="reviewStar" value="4" id="rate2">
+<label for="rate2"><i class="fa-solid fa-star"></i></label>
+
+<input type="radio" name="reviewStar" value="3" id="rate3">
+<label for="rate3"><i class="fa-solid fa-star"></i></label>
+
+<input type="radio" name="reviewStar" value="2" id="rate4">
+<label for="rate4"><i class="fa-solid fa-star"></i></label>
+
+<input type="radio" name="reviewStar" value="1" id="rate5">
+<label for="rate5"><i class="fa-solid fa-star"></i></label>
+</fieldset>
+
+<div>
+<div class="rating-text"><strong>0.0</strong> / 5.0</div>
+<div class="rating-state" id="ratingState">별점을 선택해주세요</div>
+</div>
+</div>
+
+<div class="review-tags">
+<p class="tag-title">거래는 어떠셨나요?</p>
+<div class="tag-list">
+<label class="tag-item">
+<input type="radio" name="reviewTag" value="친절해요"><span>친절해요</span>
+</label>
+<label class="tag-item">
+<input type="radio" name="reviewTag" value="시간 약속 잘 지켜요"><span>시간 약속 잘 지켜요</span>
+</label>
+<label class="tag-item">
+<input type="radio" name="reviewTag" value="설명대로예요"><span>설명대로예요</span>
+</label>
+<label class="tag-item">
+<input type="radio" name="reviewTag" value="꼼꼼해요"><span>꼼꼼해요</span>
+</label>
+</div>
+</div>
+
+<div class="review-textarea-wrap">
+<textarea id="reviewContents" maxlength="100" placeholder="리뷰 내용을 작성해주세요"></textarea>
+<div class="char-count"><span id="charCurrent">0</span>/100</div>
+</div>
+
+<div class="btn-row">
+<button type="button" class="btn btn-cancel" onclick="window.close()">취소하기</button>
+<button type="submit" class="btn btn-submit">등록하기</button>
+</div>
+</form>
+</div>
+
+<script>
+/* 별점 */
+document.querySelectorAll('#myform input[name="reviewStar"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const score = this.value;
+        document.querySelector('.rating-text strong').textContent = score + ".0";
+        const ratingState = document.getElementById("ratingState");
+        if(score == 5) ratingState.textContent = "매우 만족";
+        else if(score == 4) ratingState.textContent = "만족";
+        else if(score == 3) ratingState.textContent = "보통";
+        else if(score == 2) ratingState.textContent = "아쉬워요";
+        else ratingState.textContent = "별로예요";
+    });
+});
+
+/* 글자수 */
+const textarea = document.getElementById("reviewContents");
+const counter = document.getElementById("charCurrent");
+textarea.addEventListener("input", function() {
+    counter.textContent = this.value.length;
+});
+
+/* submit */
+document.getElementById("myform").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const star = document.querySelector('input[name="reviewStar"]:checked');
+    const tag  = document.querySelector('input[name="reviewTag"]:checked');
+    if (!star) { alert('별점을 선택해주세요.'); return; }
+    if (!tag)  { alert('태그를 선택해주세요.'); return; }
+
+    const transactionId = document.getElementById('transactionId').value;
+    const targetEmail   = document.getElementById('targetEmail').value;
+    const rating        = star.value;
+    const oneLineCat    = tag.value;
+    const reviewContent = textarea.value.trim();
+
+    const ctxPath = '/finalProject_3/';
+    const params = new URLSearchParams({ transactionId, targetEmail, rating, oneLineCat, reviewContent });
+
+    fetch(ctxPath + 'mypage/review/write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            alert('리뷰가 등록되었습니다!');
+            if (window.opener && window.opener.loadMyPurchases) {
+                window.opener.loadMyPurchases();
+            }
+            window.close();
+        } else {
+            alert(res.message || '리뷰 등록에 실패했습니다.');
+        }
+    })
+    .catch(() => alert('서버 오류가 발생했습니다.'));
+});
+</script>
+
+</body>
+</html>

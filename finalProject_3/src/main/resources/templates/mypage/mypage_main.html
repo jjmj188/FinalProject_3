@@ -43,9 +43,9 @@
                         </div>
                         <div class="mp-manner">
                             <span class="label">매너온도</span>
-                            <span class="temp">36.8°C</span>
+                            <span class="temp"><span th:text="${member.mannerTemp}">36.8</span>°C</span>
                         </div>
-                        <div class="mp-temp-bar"><span style="width: 36.8%;"></span></div>
+                        <div class="mp-temp-bar"><span id="mannerTempBar" th:attr="data-mt=${member != null ? member.mannerTemp : 50}"></span></div>
                         <p class="mp-temp-sub">최근 3개월 기준 · 변동은 거래/후기 반영</p>
                     </div>
                 </div>
@@ -59,11 +59,6 @@
                         <span class="k">거래횟수</span>
                         <span class="v">5</span>
                     </div>
-                    <div class="mp-stat-item">
-                        <span class="k">보유캐시</span>
-                        <span class="v">20,000</span>
-                    </div>
-                    <button class="mp-charge-btn">충전하기</button>
                 </div>
             </div>
 
@@ -342,6 +337,37 @@
         </div>
     </div>
 
+    <!-- 배송현황 모달 -->
+    <div id="deliveryStatusModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:400px; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0; font-size:18px; font-weight:bold;">배송현황</h3>
+                <button onclick="document.getElementById('deliveryStatusModal').style.display='none'" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
+            </div>
+            <p id="dsProductName" style="font-size:14px; color:#555; margin:0 0 20px; font-weight:bold;"></p>
+            <div class="ds-steps">
+                <div class="ds-step" id="ds-step-1">
+                    <div class="ds-step-dot"></div>
+                    <div class="ds-step-label">결제완료</div>
+                </div>
+                <div class="ds-line"></div>
+                <div class="ds-step" id="ds-step-2">
+                    <div class="ds-step-dot"></div>
+                    <div class="ds-step-label">거래중</div>
+                </div>
+                <div class="ds-line"></div>
+                <div class="ds-step" id="ds-step-3">
+                    <div class="ds-step-dot"></div>
+                    <div class="ds-step-label">거래완료</div>
+                </div>
+            </div>
+            <div id="dsCancelInfo" style="display:none; margin-top:16px; padding:12px; background:#fff5f5; border-radius:8px; text-align:center; color:#c0392b; font-size:14px;"></div>
+            <p id="dsTradeDate" style="text-align:center; font-size:12px; color:#aaa; margin:16px 0 0;"></p>
+            <p id="dsPaymentType" style="text-align:center; font-size:12px; color:#999; margin:4px 0 0;"></p>
+        </div>
+    </div>
+
+    <!-- 리뷰 작성 모달 -->
     <!-- 프로필 수정 모달 -->
     <div id="profileEditOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:460px; max-height:85vh; overflow-y:auto; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
@@ -393,12 +419,14 @@
             </button>
         </div>
     </div>
+    <span id="mypageCtxData" th:attr="data-ctx=@{/}" style="display:none;"></span>
 </main>
-<script th:inline="javascript">
-    /*<![CDATA[*/
+<script>
     (function() {
-    const ctxPath = /*[[@{/}]]*/ '/';
-    let currentProfileImg = /*[[${member != null ? member.profileImg : ''}]]*/ '';
+    const ctxPath = document.getElementById('mypageCtxData').getAttribute('data-ctx') || '/';
+    const mannerTempBar = document.getElementById('mannerTempBar');
+    if (mannerTempBar) mannerTempBar.style.width = (mannerTempBar.dataset.mt || 50) + '%';
+    let currentProfileImg = document.getElementById('mypageProfileImg') ? document.getElementById('mypageProfileImg').getAttribute('src') : '';
     let editOriginalNickname = '';
     let editNicknameChecked = false;
 
@@ -551,6 +579,51 @@
         .catch(() => alert('서버 오류가 발생했습니다.'));
     }
 
+    // ===== 배송현황 모달 =====
+    window.openDeliveryStatusModal = function(tradeStatus, paymentType, tradeDate, productName) {
+        document.getElementById('dsProductName').textContent = productName;
+        document.getElementById('dsTradeDate').textContent = tradeDate ? '거래일: ' + tradeDate : '';
+        document.getElementById('dsPaymentType').textContent = paymentType ? '결제수단: ' + paymentType : '';
+        document.getElementById('dsCancelInfo').style.display = 'none';
+
+        const steps = [
+            document.getElementById('ds-step-1'),
+            document.getElementById('ds-step-2'),
+            document.getElementById('ds-step-3')
+        ];
+        steps.forEach(s => { s.classList.remove('ds-step-active', 'ds-step-done'); });
+
+        if (tradeStatus === '거래완료') {
+            steps[0].classList.add('ds-step-done');
+            steps[1].classList.add('ds-step-done');
+            steps[2].classList.add('ds-step-active');
+        } else if (tradeStatus === '거래중') {
+            steps[0].classList.add('ds-step-done');
+            steps[1].classList.add('ds-step-active');
+        } else if (tradeStatus === '취소' || tradeStatus === '환불' || tradeStatus === '환불완료') {
+            steps[0].classList.add('ds-step-done');
+            const cancelEl = document.getElementById('dsCancelInfo');
+            cancelEl.style.display = 'block';
+            cancelEl.textContent = tradeStatus === '취소' ? '거래가 취소되었습니다.' : (tradeStatus === '환불완료' ? '환불이 완료되었습니다.' : '환불 처리 중입니다.');
+        } else {
+            steps[0].classList.add('ds-step-active');
+        }
+        document.getElementById('deliveryStatusModal').style.display = 'block';
+    }
+
+    // ===== 리뷰 작성 팝업 =====
+    window.openReviewModal = function(transactionId, targetEmail, productName, imgUrl, amount, paymentType, saleType) {
+        const params = new URLSearchParams({
+            transactionId, targetEmail, productName,
+            imgUrl: imgUrl || '',
+            amount: amount || '',
+            paymentType: paymentType || '',
+            saleType: saleType || ''
+        });
+        const url = ctxPath + 'mypage/review/write?' + params.toString();
+        window.open(url, 'reviewPopup', 'width=720,height=750,scrollbars=yes,resizable=yes');
+    }
+
     // ===== 탈퇴 =====
     window.openWithdrawModal = function() {
         document.getElementById('withdrawModal').style.display = 'block';
@@ -596,6 +669,10 @@
     }
 
     // ===== 내 판매상품 수정/삭제 =====
+
+    window.goProductEdit = function(productNo) {
+        location.href = ctxPath + 'mypage/product/edit/' + productNo;
+    }
 
     window.openProductEditModal = function(productNo) {
         const p = myProductAllData.find(function(item) { return item.productNo === productNo; });
@@ -709,6 +786,14 @@
                 : `${ctxPath}images/no_image.png`;
             const priceText = p.amount != null ? p.amount.toLocaleString() + '원' : (p.productPrice ? p.productPrice.toLocaleString() + '원' : '가격 미정');
             const st = statusMap[p.tradeStatus] || { cls: 'rp-status-pending', label: p.tradeStatus || '-' };
+            const isDone = p.tradeStatus === '거래완료';
+            const canReview = isDone && !p.hasReview;
+            const reviewBtnStyle = canReview
+                ? 'background:#ff6b35; color:#fff; border:none; cursor:pointer;'
+                : 'background:#eee; color:#aaa; border:none; cursor:default;';
+            const reviewBtnAttr = canReview
+                ? `onclick="openReviewModal(${p.transactionId},'${p.sellerEmail}','${p.productName.replace(/'/g, "\\'")}','${p.imgUrl || ''}','${p.amount || p.productPrice || ''}','${p.paymentType || ''}','${p.saleType || ''}')"`
+                : 'disabled';
             return `
                 <div class="mp-wish-card">
                     <a href="${ctxPath}product/product_detail/${p.productNo}" class="mp-wish-img-wrap">
@@ -720,9 +805,13 @@
                         <p class="mp-wish-price">${priceText}</p>
                         <p style="margin:4px 0 0; font-size:12px; color:#999;">${p.tradeDate || ''}</p>
                     </div>
-                    <div style="margin:0 12px 12px; display:flex; align-items:center; justify-content:space-between;">
+                    <div style="margin:0 12px 4px; display:flex; align-items:center; justify-content:space-between;">
                         <span class="rp-status-badge ${st.cls}">${st.label}</span>
                         <span style="font-size:11px; color:#aaa;">${p.paymentType || ''}</span>
+                    </div>
+                    <div style="margin:0 12px 12px; display:flex; gap:6px;">
+                        <button class="mp-purchase-btn" onclick="openDeliveryStatusModal('${p.tradeStatus}','${p.paymentType || ''}','${p.tradeDate || ''}','${p.productName.replace(/'/g, "\\'")}')">배송현황</button>
+                        <button class="mp-purchase-btn" style="${reviewBtnStyle}" ${reviewBtnAttr}>${p.hasReview ? '리뷰완료' : '리뷰작성'}</button>
                     </div>
                 </div>`;
         }).join('')}</div>`;
@@ -776,7 +865,7 @@
                         <p class="mp-wish-price">${priceText}</p>
                     </div>
                     <div class="mp-product-actions">
-                        <button class="mp-product-edit-btn" onclick="openProductEditModal(${p.productNo})">수정</button>
+                        <button class="mp-product-edit-btn" onclick="goProductEdit(${p.productNo})">수정</button>
                         <button class="mp-product-delete-btn" onclick="deleteMyProduct(${p.productNo})">삭제</button>
                     </div>
                 </div>`;
@@ -1286,7 +1375,6 @@
     };
 
     })();
-    /*]]>*/
 </script>
 </body>
 </html>

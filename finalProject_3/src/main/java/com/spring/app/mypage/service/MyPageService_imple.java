@@ -11,6 +11,9 @@ import com.spring.app.mypage.domain.MyPurchaseDTO;
 import com.spring.app.mypage.domain.MyReportDTO;
 import com.spring.app.mypage.domain.NotificationDTO;
 import com.spring.app.product.domain.ProductDTO;
+import com.spring.app.product.domain.ProductImageDTO;
+import com.spring.app.product.domain.ProductShippingOptionDTO;
+import com.spring.app.product.domain.ProductMeetLocationDTO;
 import com.spring.app.mypage.model.MyPageDAO;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +52,11 @@ public class MyPageService_imple implements MyPageService {
     }
 
     @Override
+    public ProductDTO getMyProductByNo(Map<String, Object> params) {
+        return myPageDAO.getMyProductByNo(params);
+    }
+
+    @Override
     public int updateMyProduct(Map<String, Object> params) {
         return myPageDAO.updateMyProduct(params);
     }
@@ -63,10 +71,25 @@ public class MyPageService_imple implements MyPageService {
         return myPageDAO.deleteMyProduct(params);
     }
 
+    @Override public ProductImageDTO getProductImageByNo(int prdImgNo) { return myPageDAO.getProductImageByNo(prdImgNo); }
+    @Override public int deleteProductImageByNo(int prdImgNo) { return myPageDAO.deleteProductImageByNo(prdImgNo); }
+    @Override public int insertProductImageEdit(ProductImageDTO img) { return myPageDAO.insertProductImageEdit(img); }
+    @Override public int resetMainImages(int productNo) { return myPageDAO.resetMainImages(productNo); }
+    @Override public int setFirstImageAsMain(int productNo) { return myPageDAO.setFirstImageAsMain(productNo); }
+    @Override public int deleteProductShippingOptions(int productNo) { return myPageDAO.deleteProductShippingOptions(productNo); }
+    @Override public int insertShippingOptionEdit(ProductShippingOptionDTO opt) { return myPageDAO.insertShippingOptionEdit(opt); }
+    @Override public int deleteProductMeetLocations(int productNo) { return myPageDAO.deleteProductMeetLocations(productNo); }
+    @Override public int insertMeetLocationEdit(ProductMeetLocationDTO loc) { return myPageDAO.insertMeetLocationEdit(loc); }
+
     // 내 구매상품
     @Override
     public List<MyPurchaseDTO> getMyPurchases(String email) {
         return myPageDAO.getMyPurchases(email);
+    }
+
+    @Override
+    public int insertReview(Map<String, Object> params) {
+        return myPageDAO.insertReview(params);
     }
 
     // 계좌

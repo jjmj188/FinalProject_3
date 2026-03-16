@@ -57,7 +57,8 @@
             NICKNAME AS nickname,
             ADDRESS AS address,
             PROFILE_IMG AS profileImg,
-            IDLE AS idle
+            IDLE AS idle,
+            MANNER_TEMP AS mannerTemp
         FROM MEMBER
         WHERE EMAIL = #{email} AND STATUS = 1
     </select>

@@ -13,4 +13,7 @@ public class MyPurchaseDTO {
     private String tradeStatus;
     private String tradeDate;
     private String imgUrl;
+    private Integer transactionId;
+    private Integer hasReview;   // 0: 미작성, 1: 작성완료
+    private String sellerEmail;
 }

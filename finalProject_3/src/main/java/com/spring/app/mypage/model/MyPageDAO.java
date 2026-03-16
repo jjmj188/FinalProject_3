@@ -9,6 +9,9 @@ import com.spring.app.mypage.domain.MyPurchaseDTO;
 import com.spring.app.mypage.domain.MyReportDTO;
 import com.spring.app.mypage.domain.NotificationDTO;
 import com.spring.app.product.domain.ProductDTO;
+import com.spring.app.product.domain.ProductImageDTO;
+import com.spring.app.product.domain.ProductShippingOptionDTO;
+import com.spring.app.product.domain.ProductMeetLocationDTO;
 
 public interface MyPageDAO {
     List<NotificationDTO> getNotifications(String email);
@@ -20,12 +23,25 @@ public interface MyPageDAO {
 
     // 내 판매상품
     List<ProductDTO> getMyProducts(String email);
+    ProductDTO getMyProductByNo(Map<String, Object> params);
     int updateMyProduct(Map<String, Object> params);
     int getProductTransactionCount(int productNo);
     int deleteMyProduct(Map<String, Object> params);
 
+    // 수정 페이지용 이미지/배송/위치
+    ProductImageDTO getProductImageByNo(int prdImgNo);
+    int deleteProductImageByNo(int prdImgNo);
+    int insertProductImageEdit(ProductImageDTO img);
+    int resetMainImages(int productNo);
+    int setFirstImageAsMain(int productNo);
+    int deleteProductShippingOptions(int productNo);
+    int insertShippingOptionEdit(ProductShippingOptionDTO opt);
+    int deleteProductMeetLocations(int productNo);
+    int insertMeetLocationEdit(ProductMeetLocationDTO loc);
+
     // 내 구매상품
     List<MyPurchaseDTO> getMyPurchases(String email);
+    int insertReview(Map<String, Object> params);
 
     // 계좌
     List<AccountDTO> getAccountList(String email);
