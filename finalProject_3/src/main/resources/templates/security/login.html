@@ -57,7 +57,7 @@
 			    <div th:if="${param.error}" class="alert alert-danger" style="color: #ee6a7b; font-size: 14px; margin-bottom: 15px;">
 			        이메일 또는 비밀번호가 일치하지 않습니다.
 			    </div>
-			
+				
 			    <div class="form-group">
 			        <label for="email">이메일</label>
 			        <input type="email" name="email" id="email" class="form-control py-3" placeholder="이메일을 입력해주세요" required autofocus>
@@ -73,6 +73,54 @@
 				    <a href="javascript:void(0);" onclick="openFindModal()" style="color: #666; font-size: 14px; text-decoration: none;">이메일 / 비밀번호 찾기</a>
 				</div>
 			</form>
+
+            <!-- 소셜 로그인 -->
+            <div style="margin: 20px 0; text-align: center; position: relative;">
+                <hr style="border: none; border-top: 1px solid #e0e0e0;">
+                <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 12px; color: #999; font-size: 13px;">또는</span>
+            </div>
+            <a th:href="@{/oauth2/authorization/kakao}"
+               style="display: flex; align-items: center; justify-content: center; gap: 10px;
+                      width: 100%; padding: 13px 0; border-radius: 4px; margin-bottom: 10px;
+                      background: #FEE500; color: #333; font-size: 15px; font-weight: bold;
+                      text-decoration: none; border: none; cursor: pointer;
+                      transition: background 0.2s;"
+               onmouseover="this.style.background='#f0d900'"
+               onmouseout="this.style.background='#FEE500'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#3C1E1E">
+                    <path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.88 1.74 5.41 4.36 6.93-.19.7-.68 2.54-.78 2.94-.12.5.18.49.38.36.16-.11 2.52-1.71 3.54-2.4.81.12 1.64.18 2.5.18 5.52 0 10-3.69 10-8.25S17.52 3 12 3z"/>
+                </svg>
+                카카오로 로그인
+            </a>
+            <a th:href="@{/oauth2/authorization/google}"
+               style="display: flex; align-items: center; justify-content: center; gap: 10px;
+                      width: 100%; padding: 13px 0; border-radius: 4px; margin-bottom: 10px;
+                      background: #fff; color: #333; font-size: 15px; font-weight: bold;
+                      text-decoration: none; border: 1px solid #ddd; cursor: pointer;
+                      transition: background 0.2s;"
+               onmouseover="this.style.background='#f5f5f5'"
+               onmouseout="this.style.background='#fff'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+                구글로 로그인
+            </a>
+            <a th:href="@{/oauth2/authorization/naver}"
+               style="display: flex; align-items: center; justify-content: center; gap: 10px;
+                      width: 100%; padding: 13px 0; border-radius: 4px;
+                      background: #03C75A; color: #fff; font-size: 15px; font-weight: bold;
+                      text-decoration: none; border: none; cursor: pointer;
+                      transition: background 0.2s;"
+               onmouseover="this.style.background='#02b350'"
+               onmouseout="this.style.background='#03C75A'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13.56 12.27L10.3 7.5H7.5v9h2.94v-4.77l3.32 4.77H16.5V7.5h-2.94v4.77z"/>
+                </svg>
+                네이버로 로그인
+            </a>
 
             <div class="register-box">
                 <p>아직 회원이 아니신가요?</p>
@@ -160,6 +208,9 @@
                 window.addEventListener('load', function() {
                     $("#idleModal").fadeIn(200);
                 });
+            }
+            if (urlParams.get('naverError') === 'exists') {
+                alert('이미 해당 이메일로 가입된 계정이 있습니다.\n일반 로그인을 이용해 주세요.');
             }
         })();
 

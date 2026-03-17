@@ -124,4 +124,21 @@ public class MemberDAO_imple implements MemberDAO {
     public void deleteRefreshToken(String email) {
         sqlsession.delete("member.deleteRefreshToken", email);
     }
+
+    // 소셜 로그인 전용 회원 조회
+    @Override
+    public MemberDTO findByEmailForSocial(String email) {
+        return sqlsession.selectOne("member.findByEmailForSocial", email);
+    }
+
+    // 소셜 로그인 자동 회원가입
+    @Override
+    public int insertSocialMember(MemberDTO member) {
+        return sqlsession.insert("member.insertSocialMember", member);
+    }
+
+    @Override
+    public void insertAuthority(String email) {
+        sqlsession.insert("member.insertAuthority", email);
+    }
 }

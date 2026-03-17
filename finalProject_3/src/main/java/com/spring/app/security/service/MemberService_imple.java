@@ -113,6 +113,7 @@ public class MemberService_imple implements MemberService {
 
     @Override
     public void withdrawMember(String email) {
+        dao.deleteRefreshToken(email);
         dao.withdrawMember(email);
     }
 }

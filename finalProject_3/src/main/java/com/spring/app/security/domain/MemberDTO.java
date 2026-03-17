@@ -34,6 +34,10 @@ public class MemberDTO {
     private MultipartFile attach;
     private String defaultProfile; // 일러스트 선택 시 dicebear API URL
 
+    // 소셜 로그인
+    private String socialType; // 'NAVER' 등
+    private String socialId;   // 네이버 고유 ID
+
     // 권한 목록 (jwt_jpa_board 방식: AUTHORITIES 테이블에서 로드)
     private List<String> authorities;
 }
