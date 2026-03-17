@@ -15,6 +15,7 @@
 	        P.PRODUCT_NAME AS productName,
 	        P.PRODUCT_PRICE AS productPrice,
 	        P.TRADE_STATUS AS tradeStatus,
+	        P.TRADE_METHOD AS tradeMethod,
 	        P.RESERVED_ROOM_ID AS reservedRoomId,
 	        (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = C.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
 	        CASE
@@ -34,6 +35,19 @@
 	    WHERE C.SELLER_EMAIL = #{loginUserEmail} OR C.BUYER_EMAIL = #{loginUserEmail}
 	    ORDER BY C.LAST_MESSAGE_AT DESC NULLS LAST
 	</select>
+
+    <select id="selectProductInfoForChat" resultType="com.spring.app.chat.domain.ChatRoomDTO">
+        SELECT
+            P.PRODUCT_PRICE AS productPrice,
+            P.TRADE_STATUS AS tradeStatus,
+            P.TRADE_METHOD AS tradeMethod,
+            P.RESERVED_ROOM_ID AS reservedRoomId,
+            (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
+            M.NICKNAME AS nickname
+        FROM PRODUCTS P
+        JOIN MEMBER M ON M.EMAIL = #{sellerEmail}
+        WHERE P.PRODUCT_NO = #{productNo}
+    </select>
 
     <select id="findRoomId" resultType="String">
 	    SELECT ROOM_ID 

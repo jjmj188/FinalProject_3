@@ -9,6 +9,8 @@ public interface ChatService {
     List<ChatRoomDTO> getMyChatRooms(String loginUserEmail);
 
 	String getOrCreateRoom(int productNo, String sellerEmail, String buyerEmail);
+
+    ChatRoomDTO getProductInfoForChat(int productNo, String sellerEmail);
     
 	// 나가기 메서드 선언
 	boolean leaveChatRoom(String roomId);

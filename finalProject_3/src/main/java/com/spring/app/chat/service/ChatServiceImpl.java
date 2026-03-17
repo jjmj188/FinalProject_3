@@ -43,6 +43,11 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
+    public ChatRoomDTO getProductInfoForChat(int productNo, String sellerEmail) {
+        return chatMapper.selectProductInfoForChat(productNo, sellerEmail);
+    }
+
+    @Override
     public boolean leaveChatRoom(String roomId) {
         // 삭제된 행(row)의 개수가 1 이상이면 성공(true)
         int result = chatMapper.deleteChatRoom(roomId);

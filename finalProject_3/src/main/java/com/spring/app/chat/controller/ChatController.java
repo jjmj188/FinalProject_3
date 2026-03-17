@@ -132,13 +132,31 @@ public class ChatController {
 
             // 서비스 호출해서 방 번호 받아오기 (있으면 기존 방, 없으면 새 방)
             String roomId = chatService.getOrCreateRoom(productNo, sellerEmail, buyerEmail);
-            
+
             resultMap.put("success", true);
             resultMap.put("roomId", roomId);
-            
+
         } catch (Exception e) {
             resultMap.put("success", false);
             resultMap.put("message", "채팅방 생성 중 오류가 발생했습니다.");
+            e.printStackTrace();
+            return resultMap;
+        }
+
+        // 채팅창 배너에 필요한 상품 정보 조회 (실패해도 채팅방 생성에는 영향 없음)
+        try {
+            int productNo = Integer.parseInt(payload.get("productNo").toString());
+            String sellerEmail = payload.get("sellerEmail").toString();
+            ChatRoomDTO productInfo = chatService.getProductInfoForChat(productNo, sellerEmail);
+            if (productInfo != null) {
+                resultMap.put("nickname", productInfo.getNickname());
+                resultMap.put("productImgUrl", productInfo.getProductImgUrl());
+                resultMap.put("productPrice", productInfo.getProductPrice());
+                resultMap.put("tradeStatus", productInfo.getTradeStatus());
+                resultMap.put("tradeMethod", productInfo.getTradeMethod());
+                resultMap.put("reservedRoomId", productInfo.getReservedRoomId());
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return resultMap;

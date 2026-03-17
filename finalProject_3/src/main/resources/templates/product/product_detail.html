@@ -1238,12 +1238,20 @@ document.addEventListener("DOMContentLoaded", function () {
             })
         })
             .then(function (response) {
+                if (response.status === 401 || response.status === 403) {
+                    isChatLoading = false;
+                    if (typeof window.toggleChatPopup === "function") {
+                        window.toggleChatPopup();
+                    }
+                    return null;
+                }
                 if (!response.ok) {
                     throw new Error("서버 에러 발생");
                 }
                 return response.json();
             })
             .then(function (data) {
+                if (!data) return;
                 isChatLoading = false;
 
                 if (data.success) {
@@ -1257,7 +1265,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     setTimeout(function () {
                         if (typeof window.openChatRoom === "function") {
-                            window.openChatRoom(data.roomId, sellerEmail, productName);
+                            window.openChatRoom(
+                                data.roomId,
+                                data.nickname || sellerEmail,
+                                productName,
+                                data.productImgUrl,
+                                data.productPrice,
+                                data.tradeStatus,
+                                sellerEmail,
+                                parseInt(productNo, 10),
+                                data.reservedRoomId,
+                                data.tradeMethod
+                            );
                         }
                     }, 300);
                 } else {
