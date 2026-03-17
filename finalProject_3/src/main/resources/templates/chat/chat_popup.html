@@ -95,6 +95,7 @@
         .chat-header { padding: 10px 20px; background: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ebebeb; height: 60px; z-index: 10; }
         .chat-header h4 { margin: 0; font-size: 18px; font-weight: bold; color: #222; flex: 1; text-align: center; }
         .header-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #333; padding: 5px; }
+        #btnUserProfile:hover { background: #ddd; }
         
         /* 가로로 나열되는 슬라이딩 메뉴 */
         .chat-options-menu { 
@@ -136,8 +137,29 @@
         .chat-input-wrapper { display: flex; flex-direction: column; border-top: 1px solid #ebebeb; }
         #chatInput { width: 100%; height: 80px; padding: 15px 20px; border: none; background: #e2e2e2; outline: none; font-size: 14px; resize: none; box-sizing: border-box; }
         .chat-input-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #fff; }
-        .action-icons { display: flex; gap: 15px; color: #333; font-size: 22px; cursor: pointer; }
-        .chat-btn-send { background: #222; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;}
+.chat-btn-send { background: #222; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;}
+        .btn-account-send { background: #1a73e8; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; }
+
+        /* 계좌 카드 메시지 */
+        .msg-account-card { background: #fff; border: 2px solid #1a73e8; border-radius: 12px; padding: 14px 16px; min-width: 200px; max-width: 260px; }
+        .msg-account-card .ac-title { font-size: 12px; font-weight: bold; color: #1a73e8; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .msg-account-card .ac-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+        .msg-account-card .ac-label { color: #888; }
+        .msg-account-card .ac-value { font-weight: bold; color: #222; }
+        .msg-account-card .ac-copy { margin-top: 10px; width: 100%; padding: 7px; background: #1a73e8; color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        /* 예약 카드 메시지 */
+        .msg-reserve-card { background: #fff; border: 2px solid #00c73c; border-radius: 12px; padding: 14px 16px; min-width: 220px; max-width: 280px; }
+        .msg-reserve-card .rv-title { font-size: 13px; font-weight: bold; color: #00c73c; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
+        .msg-reserve-card .rv-row { display: flex; gap: 8px; font-size: 13px; margin-bottom: 7px; align-items: flex-start; }
+        .msg-reserve-card .rv-icon { width: 18px; flex-shrink: 0; }
+        .msg-reserve-card .rv-text { color: #333; line-height: 1.4; }
+        .msg-reserve-card .rv-notice { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e8f8ee; font-size: 11px; color: #888; text-align: center; }
+
+        /* 예약 취소 카드 메시지 */
+        .msg-cancel-reserve-card { background: #fff; border: 2px solid #e44; border-radius: 12px; padding: 14px 16px; min-width: 220px; max-width: 280px; }
+        .msg-cancel-reserve-card .cr-title { font-size: 13px; font-weight: bold; color: #e44; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .msg-cancel-reserve-card .cr-notice { font-size: 12px; color: #666; line-height: 1.5; }
     </style>
 
     <div id="chatOverlay" class="chat-overlay" onclick="window.toggleChatPopup()"></div>
@@ -160,7 +182,14 @@
             <div class="chat-main" id="chatMainArea" style="visibility: hidden;">
                 <div class="chat-header">
                     <button class="header-btn" onclick="window.toggleChatPopup()">❮</button>
-                    <h4 id="currentRoomTitle">판매자 이름</h4>
+                    <h4 id="currentRoomTitle" style="display:flex; align-items:center; gap:8px; justify-content:center;">
+                        <span id="currentRoomNickname">판매자 이름</span>
+                        <a id="btnUserProfile" href="#" title="프로필 보기" style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#f0f0f0; color:#555; text-decoration:none; font-size:14px; flex-shrink:0; transition:background 0.15s;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                            </svg>
+                        </a>
+                    </h4>
                     <button class="header-btn" onclick="toggleOptionsMenu()">⋮</button>
                 </div>
                 
@@ -173,10 +202,7 @@
                         <div class="menu-icon">⚠️</div>
                         <span class="menu-text">신고하기</span>
                     </div>
-                    <div class="menu-item" onclick="actionBlock()">
-                        <div class="menu-icon">🚫</div>
-                        <span class="menu-text">차단하기</span>
-                    </div>
+
                     <div class="menu-item" onclick="actionLeave()">
                         <div class="menu-icon">🚪</div>
                         <span class="menu-text">나가기</span>
@@ -207,12 +233,10 @@
                     <textarea id="chatInput" placeholder="메시지를 입력하세요..." onkeypress="handleEnterKey(event)"></textarea>
                     
                     <div class="chat-input-toolbar">
-                        <div class="action-icons">
-                            <span>＋</span>
-                            <span>📸</span>
-                            <span>😊</span>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button class="btn-account-send" id="btnAccountSend" style="display:none;" onclick="window.sendAccountCard()">💳 계좌전송</button>
+                            <button class="chat-btn-send" onclick="window.sendChatMessage()">전송</button>
                         </div>
-                        <button class="chat-btn-send" onclick="window.sendChatMessage()">전송</button>
                     </div>
                 </div>
             </div>
@@ -374,7 +398,8 @@
             currentSellerEmail = sellerEmail;
             document.getElementById('chatMainArea').style.visibility = 'visible';
             
-            document.getElementById('currentRoomTitle').innerText = targetUser;
+            document.getElementById('currentRoomNickname').innerText = targetUser;
+            document.getElementById('btnUserProfile').href = ctxPath + '/product/product_user_profile?productNo=' + productNo;
             document.getElementById('bannerTitle').innerText = productName;
             
             // 이미지 세팅 (방어 코드 포함)
@@ -423,10 +448,12 @@
             btnSafePay.style.display = 'none';
             chatBlockedNotice.style.display = 'none';
             chatInputWrapper.style.display = 'flex';
+            document.getElementById('btnAccountSend').style.display = 'none';
 
             const isSeller = (currentUserEmail === sellerEmail);
 
             if (isSeller) {
+                document.getElementById('btnAccountSend').style.display = 'block';
                 if (status === '판매중') {
                     btnReserve.style.display = 'block';
                 } else if (status === '예약중') {
@@ -506,19 +533,56 @@
         window.showMessage = function(message) {
             const area = document.getElementById('msgDisplayArea');
             const isMine = message.sender === currentUserEmail;
-            
+
             const date = message.timestamp ? new Date(message.timestamp) : new Date();
             const timeStr = date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
 
             const wrapper = document.createElement('div');
             wrapper.className = `msg-wrapper ${isMine ? 'mine' : 'other'}`;
-            
-            const bubbleHtml = `<div class="message ${isMine ? 'msg-mine' : 'msg-other'}">${message.content}</div>`;
-            const timeHtml = `<div class="msg-time">${timeStr}</div>`;
 
+            let bubbleHtml;
+            if (message.content && message.content.startsWith('__ACCOUNT__:')) {
+                try {
+                    const json = JSON.parse(message.content.slice(12));
+                    bubbleHtml = `
+                    <div class="msg-account-card">
+                        <div class="ac-title">💳 계좌 정보</div>
+                        <div class="ac-row"><span class="ac-label">은행</span><span class="ac-value">${json.bankName}</span></div>
+                        <div class="ac-row"><span class="ac-label">계좌번호</span><span class="ac-value">${json.accountNum}</span></div>
+                        <div class="ac-row"><span class="ac-label">예금주</span><span class="ac-value">${json.accountHolder}</span></div>
+                        <button class="ac-copy" onclick="navigator.clipboard.writeText('${json.accountNum}').then(()=>alert('계좌번호가 복사되었습니다.'))">계좌번호 복사</button>
+                    </div>`;
+                } catch(e) {
+                    bubbleHtml = `<div class="message ${isMine ? 'msg-mine' : 'msg-other'}">${message.content}</div>`;
+                }
+            } else if (message.content && message.content.startsWith('__RESERVE__:')) {
+                try {
+                    const json = JSON.parse(message.content.slice(12));
+                    bubbleHtml = `
+                    <div class="msg-reserve-card">
+                        <div class="rv-title">🤝 예약이 확정되었습니다!</div>
+                        <div class="rv-row"><span class="rv-icon">📅</span><span class="rv-text">${json.date}</span></div>
+                        <div class="rv-row"><span class="rv-icon">📍</span><span class="rv-text">${json.location}</span></div>
+                        <div class="rv-row"><span class="rv-icon">💰</span><span class="rv-text">${json.price}원</span></div>
+                        <div class="rv-notice">약속 시간에 늦지 않게 와주세요!</div>
+                    </div>`;
+                } catch(e) {
+                    bubbleHtml = `<div class="message ${isMine ? 'msg-mine' : 'msg-other'}">${message.content}</div>`;
+                }
+            } else if (message.content && message.content.startsWith('__CANCEL_RESERVE__:')) {
+                bubbleHtml = `
+                <div class="msg-cancel-reserve-card">
+                    <div class="cr-title">❌ 예약이 취소되었습니다</div>
+                    <div class="cr-notice">상품이 다시 '판매중' 상태로 변경되었습니다.</div>
+                </div>`;
+            } else {
+                bubbleHtml = `<div class="message ${isMine ? 'msg-mine' : 'msg-other'}">${message.content}</div>`;
+            }
+
+            const timeHtml = `<div class="msg-time">${timeStr}</div>`;
             wrapper.innerHTML = isMine ? timeHtml + bubbleHtml : bubbleHtml + timeHtml;
             area.appendChild(wrapper);
-            area.scrollTop = area.scrollHeight; 
+            area.scrollTop = area.scrollHeight;
         };
 
         window.toggleOptionsMenu = function() {
@@ -656,12 +720,33 @@
             .catch(e => console.error("신고 에러:", e));
         };
         
+        window.sendAccountCard = function() {
+            if (!currentRoomId) { alert("채팅방을 먼저 선택해주세요."); return; }
+            fetch(`${ctxPath}/mypage/primary-account`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message);
+                    return;
+                }
+                const payload = JSON.stringify({ bankName: data.bankName, accountNum: data.accountNum, accountHolder: data.accountHolder });
+                const msg = {
+                    sender: currentUserEmail,
+                    content: '__ACCOUNT__:' + payload,
+                    roomId: currentRoomId,
+                    timestamp: new Date().toISOString()
+                };
+                stompClient.send("/app/chat/send", {}, JSON.stringify(msg));
+            })
+            .catch(() => alert("계좌 정보를 불러오는 중 오류가 발생했습니다."));
+        };
+
         window.actionSafePay = function() {
             if (!currentProductNo) { alert("상품 정보를 불러올 수 없습니다."); return; }
             location.href = ctxPath + '/payment/checkout?productNo=' + currentProductNo;
         };
 
-        window.actionBlock = function() { alert("차단하기 API 연동 필요"); toggleOptionsMenu(); };
+
         window.actionLeave = function() { 
             if(!currentRoomId) return; 
 
@@ -714,6 +799,7 @@
                     currentReservedRoomId = null;
 
                     alert("예약이 취소되었습니다.");
+                    window.loadChatRoomList();
                 } else {
                     alert("예약 취소에 실패했습니다.");
                 }
@@ -760,14 +846,17 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    // 2. 채팅방에 전송할 이쁜 템플릿 메시지 만들기
-                    const msgContent = `[🤝 예약이 확정되었습니다!]\n\n📅 일시 : ${formattedDate}\n📍 장소 : ${locVal}\n💰 최종가격 : ${Number(priceVal).toLocaleString()}원\n\n약속 시간에 늦지 않게 와주세요!`;
-
-                    const msg = { 
-                        sender: currentUserEmail, 
-                        content: msgContent, 
-                        roomId: currentRoomId, 
-                        timestamp: new Date().toISOString() 
+                    // 2. 예약 카드 메시지 전송
+                    const reservePayload = JSON.stringify({
+                        date: formattedDate,
+                        location: locVal,
+                        price: Number(priceVal).toLocaleString()
+                    });
+                    const msg = {
+                        sender: currentUserEmail,
+                        content: '__RESERVE__:' + reservePayload,
+                        roomId: currentRoomId,
+                        timestamp: new Date().toISOString()
                     };
                     
                     // 웹소켓으로 쏘기
@@ -784,6 +873,7 @@
 
                     alert("예약이 정상적으로 확정되었습니다.");
                     window.closeReserveModal();
+                    window.loadChatRoomList();
                 } else {
                     alert("예약 처리에 실패했습니다.");
                 }

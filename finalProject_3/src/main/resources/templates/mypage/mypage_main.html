@@ -53,11 +53,11 @@
                 <div class="mp-stats-card">
                     <div class="mp-stat-item">
                         <span class="k">안심결제</span>
-                        <span class="v">5</span>
+                        <span class="v" th:text="${safePayCount != null ? safePayCount : 0}">0</span>
                     </div>
                     <div class="mp-stat-item">
                         <span class="k">거래횟수</span>
-                        <span class="v">5</span>
+                        <span class="v" th:text="${tradeCount != null ? tradeCount : 0}">0</span>
                     </div>
                 </div>
             </div>
@@ -1047,7 +1047,7 @@
         return `<span class="rp-admin-waiting">답변 대기 중</span>`;
     }
 
-    function renderReportList(reports, containerId, emptyMsg) {
+    function renderReportList(reports, containerId, emptyMsg, isSent) {
         const container = document.getElementById(containerId);
         if (!reports || reports.length === 0) {
             container.innerHTML = `<div class="mp-empty"><p>${emptyMsg}</p></div>`;
@@ -1056,18 +1056,22 @@
         container.innerHTML = reports.map(r => {
             const imgSrc = r.imgUrl
                 ? (r.imgUrl.startsWith('http') ? r.imgUrl : ctxPath.replace(/\/$/, '') + r.imgUrl)
-                : `${ctxPath}images/no_image.png`;
+                : null;
             const productLink = r.productNo
                 ? `<a href="${ctxPath}product/product_detail/${r.productNo}" class="rp-product-name">${r.productName || '상품 정보 없음'}</a>`
-                : `<span class="rp-product-name" style="color:#999;">${r.typeName ? '[' + r.typeName + '] 채팅/리뷰 신고' : '신고 대상 정보 없음'}</span>`;
+                : `<span class="rp-product-name" style="color:#999;">-</span>`;
+            const nicknameLabel = isSent ? '신고 대상자' : '신고자';
+            const nicknameValue = isSent ? (r.targetNickname || '-') : (r.reporterNickname || '-');
+            const imgHtml = imgSrc
+                ? `<img src="${imgSrc}" alt="${r.productName || '상품 이미지'}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                   <div class="rp-img-placeholder" style="display:none;">이미지 없음</div>`
+                : `<div class="rp-img-placeholder">이미지 없음</div>`;
             return `
             <div class="rp-card">
                 <div class="rp-card-img">
                     ${r.productNo
-                        ? `<a href="${ctxPath}product/product_detail/${r.productNo}">
-                               <img src="${imgSrc}" alt="${r.productName || ''}" onerror="this.src='${ctxPath}images/no_image.png'">
-                           </a>`
-                        : `<img src="${imgSrc}" alt="이미지 없음" onerror="this.src='${ctxPath}images/no_image.png'">`
+                        ? `<a href="${ctxPath}product/product_detail/${r.productNo}">${imgHtml}</a>`
+                        : imgHtml
                     }
                 </div>
                 <div class="rp-card-body">
@@ -1075,6 +1079,11 @@
                         <span class="rp-label">신고 상품</span>
                         ${productLink}
                     </div>
+                    ${isSent ? `
+                    <div class="rp-card-row">
+                        <span class="rp-label">${nicknameLabel}</span>
+                        <span class="rp-value">${nicknameValue}</span>
+                    </div>` : ''}
                     <div class="rp-card-row">
                         <span class="rp-label">신고 유형</span>
                         <span class="rp-value">${r.mainCategory ? r.mainCategory + ' > ' : ''}${r.typeName || '-'}</span>
@@ -1105,7 +1114,7 @@
     window.loadMyReportsSent = function() {
         fetch(`${ctxPath}mypage/reports/sent`)
         .then(r => r.json())
-        .then(data => renderReportList(data, 'reportSentContent', '신고한 내역이 없습니다.'))
+        .then(data => renderReportList(data, 'reportSentContent', '신고한 내역이 없습니다.', true))
         .catch(() => {
             document.getElementById('reportSentContent').innerHTML = '<div class="mp-empty"><p>신고 내역을 불러올 수 없습니다.</p></div>';
         });
@@ -1114,7 +1123,7 @@
     window.loadMyReportsReceived = function() {
         fetch(`${ctxPath}mypage/reports/received`)
         .then(r => r.json())
-        .then(data => renderReportList(data, 'reportReceivedContent', '신고받은 내역이 없습니다.'))
+        .then(data => renderReportList(data, 'reportReceivedContent', '신고받은 내역이 없습니다.', false))
         .catch(() => {
             document.getElementById('reportReceivedContent').innerHTML = '<div class="mp-empty"><p>신고받은 내역을 불러올 수 없습니다.</p></div>';
         });

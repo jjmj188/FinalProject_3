@@ -53,4 +53,11 @@ public interface MemberDAO {
                           @org.apache.ibatis.annotations.Param("rtValue") String rtValue);
     String findRefreshTokenByEmail(String email);
     void deleteRefreshToken(String email);
+
+    // 소셜 로그인 전용 회원 조회 (STATUS 조건 없음)
+    MemberDTO findByEmailForSocial(String email);
+
+    // 소셜 로그인 자동 회원가입
+    int insertSocialMember(MemberDTO member);
+    void insertAuthority(String email);
 }

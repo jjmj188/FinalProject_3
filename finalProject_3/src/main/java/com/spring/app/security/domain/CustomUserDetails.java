@@ -2,11 +2,13 @@ package com.spring.app.security.domain;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 /*
     Spring Security 의 UserDetails 인터페이스를 구현한 클래스.
@@ -14,7 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
     jwt_jpa_board 의 CustomUserDetails 구조를 따른다.
     - 권한(authorities)은 MemberDTO.getAuthorities() (List<String>) 에서 로드한다.
 */
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, OAuth2User {
 
     private MemberDTO member;
 
@@ -48,6 +50,10 @@ public class CustomUserDetails implements UserDetails {
     public String getUsername() {
         return member.getEmail();
     }
+
+    // OAuth2User 인터페이스 구현 (소셜 로그인용)
+    @Override public Map<String, Object> getAttributes() { return Map.of(); }
+    @Override public String getName() { return member.getEmail(); }
 
     @Override public boolean isAccountNonExpired()     { return true; }
     @Override public boolean isAccountNonLocked()      { return true; }

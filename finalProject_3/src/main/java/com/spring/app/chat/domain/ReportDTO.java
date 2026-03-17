@@ -14,6 +14,7 @@ public class ReportDTO {
     private String reporterEmail;      // 신고자 (현재 로그인한 사람)
     private String targetEmail;        // 피신고자 (채팅 상대방)
     private int typeId;                // REPORT_TYPES 테이블에서 찾아온 번호
+    private Integer productNum;        // 채팅방에 연결된 상품 번호
     private String nosqlMsgKey;        // 제약조건 통과용 임의 키
     private String reportImg;          // 첨부 이미지 파일명 (file_reports/ 폴더 기준)
 }

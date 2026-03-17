@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.spring.app.common.AccountEncryptUtil;
 import com.spring.app.mypage.domain.AccountDTO;
 import com.spring.app.mypage.domain.DeliveryAddressDTO;
 import com.spring.app.mypage.domain.MyPurchaseDTO;
@@ -94,8 +95,17 @@ public class MyPageService_imple implements MyPageService {
 
     // 계좌
     @Override
+    public AccountDTO getPrimaryAccount(String email) {
+        AccountDTO account = myPageDAO.getPrimaryAccount(email);
+        if (account != null) account.setAccountNum(AccountEncryptUtil.decrypt(account.getAccountNum()));
+        return account;
+    }
+
+    @Override
     public List<AccountDTO> getAccountList(String email) {
-        return myPageDAO.getAccountList(email);
+        List<AccountDTO> list = myPageDAO.getAccountList(email);
+        if (list != null) list.forEach(a -> a.setAccountNum(AccountEncryptUtil.decrypt(a.getAccountNum())));
+        return list;
     }
 
     @Override
@@ -105,11 +115,13 @@ public class MyPageService_imple implements MyPageService {
 
     @Override
     public int insertAccount(AccountDTO account) {
+        account.setAccountNum(AccountEncryptUtil.encrypt(account.getAccountNum()));
         return myPageDAO.insertAccount(account);
     }
 
     @Override
     public int updateAccount(AccountDTO account) {
+        account.setAccountNum(AccountEncryptUtil.encrypt(account.getAccountNum()));
         return myPageDAO.updateAccount(account);
     }
 
@@ -152,6 +164,17 @@ public class MyPageService_imple implements MyPageService {
     @Override
     public int setPrimaryDelivery(Map<String, Object> params) {
         return myPageDAO.setPrimaryDelivery(params);
+    }
+
+    // 내 통계
+    @Override
+    public int getMySafePayCount(String email) {
+        return myPageDAO.getMySafePayCount(email);
+    }
+
+    @Override
+    public int getMyTradeCount(String email) {
+        return myPageDAO.getMyTradeCount(email);
     }
 
     // 신고관리

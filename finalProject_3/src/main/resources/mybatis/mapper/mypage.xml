@@ -182,6 +182,18 @@
 
     <!-- ===== 계좌 관리 ===== -->
 
+    <select id="getPrimaryAccount" parameterType="String" resultType="com.spring.app.mypage.domain.AccountDTO">
+        SELECT ACCOUNT_ID   AS accountId,
+               EMAIL        AS email,
+               BANK_NAME    AS bankName,
+               ACCOUNT_NUM  AS accountNum,
+               ACCOUNT_HOLDER AS accountHolder,
+               IS_PRIMARY   AS isPrimary
+        FROM ACCOUNTS
+        WHERE EMAIL = #{email} AND IS_PRIMARY = 'Y'
+        AND ROWNUM = 1
+    </select>
+
     <select id="getAccountList" parameterType="String" resultType="com.spring.app.mypage.domain.AccountDTO">
         SELECT ACCOUNT_ID   AS accountId,
                EMAIL        AS email,
@@ -308,6 +320,23 @@
         VALUES (#{reviewNo}, #{writerEmail}, #{targetEmail}, #{transactionId}, #{rating}, #{oneLineCat}, #{reviewContent, jdbcType=VARCHAR}, SYSDATE)
     </insert>
 
+    <!-- ===== 내 통계 ===== -->
+    <select id="getMySafePayCount" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM TRANSACTIONS t
+        JOIN PRODUCTS p ON t.PRODUCT_NO = p.PRODUCT_NO
+        WHERE p.SELLER_EMAIL = #{email}
+          AND t.USE_ESCROW = 'Y'
+          AND t.PAY_STATUS = 'DONE'
+    </select>
+
+    <select id="getMyTradeCount" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM PRODUCTS
+        WHERE SELLER_EMAIL = #{email}
+          AND TRADE_STATUS = '판매완료'
+    </select>
+
     <!-- ===== 신고관리 ===== -->
 
     <select id="getMyReportsSent" parameterType="String" resultType="com.spring.app.mypage.domain.MyReportDTO">
@@ -319,11 +348,15 @@
                rt.MAIN_CATEGORY     AS mainCategory,
                p.PRODUCT_NAME       AS productName,
                p.PRODUCT_NO         AS productNo,
-               pi.IMG_URL           AS imgUrl
+               pi.IMG_URL           AS imgUrl,
+               m_reporter.NICKNAME  AS reporterNickname,
+               m_target.NICKNAME    AS targetNickname
         FROM REPORTS r
         LEFT JOIN REPORT_TYPES rt ON r.TYPE_ID = rt.TYPE_ID
         LEFT JOIN PRODUCTS p ON r.PRODUCT_NUM = p.PRODUCT_NO
         LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+        LEFT JOIN MEMBER m_reporter ON m_reporter.EMAIL = r.REPORTER_EMAIL
+        LEFT JOIN MEMBER m_target ON m_target.EMAIL = r.TARGET_EMAIL
         WHERE r.REPORTER_EMAIL = #{email}
         ORDER BY r.REPORT_DATE DESC
     </select>
@@ -337,11 +370,15 @@
                rt.MAIN_CATEGORY     AS mainCategory,
                p.PRODUCT_NAME       AS productName,
                p.PRODUCT_NO         AS productNo,
-               pi.IMG_URL           AS imgUrl
+               pi.IMG_URL           AS imgUrl,
+               m_reporter.NICKNAME  AS reporterNickname,
+               m_target.NICKNAME    AS targetNickname
         FROM REPORTS r
         LEFT JOIN REPORT_TYPES rt ON r.TYPE_ID = rt.TYPE_ID
         LEFT JOIN PRODUCTS p ON r.PRODUCT_NUM = p.PRODUCT_NO
         LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+        LEFT JOIN MEMBER m_reporter ON m_reporter.EMAIL = r.REPORTER_EMAIL
+        LEFT JOIN MEMBER m_target ON m_target.EMAIL = r.TARGET_EMAIL
         WHERE r.TARGET_EMAIL = #{email}
         ORDER BY r.REPORT_DATE DESC
     </select>

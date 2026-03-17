@@ -18,12 +18,17 @@
         WHERE TYPE_NAME = #{typeName}
     </select>
 
+    <select id="findProductNoByRoomId" parameterType="String" resultType="Integer">
+        SELECT PRODUCT_NO FROM CHAT_ROOM WHERE ROOM_ID = #{roomId}
+    </select>
+
     <insert id="insertReport" parameterType="com.spring.app.chat.domain.ReportDTO">
         INSERT INTO REPORTS (
             REPORT_ID,
             REPORTER_EMAIL,
             TARGET_EMAIL,
             TYPE_ID,
+            PRODUCT_NUM,
             ROOM_ID,
             NOSQL_MSG_KEY,
             REPORT_DETAIL,
@@ -35,6 +40,7 @@
             #{reporterEmail},
             #{targetEmail},
             #{typeId},
+            #{productNum, jdbcType=NUMERIC},
             #{roomId, jdbcType=VARCHAR},
             #{nosqlMsgKey, jdbcType=VARCHAR},
             #{reportContent},

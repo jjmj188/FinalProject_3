@@ -36,6 +36,10 @@ public class ReportService_imple implements ReportService {
         String targetEmail = dao.findOtherUserByRoomId(reportDto.getRoomId(), myEmail);
         reportDto.setTargetEmail(targetEmail);
 
+        // 2-1. 채팅방에 연결된 상품 번호 저장
+        Integer productNo = dao.findProductNoByRoomId(reportDto.getRoomId());
+        reportDto.setProductNum(productNo);
+
         // 3. TYPE_ID 조회
         int typeId = dao.findTypeIdByName(reportDto.getReportSubCategory());
         reportDto.setTypeId(typeId);

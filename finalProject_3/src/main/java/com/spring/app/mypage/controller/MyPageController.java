@@ -79,6 +79,8 @@ public class MyPageController {
                     profileImgUrl = ctxPath + "/resources/profile_images/" + profileImg;
                 }
                 model.addAttribute("profileImgUrl", profileImgUrl);
+                model.addAttribute("safePayCount", myPageService.getMySafePayCount(principal.getName()));
+                model.addAttribute("tradeCount", myPageService.getMyTradeCount(principal.getName()));
             }
         }
         return "mypage/mypage_main";
@@ -354,6 +356,23 @@ public class MyPageController {
         Map<String, Object> result = new HashMap<>();
         if (principal == null) { result.put("success", false); return result; }
 
+        // 계좌번호 형식 검사 (하이픈 제거 후 숫자 10~14자리)
+        String digitsOnly = account.getAccountNum() == null ? "" : account.getAccountNum().replaceAll("-", "");
+        if (!digitsOnly.matches("\\d{10,14}")) {
+            result.put("success", false);
+            result.put("message", "계좌번호는 숫자 10~14자리로 입력해주세요.");
+            return result;
+        }
+        account.setAccountNum(digitsOnly); // 하이픈 제거 후 저장
+
+        // 예금주 이름 = 회원 이름 일치 확인
+        MemberDTO member = memberService.getMemberByEmail(principal.getName());
+        if (member == null || !member.getUserName().equals(account.getAccountHolder())) {
+            result.put("success", false);
+            result.put("message", "예금주 이름이 회원 가입 시 등록한 이름과 일치하지 않습니다.");
+            return result;
+        }
+
         String email = principal.getName();
         int count = myPageService.getAccountCount(email);
         if (count >= 5) {
@@ -374,6 +393,23 @@ public class MyPageController {
     public Map<String, Object> updateAccount(@RequestBody AccountDTO account, Principal principal) {
         Map<String, Object> result = new HashMap<>();
         if (principal == null) { result.put("success", false); return result; }
+
+        // 계좌번호 형식 검사
+        String digitsOnly = account.getAccountNum() == null ? "" : account.getAccountNum().replaceAll("-", "");
+        if (!digitsOnly.matches("\\d{10,14}")) {
+            result.put("success", false);
+            result.put("message", "계좌번호는 숫자 10~14자리로 입력해주세요.");
+            return result;
+        }
+        account.setAccountNum(digitsOnly);
+
+        // 예금주 이름 = 회원 이름 일치 확인
+        MemberDTO member = memberService.getMemberByEmail(principal.getName());
+        if (member == null || !member.getUserName().equals(account.getAccountHolder())) {
+            result.put("success", false);
+            result.put("message", "예금주 이름이 회원 가입 시 등록한 이름과 일치하지 않습니다.");
+            return result;
+        }
 
         account.setEmail(principal.getName());
         myPageService.updateAccount(account);
@@ -508,6 +544,30 @@ public class MyPageController {
         params.put("email", principal.getName());
         myPageService.setPrimaryDelivery(params);
         result.put("success", true);
+        return result;
+    }
+
+    // ===== 대표계좌 조회 (채팅용) =====
+
+    @GetMapping("/primary-account")
+    @ResponseBody
+    public Map<String, Object> getPrimaryAccount(Principal principal) {
+        Map<String, Object> result = new java.util.HashMap<>();
+        if (principal == null) {
+            result.put("success", false);
+            result.put("message", "로그인이 필요합니다.");
+            return result;
+        }
+        AccountDTO account = myPageService.getPrimaryAccount(principal.getName());
+        if (account == null) {
+            result.put("success", false);
+            result.put("message", "등록된 대표계좌가 없습니다. 마이페이지에서 계좌를 등록해주세요.");
+            return result;
+        }
+        result.put("success", true);
+        result.put("bankName", account.getBankName());
+        result.put("accountNum", account.getAccountNum());
+        result.put("accountHolder", account.getAccountHolder());
         return result;
     }
 

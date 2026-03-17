@@ -259,7 +259,7 @@ public class ChatController {
             String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
             ChatMessageDTO cancelMsg = new ChatMessageDTO();
             cancelMsg.setSender(principal.getName());
-            cancelMsg.setContent("[❌ 예약이 취소되었습니다.]\n\n다시 일정을 조율해 주세요.");
+            cancelMsg.setContent("__CANCEL_RESERVE__:");
             cancelMsg.setRoomId(roomId);
             cancelMsg.setTimestamp(now);
 

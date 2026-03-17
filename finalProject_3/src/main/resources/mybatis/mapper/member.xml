@@ -166,4 +166,51 @@
         DELETE FROM TBL_REFRESHTOKEN WHERE EMAIL = #{email}
     </delete>
 
+    <!-- 소셜 로그인 전용 회원 조회 (STATUS 조건 없음) -->
+    <select id="findByEmailForSocial" parameterType="String" resultType="com.spring.app.security.domain.MemberDTO">
+        SELECT
+            EMAIL AS email,
+            USER_NO AS userNo,
+            PASSWORD AS password,
+            USER_NAME AS userName,
+            PHONE AS phone,
+            NICKNAME AS nickname,
+            ADDRESS AS address,
+            PROFILE_IMG AS profileImg,
+            IDLE AS idle,
+            MANNER_TEMP AS mannerTemp,
+            SOCIAL_TYPE AS socialType
+        FROM MEMBER
+        WHERE EMAIL = #{email}
+    </select>
+
+    <!-- 소셜 로그인 자동 회원가입 -->
+    <insert id="insertSocialMember" parameterType="com.spring.app.security.domain.MemberDTO">
+        INSERT INTO MEMBER (
+            EMAIL, USER_NO, PASSWORD, USER_NAME, NICKNAME,
+            POSTCODE, ADDRESS, DETAILADDRESS,
+            REG_DATE, LAST_PW_DATE,
+            STATUS, IDLE, SUSPENDED,
+            CASH_BALANCE, MANNER_TEMP,
+            SOCIAL_TYPE, SOCIAL_ID
+        ) VALUES (
+            #{email},
+            SEQ_MEMBER_NO.NEXTVAL,
+            #{password},
+            #{userName},
+            #{nickname},
+            #{postcode}, #{address}, #{detailaddress},
+            SYSDATE, SYSDATE,
+            DEFAULT, DEFAULT, DEFAULT,
+            DEFAULT, DEFAULT,
+            #{socialType}, #{socialId}
+        )
+    </insert>
+
+    <!-- 소셜 회원 권한 등록 -->
+    <insert id="insertAuthority" parameterType="String">
+        INSERT INTO AUTHORITIES (AUTH_NO, EMAIL, AUTHORITY)
+        VALUES (SEQ_AUTHORITIES_NO.NEXTVAL, #{email}, 'ROLE_USER')
+    </insert>
+
 </mapper>

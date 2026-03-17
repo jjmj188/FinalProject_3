@@ -14,4 +14,7 @@ public interface ReportDAO {
     
     // 3. 실제 REPORTS 테이블에 INSERT
     void insertReport(ReportDTO reportDto);
+
+    // 4. 채팅방으로 상품 번호 조회
+    Integer findProductNoByRoomId(String roomId);
 }

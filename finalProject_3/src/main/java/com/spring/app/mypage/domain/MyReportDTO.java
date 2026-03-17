@@ -13,4 +13,6 @@ public class MyReportDTO {
     private String productName;
     private Integer productNo;
     private String imgUrl;
+    private String reporterNickname;
+    private String targetNickname;
 }
