@@ -82,11 +82,11 @@
         .chat-container { display: flex; height: 100%; }
         
         /* 좌측: 채팅방 목록 */
-        .chat-sidebar { width: 35%; background: #fff; border-right: 1px solid #ebebeb; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; background: #fff; color: #222; font-size: 18px; font-weight: bold; border-bottom: 1px solid #ebebeb; }
+        .chat-sidebar { width: 25%; background: #4CB050; border-right: 1px solid #3a9a3e; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background: #4CB050; color: #fff; font-size: 18px; font-weight: bold; border-bottom: 1px solid #3a9a3e; }
         .room-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-        .room-item { padding: 15px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.2s; display: flex; flex-direction: column; }
-        .room-item:hover { background: #f9f9f9; }
+        .room-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: background 0.2s; display: flex; flex-direction: column; }
+        .room-item:hover { background: rgba(255,255,255,0.15); }
         
         /* 우측: 실제 채팅창 */
         .chat-main { width: 65%; display: flex; flex-direction: column; background: #fff; }
@@ -116,11 +116,13 @@
         .chat-product-banner img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; }
         .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .price-row { font-size: 16px; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-        .status-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #222; color: #222; font-weight: normal; }
+        .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 700; color: #fff; background: #16a34a; border: none; }
+        .status-badge.reserved { background: #f59e0b; }
+        .status-badge.done { background: #6b7280; }
         .name-row { font-size: 13px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
         .btn-reserve { background: #222; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
         .btn-cancel-reserve { background: #e74c3c; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
-        .btn-safe-pay { background: #00c73c; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .btn-safe-pay { background: #4CB050; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
         .chat-blocked-notice { display: none; padding: 12px 20px; background: #fff3f3; border-top: 1px solid #ffd0d0; text-align: center; font-size: 13px; color: #e74c3c; font-weight: bold; }
 
         /* 메시지 영역 */
@@ -135,7 +137,7 @@
 
         /* 입력 영역 */
         .chat-input-wrapper { display: flex; flex-direction: column; border-top: 1px solid #ebebeb; }
-        #chatInput { width: 100%; height: 80px; padding: 15px 20px; border: none; background: #e2e2e2; outline: none; font-size: 14px; resize: none; box-sizing: border-box; }
+        #chatInput { width: 100%; height: 80px; padding: 15px 20px; border: none; border-top: 2px solid #4CB050; background: #fff; outline: none; font-size: 14px; resize: none; box-sizing: border-box; }
         .chat-input-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #fff; }
 .chat-btn-send { background: #222; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;}
         .btn-account-send { background: #1a73e8; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; }
@@ -149,8 +151,8 @@
         .msg-account-card .ac-copy { margin-top: 10px; width: 100%; padding: 7px; background: #1a73e8; color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
         /* 예약 카드 메시지 */
-        .msg-reserve-card { background: #fff; border: 2px solid #00c73c; border-radius: 12px; padding: 14px 16px; min-width: 220px; max-width: 280px; }
-        .msg-reserve-card .rv-title { font-size: 13px; font-weight: bold; color: #00c73c; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
+        .msg-reserve-card { background: #fff; border: 2px solid #4CB050; border-radius: 12px; padding: 14px 16px; min-width: 220px; max-width: 280px; }
+        .msg-reserve-card .rv-title { font-size: 13px; font-weight: bold; color: #4CB050; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
         .msg-reserve-card .rv-row { display: flex; gap: 8px; font-size: 13px; margin-bottom: 7px; align-items: flex-start; }
         .msg-reserve-card .rv-icon { width: 18px; flex-shrink: 0; }
         .msg-reserve-card .rv-text { color: #333; line-height: 1.4; }
@@ -235,8 +237,8 @@
                     <div class="chat-input-toolbar">
                         <div style="display:flex; gap:8px; align-items:center;">
                             <button class="btn-account-send" id="btnAccountSend" style="display:none;" onclick="window.sendAccountCard()">💳 계좌전송</button>
-                            <button class="chat-btn-send" onclick="window.sendChatMessage()">전송</button>
                         </div>
+                        <button class="chat-btn-send" onclick="window.sendChatMessage()">전송</button>
                     </div>
                 </div>
             </div>
@@ -363,7 +365,7 @@
         window.renderRoomList = function(roomList) {
             const ul = document.getElementById('roomListArea');
             ul.innerHTML = ''; 
-            if(!roomList || roomList.length===0) return ul.innerHTML = '<li style="padding:15px; text-align:center;">대화가 없습니다.</li>';
+            if(!roomList || roomList.length===0) return ul.innerHTML = '<li style="padding:15px; text-align:center; color:#fff;">대화가 없습니다.</li>';
             
             roomList.forEach(room => {
                 const li = document.createElement('li');
@@ -384,8 +386,8 @@
                 );
                 
                 li.innerHTML = `
-                    <div style="font-weight:bold; margin-bottom:5px;">${room.nickname}</div>
-                    <div style="font-size:13px; color:#666;">[${room.productName}] ${room.lastMessage || '대화를 시작하세요.'}</div>
+                    <div style="font-weight:bold; margin-bottom:5px; color:#fff;">${room.nickname}</div>
+                    <div style="font-size:13px; color:rgba(255,255,255,0.8);">[${room.productName}] ${room.lastMessage || '대화를 시작하세요.'}</div>
                 `;
                 ul.appendChild(li);
             });
@@ -422,16 +424,11 @@
             const statusEl = document.getElementById('bannerStatus');
             statusEl.innerText = status ? status : '상태 모름';
             
-            // 상태에 따라 뱃지 색상을 바꾸기
-            if(status === '판매완료') {
-                statusEl.style.background = '#666';
-                statusEl.style.color = '#fff';
-            } else if(status === '예약중' || status === '거래중') {
-                statusEl.style.background = '#00c73c';
-                statusEl.style.color = '#fff';
-            } else {
-                statusEl.style.background = '#fff';
-                statusEl.style.color = '#222';
+            statusEl.classList.remove('reserved', 'done');
+            if (status === '판매완료') {
+                statusEl.classList.add('done');
+            } else if (status === '예약중' || status === '거래중') {
+                statusEl.classList.add('reserved');
             }
 
             // 예약잡기 / 예약취소 버튼 노출 조건
@@ -792,8 +789,7 @@
                     // 배너 상태 업데이트
                     const statusEl = document.getElementById('bannerStatus');
                     statusEl.innerText = '판매중';
-                    statusEl.style.background = '#fff';
-                    statusEl.style.color = '#222';
+                    statusEl.classList.remove('reserved', 'done');
                     document.getElementById('btnCancelReserve').style.display = 'none';
                     document.getElementById('btnReserve').style.display = 'block';
                     currentReservedRoomId = null;
@@ -865,8 +861,8 @@
                     // 3. 화면의 상품 배너 상태 즉시 업데이트
                     const statusEl = document.getElementById('bannerStatus');
                     statusEl.innerText = '예약중';
-                    statusEl.style.background = '#00c73c';
-                    statusEl.style.color = '#fff';
+                    statusEl.classList.remove('done');
+                    statusEl.classList.add('reserved');
                     document.getElementById('btnReserve').style.display = 'none';
                     document.getElementById('btnCancelReserve').style.display = 'block'; // 예약취소 버튼 표시
                     currentReservedRoomId = currentRoomId; // 전역 변수 업데이트

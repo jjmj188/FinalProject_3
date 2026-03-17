@@ -38,7 +38,7 @@
 .mp-edit-link { font-size: 13px; color: #999; margin-left: 10px; font-weight: normal; }
 .mp-manner { font-size: 14px; margin-bottom: 5px; }
 .mp-temp-bar { width: 200px; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
-.mp-temp-bar span { display: block; height: 100%; background: #222; }
+.mp-temp-bar span { display: block; height: 100%; background: #4CB050; }
 .mp-temp-sub { font-size: 12px; color: #999; margin-top: 8px; }
 
 /* 통계 카드 */
