@@ -3,12 +3,12 @@
    + 거래제한 모달 + 택배 UI + 직거래 위치(1~3)
    + 공백만 입력 방지(alert)
    + 판매가격 숫자만 입력/검증(alert)
-   + ✅ 최근 검색한 동네 캐시(24h TTL, 개수 제한 없음)
-   + ✅ 위치설정: 1차 모달(areaModal) 내부에서 "검색어로" 버튼 클릭 시
-        지도/검색 UI(areaSearchWrap) 펼치기(2차 모달 제거)
-   + ✅ placeName/fullAddress 분리 저장
-        - 예: "홍대입구역 2호선 / 서울마포구 양화로 지하 160"
-        - 화면(칩)에는 placeName 우선 표시
+   + 최근 검색한 동네 캐시(24h TTL, 개수 제한 없음)
+   + 위치설정: 1차 모달(areaModal) 내부에서 "검색어로" 버튼 클릭 시
+     지도/검색 UI(areaSearchWrap) 펼치기(2차 모달 제거)
+   + placeName/fullAddress 분리 저장
+   + AI 판매글 작성 기능 추가
+   - AI 이미지 진단 기능 제외
 ========================================================= */
 
 (() => {
@@ -32,9 +32,6 @@
     try { return JSON.parse(str); } catch { return fallback; }
   }
 
-  // =========================================================
-  // 공통 유효성: 공백만 입력 방지 / alert + focus
-  // =========================================================
   function isBlank(value) {
     return String(value ?? "").trim().length === 0;
   }
@@ -44,11 +41,20 @@
     if (el && typeof el.focus === "function") el.focus();
   }
 
+  function getContextPath() {
+    const raw =
+      document.documentElement.getAttribute("data-context-path") ||
+      document.body.getAttribute("data-context-path") ||
+      window.ctxPath ||
+      "";
+    return String(raw).replace(/\/$/, "");
+  }
+
   // =========================================================
-  // ✅ 최근 검색한 동네 캐시 (localStorage + TTL 24h, 개수 제한 없음)
+  // 최근 검색한 동네 캐시
   // =========================================================
   const RECENT_AREA_KEY = "PF_RECENT_AREAS_V1";
-  const RECENT_AREA_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+  const RECENT_AREA_TTL_MS = 24 * 60 * 60 * 1000;
 
   function readRecentAreas() {
     try {
@@ -117,25 +123,22 @@
   }
 
   // =========================================================
-  // ✅ placeName / fullAddress 분리 도구
+  // placeName / fullAddress 분리 도구
   // =========================================================
   function splitPlaceAndAddress(raw) {
     const v = String(raw ?? "").trim();
     if (!v) return { placeName: "", fullAddress: "" };
 
-    // "A / B" 형태면 분리
     if (v.includes("/")) {
       const [a, b] = v.split("/");
       return { placeName: (a || "").trim(), fullAddress: (b || "").trim() };
     }
 
-    // "A · B" 형태면 분리 (검색 결과 표기에서 종종 사용)
     if (v.includes("·")) {
       const [a, b] = v.split("·");
       return { placeName: (a || "").trim(), fullAddress: (b || "").trim() };
     }
 
-    // 그 외는 fullAddress로만 취급
     return { placeName: "", fullAddress: v };
   }
 
@@ -152,7 +155,7 @@
   }
 
   // =========================================================
-  // -1) 공백만 입력 방지 (blur 시 alert)
+  // 공백만 입력 방지
   // =========================================================
   (() => {
     const candidates = [
@@ -179,7 +182,7 @@
   })();
 
   // =========================================================
-  // 0) 거래 제한 품목 안내 모달
+  // 거래 제한 품목 안내 모달
   // =========================================================
   (() => {
     const link = $("#pfShipSettingLink");
@@ -222,7 +225,7 @@
   })();
 
   // =========================================================
-  // 1) 탭 underline
+  // 탭 underline
   // =========================================================
   (() => {
     const tabs = $(".pf-tabs");
@@ -246,7 +249,7 @@
   })();
 
   // =========================================================
-  // 2) 이미지(1~3) + 대표(mainIndex)
+  // 이미지(1~3) + 대표(mainIndex)
   // =========================================================
   const ImageModule = (() => {
     const fileInput = $("#pfImageInput");
@@ -357,7 +360,7 @@
   window.PF.Image = ImageModule;
 
   // =========================================================
-  // 3) textarea 글자수
+  // textarea 글자수
   // =========================================================
   (() => {
     const ta = $(".pf-textarea");
@@ -369,7 +372,7 @@
   })();
 
   // =========================================================
-  // 4) 택배(배송비 포함/별도) + shippingOptionsJson
+  // 택배(배송비 포함/별도) + shippingOptionsJson
   // =========================================================
   const ShippingModule = (() => {
     const shipToggle = $("#pfShipToggle");
@@ -547,7 +550,7 @@
   window.PF.Shipping = ShippingModule;
 
   // =========================================================
-  // 4.5) 판매가격 숫자만 입력 + 검증(alert)
+  // 판매가격 숫자만 입력 + 검증
   // =========================================================
   const PriceModule = (() => {
     const priceEl =
@@ -600,9 +603,177 @@
   window.PF.Price = PriceModule;
 
   // =========================================================
-  // 5) 직거래 위치 1~3 -> meetLocationsJson
-  //    ✅ areaModal 내부에서 "검색어로" 클릭 시 지도/검색 UI 펼침
-  //    ✅ placeName/fullAddress 분리 저장 + 칩에는 placeName만 표시
+  // AI 판매글 작성
+  // - /ai/sell/description 호출
+  // - AI 이미지 진단 없음
+  // =========================================================
+  const AiSellModule = (() => {
+    const btn = $("#pfAiWriteBtn");
+    if (!btn) return null;
+
+    const statusEl = $("#pfAiStatus");
+    const cautionsWrap = $("#pfAiCautions");
+
+    const titleEl =
+      $("#pfTitle") ||
+      $("#pfName") ||
+      document.querySelector("input[name='productName']");
+
+    const descEl =
+      $(".pf-textarea") ||
+      document.querySelector("textarea[name='productDesc']");
+
+    const priceEl =
+      $("#pfPrice") ||
+      document.querySelector("input[name='productPrice']");
+
+    const categoryEl =
+      $("#pfCategoryName") ||
+      $("#pfCategoryText") ||
+      document.querySelector("select[name='categoryName']") ||
+      document.querySelector("input[name='categoryName']");
+
+    let busy = false;
+
+    function setBusy(flag) {
+      busy = flag;
+      btn.disabled = flag;
+      btn.classList.toggle("is-loading", flag);
+
+      if (statusEl) {
+        statusEl.textContent = flag ? "AI가 판매글을 작성하는 중입니다..." : "";
+      }
+    }
+
+    function getCategoryName() {
+      if (!categoryEl) return "";
+
+      if (categoryEl.tagName === "SELECT") {
+        const opt = categoryEl.options[categoryEl.selectedIndex];
+        return String(opt?.text || categoryEl.value || "").trim();
+      }
+
+      return String(categoryEl.value ?? categoryEl.textContent ?? "").trim();
+    }
+
+    function renderCautions(cautions) {
+      if (!cautionsWrap) return;
+
+      const list = Array.isArray(cautions) ? cautions.filter(x => String(x ?? "").trim() !== "") : [];
+      cautionsWrap.innerHTML = "";
+
+      if (list.length === 0) return;
+
+      const ul = document.createElement("ul");
+      ul.className = "pf-ai-caution-list";
+
+      list.forEach(text => {
+        const li = document.createElement("li");
+        li.textContent = text;
+        ul.appendChild(li);
+      });
+
+      cautionsWrap.appendChild(ul);
+    }
+
+    async function requestAiDescription() {
+      if (busy) return;
+
+      if (!titleEl || isBlank(titleEl.value)) {
+        alertAndFocus("상품명을 먼저 입력해 주세요.", titleEl);
+        return;
+      }
+
+      if (!priceEl || isBlank(priceEl.value)) {
+        alertAndFocus("판매가격을 먼저 입력해 주세요.", priceEl);
+        return;
+      }
+
+      const priceV = window.PF.Price?.validate?.();
+      if (priceV && priceV.ok === false) {
+        alertAndFocus(priceV.msg, window.PF.Price?.el);
+        return;
+      }
+
+      const payload = {
+        productName: String(titleEl?.value ?? "").trim(),
+        categoryName: getCategoryName(),
+        productPrice: String(priceEl?.value ?? "").trim(),
+        productDesc: String(descEl?.value ?? "").trim()
+      };
+
+      const ctxPath = getContextPath();
+      const url = ctxPath + "/ai/sell/description";
+
+      try {
+        setBusy(true);
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          const msg =
+            data?.message ||
+            `AI 판매글 작성 요청에 실패했습니다. (${res.status})`;
+          throw new Error(msg);
+        }
+
+        if (!data || typeof data !== "object") {
+          throw new Error("AI 응답 형식이 올바르지 않습니다.");
+        }
+
+        const nextTitle = String(data.titleSuggestion ?? "").trim();
+        const nextDesc = String(data.description ?? "").trim();
+
+        if (!nextTitle && !nextDesc) {
+          throw new Error("AI가 작성 결과를 반환하지 않았습니다.");
+        }
+
+        if (titleEl && nextTitle) titleEl.value = nextTitle;
+        if (descEl && nextDesc) {
+          descEl.value = nextDesc;
+
+          const now = $(".pf-count-now");
+          if (now) now.textContent = String(descEl.value.length);
+        }
+
+        renderCautions(data.cautions);
+
+        if (statusEl) {
+          statusEl.textContent = "AI 판매글이 적용되었습니다.";
+          setTimeout(() => {
+            if (statusEl.textContent === "AI 판매글이 적용되었습니다.") {
+              statusEl.textContent = "";
+            }
+          }, 2500);
+        }
+      } catch (err) {
+        console.error(err);
+        alert(err?.message || "AI 판매글 작성 중 오류가 발생했습니다.");
+        if (statusEl) statusEl.textContent = "";
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    btn.addEventListener("click", requestAiDescription);
+
+    return {
+      request: requestAiDescription
+    };
+  })();
+
+  window.PF.AiSell = AiSellModule;
+
+  // =========================================================
+  // 직거래 위치 1~3 -> meetLocationsJson
   // =========================================================
   const MeetLocationModule = (() => {
     const openBtn = $("#pfLocationBtn");
@@ -1091,7 +1262,7 @@
   window.PF.Meet = MeetLocationModule;
 
   // =========================================================
-  // 6) 폼 submit 시 유효성 검사 + alert
+  // 폼 submit 시 유효성 검사
   // =========================================================
   (() => {
     const form =
@@ -1149,7 +1320,9 @@
     });
   })();
 
-  // ✅ 배송비 허용 범위(원)
+  // =========================================================
+  // 배송비 허용 범위(원)
+  // =========================================================
   const FEE_RANGE = {
     "일반택배": { min: 2700, max: 17000 },
     "CU반값": { min: 1800, max: 2700 },
