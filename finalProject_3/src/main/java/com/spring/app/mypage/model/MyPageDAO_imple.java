@@ -61,6 +61,16 @@ public class MyPageDAO_imple implements MyPageDAO {
     }
 
     @Override
+    public int saveInvoice(Map<String, Object> params) {
+        return sqlsession.update(ns + ".saveInvoice", params);
+    }
+
+    @Override
+    public ProductDTO getInvoice(Map<String, Object> params) {
+        return sqlsession.selectOne(ns + ".getInvoice", params);
+    }
+
+    @Override
     public int updateMyProduct(Map<String, Object> params) {
         return sqlsession.update(ns + ".updateMyProduct", params);
     }

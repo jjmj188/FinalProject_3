@@ -28,6 +28,10 @@ public interface MyPageDAO {
     int getProductTransactionCount(int productNo);
     int deleteMyProduct(Map<String, Object> params);
 
+    // 송장번호
+    int saveInvoice(Map<String, Object> params);
+    ProductDTO getInvoice(Map<String, Object> params);
+
     // 수정 페이지용 이미지/배송/위치
     ProductImageDTO getProductImageByNo(int prdImgNo);
     int deleteProductImageByNo(int prdImgNo);

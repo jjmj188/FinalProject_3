@@ -420,6 +420,53 @@
         </div>
     </div>
     <span id="mypageCtxData" th:attr="data-ctx=@{/}" style="display:none;"></span>
+
+    <!-- 송장번호 입력 모달 -->
+    <div id="invoiceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:420px; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h3 style="margin:0; font-size:18px; font-weight:bold;">송장번호 입력</h3>
+                <button onclick="closeInvoiceModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
+            </div>
+            <input type="hidden" id="invoiceProductNo">
+            <div style="margin-bottom:16px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">택배사</label>
+                <select id="invoiceCarrierCode" style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none;">
+                    <option value="">택배사 선택</option>
+                    <option value="04">CJ대한통운</option>
+                    <option value="05">한진택배</option>
+                    <option value="08">롯데택배</option>
+                    <option value="01">우체국택배</option>
+                    <option value="06">로젠택배</option>
+                    <option value="11">일양로지스</option>
+                    <option value="12">EMS</option>
+                    <option value="17">카카오택배</option>
+                    <option value="32">오늘의픽업</option>
+                    <option value="46">CU편의점택배</option>
+                    <option value="24">GS편의점택배</option>
+                </select>
+            </div>
+            <div style="margin-bottom:24px;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">송장번호</label>
+                <input type="text" id="invoiceNo" placeholder="송장번호를 입력하세요 (숫자만)"
+                       style="width:100%; padding:11px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; box-sizing:border-box;">
+            </div>
+            <button onclick="saveInvoice()" style="width:100%; padding:14px; background:#222; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer;">
+                저장하기
+            </button>
+        </div>
+    </div>
+
+    <!-- 배송조회 결과 모달 -->
+    <div id="trackingModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:480px; max-height:80vh; overflow-y:auto; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0; font-size:18px; font-weight:bold;">배송조회</h3>
+                <button onclick="closeTrackingModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
+            </div>
+            <div id="trackingContent" style="font-size:14px; color:#333;"></div>
+        </div>
+    </div>
 </main>
 <script>
     (function() {
@@ -809,8 +856,9 @@
                         <span class="rp-status-badge ${st.cls}">${st.label}</span>
                         <span style="font-size:11px; color:#aaa;">${p.paymentType || ''}</span>
                     </div>
-                    <div style="margin:0 12px 12px; display:flex; gap:6px;">
+                    <div style="margin:0 12px 12px; display:flex; gap:6px; flex-wrap:wrap;">
                         <button class="mp-purchase-btn" onclick="openDeliveryStatusModal('${p.tradeStatus}','${p.paymentType || ''}','${p.tradeDate || ''}','${p.productName.replace(/'/g, "\\'")}')">배송현황</button>
+                        ${p.invoiceNo ? `<button class="mp-purchase-btn" style="background:#4CB050; color:#fff; border:none; cursor:pointer;" onclick="trackDeliveryByInfo('${p.carrierCode || ''}','${p.invoiceNo}','${p.productName.replace(/'/g, "\\'")}')">배송조회</button>` : ''}
                         <button class="mp-purchase-btn" style="${reviewBtnStyle}" ${reviewBtnAttr}>${p.hasReview ? '리뷰완료' : '리뷰작성'}</button>
                     </div>
                 </div>`;
@@ -854,6 +902,8 @@
             const statusClass = p.tradeStatus === '판매중' ? 'wish-status-sale'
                 : p.tradeStatus === '예약중' ? 'wish-status-reserve'
                 : 'wish-status-done';
+            const showInvoice = p.tradeStatus === '예약중' || p.tradeStatus === '판매완료';
+            const hasInvoice = p.invoiceNo && p.invoiceNo.length > 0;
             return `
                 <div class="mp-wish-card">
                     <a href="${ctxPath}product/product_detail/${p.productNo}" class="mp-wish-img-wrap">
@@ -864,6 +914,15 @@
                         <p class="mp-wish-name">${p.productName}</p>
                         <p class="mp-wish-price">${priceText}</p>
                     </div>
+                    ${showInvoice ? `
+                    <div style="margin:0 12px 6px;">
+                        <button class="mp-product-edit-btn" style="width:100%; font-size:12px; padding:6px 0;"
+                            onclick="openInvoiceModal(${p.productNo}, '${p.carrierCode || ''}', '${p.invoiceNo || ''}')">
+                            ${hasInvoice ? '송장수정' : '송장입력'}
+                        </button>
+                        ${hasInvoice ? `<button class="mp-product-edit-btn" style="width:100%; font-size:12px; padding:6px 0; margin-top:4px; background:#4CB050; color:#fff; border:none;"
+                            onclick="trackDelivery(${p.productNo})">배송조회</button>` : ''}
+                    </div>` : ''}
                     <div class="mp-product-actions">
                         <button class="mp-product-edit-btn" onclick="goProductEdit(${p.productNo})">수정</button>
                         <button class="mp-product-delete-btn"
@@ -1387,6 +1446,121 @@
         fetch(`${ctxPath}mypage/delivery/setPrimary?deliveryNo=${deliveryNo}`, { method: 'POST' })
         .then(r => r.json())
         .then(data => { if (data.success) loadDeliveries(); else alert(data.message || '오류가 발생했습니다.'); });
+    }
+
+    // ===== 송장번호 / 배송조회 =====
+    window.openInvoiceModal = function(productNo, carrierCode, invoiceNo) {
+        document.getElementById('invoiceProductNo').value = productNo;
+        document.getElementById('invoiceCarrierCode').value = carrierCode || '';
+        document.getElementById('invoiceNo').value = invoiceNo || '';
+        document.getElementById('invoiceModal').style.display = 'block';
+    }
+
+    window.closeInvoiceModal = function() {
+        document.getElementById('invoiceModal').style.display = 'none';
+    }
+
+    window.saveInvoice = function() {
+        const productNo = parseInt(document.getElementById('invoiceProductNo').value);
+        const carrierCode = document.getElementById('invoiceCarrierCode').value;
+        const invoiceNo = document.getElementById('invoiceNo').value.trim();
+
+        if (!carrierCode) { alert('택배사를 선택해주세요.'); return; }
+        if (!invoiceNo) { alert('송장번호를 입력해주세요.'); return; }
+        if (!/^\d+$/.test(invoiceNo)) { alert('송장번호는 숫자만 입력해주세요.'); return; }
+
+        fetch(`${ctxPath}mypage/product/invoice`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productNo, carrierCode, invoiceNo })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeInvoiceModal();
+                loadMyProducts();
+                alert('송장번호가 저장되었습니다.');
+            } else {
+                alert(data.message || '저장에 실패했습니다.');
+            }
+        })
+        .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    function renderTrackingResult(content, d, carrierCode, invoiceNo) {
+        const carrierName = d.carrier ? d.carrier.name : '';
+        const level = d.level || 0;
+        const trackingDetails = d.trackingDetails || [];
+        const levelLabels = ['', '배송준비중', '집하완료', '이동중', '배달중', '배달완료'];
+        const stepsHtml = [1,2,3,4,5].map(i => {
+            const isActive = i === level;
+            const isDone = i < level;
+            const dot = isActive
+                ? 'background:#4CB050; width:14px; height:14px; border-radius:50%; display:inline-block; margin-right:8px;'
+                : isDone
+                    ? 'background:#ccc; width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:8px;'
+                    : 'background:#eee; width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:8px;';
+            const fontWeight = isActive ? 'bold' : 'normal';
+            const color = isActive ? '#222' : '#999';
+            return `<div style="display:flex; align-items:center; margin-bottom:6px; font-size:13px; color:${color}; font-weight:${fontWeight};">
+                <span style="${dot}"></span>${levelLabels[i]}
+            </div>`;
+        }).join('');
+        const detailsHtml = trackingDetails.length > 0
+            ? trackingDetails.slice().reverse().map(t => `
+                <div style="padding:10px 0; border-bottom:1px solid #f0f0f0; font-size:13px;">
+                    <div style="color:#999; margin-bottom:3px;">${t.timeString || ''}</div>
+                    <div style="font-weight:bold;">${t.where || ''}</div>
+                    <div style="color:#555;">${t.kind || ''}</div>
+                </div>`).join('')
+            : '<p style="color:#999; text-align:center; padding:16px 0;">배송 내역이 없습니다.</p>';
+        content.innerHTML = `
+            <div style="margin-bottom:16px; padding:12px; background:#f9f9f9; border-radius:8px; font-size:13px;">
+                <span style="color:#666;">택배사:</span> <strong>${carrierName}</strong>
+                <span style="color:#666; margin-left:12px;">송장번호:</span> <strong>${invoiceNo}</strong>
+            </div>
+            <div style="margin-bottom:16px;">${stepsHtml}</div>
+            <div>${detailsHtml}</div>`;
+    }
+
+    window.trackDelivery = function(productNo) {
+        const content = document.getElementById('trackingContent');
+        content.innerHTML = '<p style="text-align:center; color:#999;">조회 중...</p>';
+        document.getElementById('trackingModal').style.display = 'block';
+
+        fetch(`${ctxPath}mypage/product/track?productNo=${productNo}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) { content.innerHTML = `<p style="text-align:center; color:#e33;">${data.message || '조회에 실패했습니다.'}</p>`; return; }
+            const d = data.data;
+            if (!d) { content.innerHTML = '<p style="text-align:center; color:#999;">조회 결과가 없습니다.</p>'; return; }
+            renderTrackingResult(content, d, data.carrierCode || '', data.invoiceNo || '');
+        })
+        .catch(() => { content.innerHTML = '<p style="text-align:center; color:#e33;">서버 오류가 발생했습니다.</p>'; });
+    }
+
+    window.closeTrackingModal = function() {
+        document.getElementById('trackingModal').style.display = 'none';
+    }
+
+    // 구매자용 - carrierCode/invoiceNo 직접 전달
+    window.trackDeliveryByInfo = function(carrierCode, invoiceNo, productName) {
+        const content = document.getElementById('trackingContent');
+        content.innerHTML = '<p style="text-align:center; color:#999;">조회 중...</p>';
+        document.getElementById('trackingModal').style.display = 'block';
+
+        fetch(`${ctxPath}mypage/product/track-by-invoice?carrierCode=${encodeURIComponent(carrierCode)}&invoiceNo=${encodeURIComponent(invoiceNo)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                content.innerHTML = `<p style="text-align:center; color:#e33;">${data.message || '조회에 실패했습니다.'}</p>`;
+                return;
+            }
+            const d = data.data;
+            if (!d) { content.innerHTML = '<p style="text-align:center; color:#999;">조회 결과가 없습니다.</p>'; return; }
+            renderTrackingResult(content, d, carrierCode, invoiceNo);
+        })
+        .catch(() => { content.innerHTML = '<p style="text-align:center; color:#e33;">서버 오류가 발생했습니다.</p>'; });
     }
 
     // 페이지 로드 시 내 판매상품 초기 로드

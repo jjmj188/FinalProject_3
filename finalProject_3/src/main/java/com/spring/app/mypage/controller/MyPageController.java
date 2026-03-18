@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,6 +59,9 @@ public class MyPageController {
 
     @Value("${file.images-dir}")
     private String imagesDir;
+
+    @Value("${sweettracker.api-key}")
+    private String sweetTrackerApiKey;
 
     private static final String IMAGE_WEB_PREFIX = "/images/";
 
@@ -286,7 +290,7 @@ public class MyPageController {
 
     @GetMapping("/review/write")
     public String reviewWritePage(
-            @RequestParam int transactionId,
+            @RequestParam("transactionId") int transactionId,
             @RequestParam String targetEmail,
             @RequestParam String productName,
             @RequestParam(required = false) String imgUrl,
@@ -568,6 +572,110 @@ public class MyPageController {
         result.put("bankName", account.getBankName());
         result.put("accountNum", account.getAccountNum());
         result.put("accountHolder", account.getAccountHolder());
+        return result;
+    }
+
+    // ===== 송장번호 / 배송조회 =====
+
+    @PostMapping("/product/invoice")
+    @ResponseBody
+    public Map<String, Object> saveInvoice(@RequestBody Map<String, Object> payload, Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        if (principal == null) { result.put("success", false); return result; }
+
+        int productNo = Integer.parseInt(String.valueOf(payload.get("productNo")));
+        String carrierCode = String.valueOf(payload.get("carrierCode"));
+        String invoiceNo = String.valueOf(payload.get("invoiceNo")).replaceAll("[^0-9]", "");
+
+        // 본인 상품 여부 확인
+        Map<String, Object> checkParams = new HashMap<>();
+        checkParams.put("productNo", productNo);
+        checkParams.put("email", principal.getName());
+        if (myPageService.getMyProductByNo(checkParams) == null) {
+            result.put("success", false);
+            result.put("message", "상품을 찾을 수 없습니다.");
+            return result;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("productNo", productNo);
+        params.put("carrierCode", carrierCode);
+        params.put("invoiceNo", invoiceNo);
+        params.put("email", principal.getName());
+        myPageService.saveInvoice(params);
+        result.put("success", true);
+        return result;
+    }
+
+    @GetMapping("/product/track")
+    @ResponseBody
+    public Map<String, Object> trackDelivery(@RequestParam("productNo") int productNo, Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        if (principal == null) { result.put("success", false); return result; }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("productNo", productNo);
+        params.put("email", principal.getName());
+        ProductDTO product = myPageService.getInvoice(params);
+
+        if (product == null || product.getInvoiceNo() == null || product.getInvoiceNo().isEmpty()) {
+            result.put("success", false);
+            result.put("message", "등록된 송장번호가 없습니다.");
+            return result;
+        }
+
+        String carrierCode = product.getCarrierCode();
+        String invoiceNo = product.getInvoiceNo();
+
+        try {
+            String url = "https://info.sweettracker.co.kr/api/v1/trackingInfo"
+                + "?t_key=" + sweetTrackerApiKey
+                + "&t_code=" + carrierCode
+                + "&t_invoice=" + invoiceNo;
+
+            RestTemplate rt = new RestTemplate();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> apiResult = rt.getForObject(url, Map.class);
+            result.put("success", true);
+            result.put("data", apiResult);
+            result.put("carrierCode", carrierCode);
+            result.put("invoiceNo", invoiceNo);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "배송 조회 중 오류가 발생했습니다.");
+        }
+        return result;
+    }
+
+    @GetMapping("/product/track-by-invoice")
+    @ResponseBody
+    public Map<String, Object> trackDeliveryByInvoice(
+            @RequestParam("carrierCode") String carrierCode,
+            @RequestParam("invoiceNo") String invoiceNo,
+            Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        if (principal == null) { result.put("success", false); return result; }
+        if (carrierCode == null || carrierCode.isEmpty() || invoiceNo == null || invoiceNo.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "송장정보가 없습니다.");
+            return result;
+        }
+        try {
+            String url = "https://info.sweettracker.co.kr/api/v1/trackingInfo"
+                + "?t_key=" + sweetTrackerApiKey
+                + "&t_code=" + carrierCode
+                + "&t_invoice=" + invoiceNo;
+            RestTemplate rt = new RestTemplate();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> apiResult = rt.getForObject(url, Map.class);
+            result.put("success", true);
+            result.put("data", apiResult);
+            result.put("carrierCode", carrierCode);
+            result.put("invoiceNo", invoiceNo);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "배송 조회 중 오류가 발생했습니다.");
+        }
         return result;
     }
 

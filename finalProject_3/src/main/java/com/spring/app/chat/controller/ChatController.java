@@ -281,6 +281,14 @@ public class ChatController {
             int productNo = Integer.parseInt(payload.get("productNo").toString());
             String roomId = payload.get("roomId").toString();
 
+            // 실제 예약된 방인지 검증 - 예약된 방이 아니면 취소 거부
+            String reservedRoomId = chatService.getReservedRoomId(productNo);
+            if (reservedRoomId != null && !reservedRoomId.equals(roomId)) {
+                resultMap.put("success", false);
+                resultMap.put("message", "예약이 확정된 채팅방에서만 취소할 수 있습니다.");
+                return resultMap;
+            }
+
             chatService.cancelReserve(productNo);
 
             // 채팅방에 예약취소 안내 메시지 전송

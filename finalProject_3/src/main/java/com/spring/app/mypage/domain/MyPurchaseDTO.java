@@ -17,4 +17,6 @@ public class MyPurchaseDTO {
     private Integer transactionId;
     private Integer hasReview;   // 0: 미작성, 1: 작성완료
     private String sellerEmail;
+    private String carrierCode;
+    private String invoiceNo;
 }

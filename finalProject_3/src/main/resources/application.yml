@@ -186,6 +186,9 @@ toss:
     secret-key: test_sk_Gv6LjeKD8aXjoNN5QYQkrwYxAdXy
     api-url: https://api.tosspayments.com/v1
 
+sweettracker:
+  api-key: iZXFC9x2hR8IE8S0D0L7AQ
+
 eureka:
   client:
     register-with-eureka: true

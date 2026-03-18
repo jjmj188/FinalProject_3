@@ -57,11 +57,32 @@
                p.SALE_TYPE     AS saleType,
                p.TRADE_STATUS  AS tradeStatus,
                p.PRODUCT_DESC  AS productDesc,
+               p.TRADE_METHOD  AS tradeMethod,
+               p.CARRIER_CODE  AS carrierCode,
+               p.INVOICE_NO    AS invoiceNo,
                pi.IMG_URL      AS imgUrl
         FROM PRODUCTS p
         LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
         WHERE p.SELLER_EMAIL = #{email}
         ORDER BY p.PRODUCT_NO DESC
+    </select>
+
+    <!-- ===== 송장번호 저장 ===== -->
+    <update id="saveInvoice" parameterType="map">
+        UPDATE PRODUCTS
+        SET CARRIER_CODE = #{carrierCode},
+            INVOICE_NO   = #{invoiceNo}
+        WHERE PRODUCT_NO   = #{productNo}
+          AND SELLER_EMAIL = #{email}
+    </update>
+
+    <!-- ===== 송장번호 조회 ===== -->
+    <select id="getInvoice" parameterType="map" resultType="com.spring.app.product.domain.ProductDTO">
+        SELECT CARRIER_CODE AS carrierCode,
+               INVOICE_NO   AS invoiceNo,
+               TRADE_METHOD AS tradeMethod
+        FROM PRODUCTS
+        WHERE PRODUCT_NO = #{productNo}
     </select>
 
     <!-- ===== 내 판매상품 단건 조회 (수정 페이지용) ===== -->
@@ -300,6 +321,8 @@
                pi.IMG_URL      AS imgUrl,
                t.TRANSACTION_ID AS transactionId,
                t.SELLER_EMAIL   AS sellerEmail,
+               p.CARRIER_CODE  AS carrierCode,
+               p.INVOICE_NO    AS invoiceNo,
                CASE WHEN EXISTS (
                    SELECT 1 FROM REVIEWS r WHERE r.TRANSACTION_ID = t.TRANSACTION_ID
                ) THEN 1 ELSE 0 END AS hasReview

@@ -24,6 +24,10 @@ public interface MyPageService {
     // 내 판매상품
     List<ProductDTO> getMyProducts(String email);
     ProductDTO getMyProductByNo(Map<String, Object> params);
+
+    // 송장번호
+    int saveInvoice(Map<String, Object> params);
+    ProductDTO getInvoice(Map<String, Object> params);
     int updateMyProduct(Map<String, Object> params);
     int getProductTransactionCount(int productNo);
     int deleteMyProduct(Map<String, Object> params);
