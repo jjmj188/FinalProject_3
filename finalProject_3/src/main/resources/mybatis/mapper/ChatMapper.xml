@@ -105,4 +105,33 @@
         FROM CHAT_ROOM
         WHERE ROOM_ID = #{roomId}
     </select>
+
+    <!-- 판매자 미읽음 +1 -->
+    <update id="incrementSellerUnread" parameterType="String">
+        UPDATE CHAT_ROOM SET SELLER_UNREAD = NVL(SELLER_UNREAD, 0) + 1 WHERE ROOM_ID = #{roomId}
+    </update>
+
+    <!-- 구매자 미읽음 +1 -->
+    <update id="incrementBuyerUnread" parameterType="String">
+        UPDATE CHAT_ROOM SET BUYER_UNREAD = NVL(BUYER_UNREAD, 0) + 1 WHERE ROOM_ID = #{roomId}
+    </update>
+
+    <!-- 사용자의 모든 채팅방 미읽음 초기화 -->
+    <update id="resetAllUnread" parameterType="String">
+        UPDATE CHAT_ROOM
+        SET SELLER_UNREAD = CASE WHEN SELLER_EMAIL = #{email} THEN 0 ELSE SELLER_UNREAD END,
+            BUYER_UNREAD  = CASE WHEN BUYER_EMAIL  = #{email} THEN 0 ELSE BUYER_UNREAD  END
+        WHERE SELLER_EMAIL = #{email} OR BUYER_EMAIL = #{email}
+    </update>
+
+    <!-- 총 미읽음 카운트 조회 -->
+    <select id="getTotalUnreadCount" parameterType="String" resultType="int">
+        SELECT NVL(SUM(
+            CASE WHEN SELLER_EMAIL = #{email} THEN NVL(SELLER_UNREAD, 0)
+                 WHEN BUYER_EMAIL  = #{email} THEN NVL(BUYER_UNREAD,  0)
+                 ELSE 0 END
+        ), 0)
+        FROM CHAT_ROOM
+        WHERE SELLER_EMAIL = #{email} OR BUYER_EMAIL = #{email}
+    </select>
 </mapper>

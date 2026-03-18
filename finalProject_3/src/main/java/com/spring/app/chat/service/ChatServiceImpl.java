@@ -87,4 +87,23 @@ public class ChatServiceImpl implements ChatService {
     public ChatRoomDTO getRoomById(String roomId) {
         return chatMapper.selectRoomById(roomId);
     }
+
+    @Override
+    public void incrementUnread(String roomId, String recipientEmail, String sellerEmail) {
+        if (recipientEmail.equals(sellerEmail)) {
+            chatMapper.incrementSellerUnread(roomId);
+        } else {
+            chatMapper.incrementBuyerUnread(roomId);
+        }
+    }
+
+    @Override
+    public void resetAllUnread(String email) {
+        chatMapper.resetAllUnread(email);
+    }
+
+    @Override
+    public int getTotalUnreadCount(String email) {
+        return chatMapper.getTotalUnreadCount(email);
+    }
 }

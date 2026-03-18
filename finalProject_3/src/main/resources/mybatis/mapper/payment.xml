@@ -165,17 +165,17 @@
             ERROR_CODE, ERROR_MSG, REQUESTED_AT, REQUEST_IP
         ) VALUES (
             SEQ_PAYLOG_ID.NEXTVAL,
-            #{transactionId},
-            #{logType},
-            #{apiEndpoint},
-            #{httpMethod},
-            #{requestData},
-            #{responseData},
-            #{httpStatus},
-            #{errorCode},
-            #{errorMsg},
+            #{transactionId, jdbcType=NUMERIC},
+            #{logType, jdbcType=VARCHAR},
+            #{apiEndpoint, jdbcType=VARCHAR},
+            #{httpMethod, jdbcType=VARCHAR},
+            #{requestData, jdbcType=CLOB},
+            #{responseData, jdbcType=CLOB},
+            #{httpStatus, jdbcType=NUMERIC},
+            #{errorCode, jdbcType=VARCHAR},
+            #{errorMsg, jdbcType=VARCHAR},
             SYSTIMESTAMP,
-            #{requestIp}
+            #{requestIp, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -189,15 +189,15 @@
         ) VALUES (
             SEQ_CARD_PAY_ID.NEXTVAL,
             #{transactionId},
-            #{cardCompanyCd},
-            #{cardCompany},
-            #{cardNum},
-            #{cardType},
+            #{cardCompanyCd, jdbcType=VARCHAR},
+            #{cardCompany, jdbcType=VARCHAR},
+            #{cardNum, jdbcType=VARCHAR},
+            #{cardType, jdbcType=VARCHAR},
             #{installment, jdbcType=NUMERIC},
             #{isNoInterest, jdbcType=VARCHAR},
-            #{ownerType},
-            #{acquireStatus},
-            #{receiptUrl}
+            #{ownerType, jdbcType=VARCHAR},
+            #{acquireStatus, jdbcType=VARCHAR},
+            #{receiptUrl, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -209,7 +209,7 @@
         ) VALUES (
             SEQ_EASY_PAY_ID.NEXTVAL,
             #{transactionId},
-            #{provider},
+            #{provider, jdbcType=VARCHAR},
             #{discountAmt, jdbcType=NUMERIC}
         )
     </insert>

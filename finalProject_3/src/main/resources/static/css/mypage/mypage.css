@@ -208,7 +208,7 @@
     color: #fff;
 }
 
-.wish-status-sale { background: #222; }
+.wish-status-sale { background: #4CB050; }
 .wish-status-reserve { background: #f90; }
 .wish-status-done { background: #aaa; }
 
@@ -217,18 +217,25 @@
 .mp-wish-price { font-size: 14px; font-weight: bold; margin: 0; }
 
 .mp-wish-cancel {
-    margin: 0 12px 12px;
-    padding: 7px;
-    border: 1px solid #eee;
-    border-radius: 6px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
     background: #fff;
-    font-size: 12px;
-    color: #e44;
+    border: 1px solid rgba(0,0,0,.10);
+    display: grid;
+    place-items: center;
     cursor: pointer;
-    width: calc(100% - 24px);
+    box-shadow: 0 10px 22px rgba(15,23,42,.10);
+    color: #ef4444;
+    z-index: 50;
+    font-size: 16px;
+    line-height: 1;
 }
 
-.mp-wish-cancel:hover { background: #fff0f0; border-color: #e44; }
+.mp-wish-cancel:hover { background: #fff0f0; }
 
 /* ===== 내 판매상품 수정/삭제 버튼 ===== */
 .mp-product-actions {
@@ -262,6 +269,14 @@
 }
 
 .mp-product-delete-btn:hover { background: #fff0f0; }
+
+.mp-product-delete-btn:disabled {
+    border-color: #ddd;
+    color: #bbb;
+    cursor: not-allowed;
+    background: #f9f9f9;
+}
+.mp-product-delete-btn:disabled:hover { background: #f9f9f9; }
 
 /* ===== 페이징 ===== */
 .mp-paging {
