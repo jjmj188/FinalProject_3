@@ -82,4 +82,9 @@ public class ChatServiceImpl implements ChatService {
     public String getReservedRoomId(int productNo) {
         return chatMapper.getReservedRoomId(productNo);
     }
+
+    @Override
+    public ChatRoomDTO getRoomById(String roomId) {
+        return chatMapper.selectRoomById(roomId);
+    }
 }

@@ -36,4 +36,7 @@ public interface ChatMapper {
 
     // 상품의 현재 예약된 채팅방 ID 조회
     String getReservedRoomId(@Param("productNo") int productNo);
+
+    // roomId로 채팅방 조회 (발신자/수신자 파악용)
+    ChatRoomDTO selectRoomById(@Param("roomId") String roomId);
 }

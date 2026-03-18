@@ -98,4 +98,11 @@
         FROM PRODUCTS
         WHERE PRODUCT_NO = #{productNo}
     </select>
+
+    <!-- roomId로 채팅방 조회 (발신자/수신자 파악용) -->
+    <select id="selectRoomById" resultType="com.spring.app.chat.domain.ChatRoomDTO">
+        SELECT ROOM_ID AS roomId, SELLER_EMAIL AS sellerEmail, BUYER_EMAIL AS buyerEmail
+        FROM CHAT_ROOM
+        WHERE ROOM_ID = #{roomId}
+    </select>
 </mapper>

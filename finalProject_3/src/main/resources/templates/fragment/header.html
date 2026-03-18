@@ -48,11 +48,11 @@
 		  
             <span class="util-sep" aria-hidden="true">|</span>
 
-            <a href="javascript:void(0);" onclick="toggleChatPopup()">
+            <a href="javascript:void(0);" onclick="toggleChatPopup(); resetChatBadge();">
 			  <div class="notification">
 			    <button type="button" class="not-btn">
 			      <i class="fa-solid fa-comment-dots"></i>
-			      <span class="number">2</span>
+			      <span class="number" id="chatBadge" style="display:none;">0</span>
 			    </button>
 			  </div>
 			</a>
@@ -119,6 +119,33 @@
                 clearTimeout(window._tt);
                 window._tt = setTimeout(()=>el.style.display='none', 4000);
               }
+            })();
+            </script>
+
+            <script th:inline="javascript">
+            function resetChatBadge() {
+              const b = document.getElementById('chatBadge');
+              if (b) { b.textContent = '0'; b.style.display = 'none'; }
+            }
+            (function() {
+              const userEmail = /*[[${#authentication != null && #authentication.name != 'anonymousUser' ? #authentication.name : ''}]]*/ '';
+              if (!userEmail) return;
+              const _ctx = (/*[[@{/}]]*/ '/').replace(/\/$/, '');
+              function connectChatBadge() {
+                if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') { setTimeout(connectChatBadge, 500); return; }
+                const client = Stomp.over(new SockJS(_ctx + '/ws-chat'));
+                client.debug = null;
+                client.connect({}, function() {
+                  client.subscribe('/topic/chat-unread/' + userEmail, function() {
+                    const b = document.getElementById('chatBadge');
+                    if (!b) return;
+                    const cur = parseInt(b.textContent) || 0;
+                    b.textContent = cur + 1 > 99 ? '99+' : cur + 1;
+                    b.style.display = '';
+                  });
+                }, function() { setTimeout(connectChatBadge, 3000); });
+              }
+              connectChatBadge();
             })();
             </script>
 

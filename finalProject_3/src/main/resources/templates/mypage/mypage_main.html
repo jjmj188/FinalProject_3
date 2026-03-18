@@ -154,10 +154,10 @@
                         <button class="tab-btn active" onclick="switchReportTab(this, 'sent')">신고한 내역</button>
                         <button class="tab-btn" onclick="switchReportTab(this, 'received')">신고받은 내역</button>
                     </div>
-                    <div id="reportSentContent" class="mp-tab-content">
+                    <div id="reportSentContent" class="mp-tab-content" style="min-height:530px;">
                         <div class="mp-empty"><p>신고 내역이 없습니다.</p></div>
                     </div>
-                    <div id="reportReceivedContent" class="mp-tab-content" style="display:none;">
+                    <div id="reportReceivedContent" class="mp-tab-content" style="display:none; min-height:530px;">
                         <div class="mp-empty"><p>신고받은 내역이 없습니다.</p></div>
                     </div>
                 </div>
@@ -1029,6 +1029,25 @@
     }
 
     // ===== 신고관리 =====
+    let allReportsSent = [];
+    let allReportsReceived = [];
+    let sentPage = 1;
+    let receivedPage = 1;
+    const REPORT_PAGE_SIZE = 3;
+
+    window.changeReportPage = function(type, page) {
+        if (type === 'sent') {
+            const totalPages = Math.ceil(allReportsSent.length / REPORT_PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            sentPage = page;
+            renderReportList(allReportsSent, 'reportSentContent', '신고한 내역이 없습니다.', true);
+        } else {
+            const totalPages = Math.ceil(allReportsReceived.length / REPORT_PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            receivedPage = page;
+            renderReportList(allReportsReceived, 'reportReceivedContent', '신고받은 내역이 없습니다.', false);
+        }
+    }
 
     function getReportStatusBadge(status) {
         const map = {
@@ -1053,7 +1072,12 @@
             container.innerHTML = `<div class="mp-empty"><p>${emptyMsg}</p></div>`;
             return;
         }
-        container.innerHTML = reports.map(r => {
+        const page = isSent ? sentPage : receivedPage;
+        const totalPages = Math.ceil(reports.length / REPORT_PAGE_SIZE);
+        const pageItems = reports.slice((page - 1) * REPORT_PAGE_SIZE, page * REPORT_PAGE_SIZE);
+        const type = isSent ? 'sent' : 'received';
+
+        const cardsHtml = pageItems.map(r => {
             const imgSrc = r.imgUrl
                 ? (r.imgUrl.startsWith('http') ? r.imgUrl : ctxPath.replace(/\/$/, '') + r.imgUrl)
                 : null;
@@ -1109,21 +1133,36 @@
                 </div>
             </div>`;
         }).join('');
+
+        let pagingHtml = '';
+        if (totalPages > 1) {
+            pagingHtml = `<div class="mp-paging">
+                <button class="mp-page-btn" onclick="changeReportPage('${type}', ${page - 1})" ${page <= 1 ? 'disabled' : ''}>◀</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                pagingHtml += `<button class="mp-page-btn${i === page ? ' active' : ''}" onclick="changeReportPage('${type}', ${i})">${i}</button>`;
+            }
+            pagingHtml += `<button class="mp-page-btn" onclick="changeReportPage('${type}', ${page + 1})" ${page >= totalPages ? 'disabled' : ''}>▶</button>
+            </div>`;
+        }
+
+        container.innerHTML = cardsHtml + pagingHtml;
     }
 
     window.loadMyReportsSent = function() {
+        sentPage = 1;
         fetch(`${ctxPath}mypage/reports/sent`)
         .then(r => r.json())
-        .then(data => renderReportList(data, 'reportSentContent', '신고한 내역이 없습니다.', true))
+        .then(data => { allReportsSent = data; renderReportList(data, 'reportSentContent', '신고한 내역이 없습니다.', true); })
         .catch(() => {
             document.getElementById('reportSentContent').innerHTML = '<div class="mp-empty"><p>신고 내역을 불러올 수 없습니다.</p></div>';
         });
     }
 
     window.loadMyReportsReceived = function() {
+        receivedPage = 1;
         fetch(`${ctxPath}mypage/reports/received`)
         .then(r => r.json())
-        .then(data => renderReportList(data, 'reportReceivedContent', '신고받은 내역이 없습니다.', false))
+        .then(data => { allReportsReceived = data; renderReportList(data, 'reportReceivedContent', '신고받은 내역이 없습니다.', false); })
         .catch(() => {
             document.getElementById('reportReceivedContent').innerHTML = '<div class="mp-empty"><p>신고받은 내역을 불러올 수 없습니다.</p></div>';
         });

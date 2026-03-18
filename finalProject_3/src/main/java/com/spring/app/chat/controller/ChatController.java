@@ -97,11 +97,19 @@ public class ChatController {
 
         // 3) 웹소켓을 통해 해당 방("/topic/room/방ID")을 열고 있는 모든 사람에게 즉시 메시지 쏘기!
         messagingTemplate.convertAndSend("/topic/room/" + message.getRoomId(), message);
-        
-        /* * TODO: 4) 오라클 DB의 CHAT_ROOM 테이블에 '마지막 메시지' 업데이트 하기
-         * (그래야 채팅방 목록을 열었을 때 방금 보낸 내용이 미리보기에 뜹니다.)
-         * ex) chatService.updateLastMessage(message.getRoomId(), message.getContent(), now); 
-         */
+
+        // 4) 수신자의 채팅 뱃지 카운트 증가 알림
+        try {
+            ChatRoomDTO room = chatService.getRoomById(message.getRoomId());
+            if (room != null && message.getSender() != null) {
+                String recipient = message.getSender().equals(room.getSellerEmail())
+                        ? room.getBuyerEmail()
+                        : room.getSellerEmail();
+                if (recipient != null) {
+                    messagingTemplate.convertAndSend("/topic/chat-unread/" + recipient, Map.of("count", 1));
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     // ★ 4. 새로운 채팅방 생성 (또는 기존 방 찾기) API 추가
