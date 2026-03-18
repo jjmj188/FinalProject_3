@@ -456,12 +456,16 @@
                         <button id="btnStartChat" class="pd-btn pd-btn-chat" type="button"
                                 th:data-product-no="${product.productNo}"
                                 th:data-seller-email="${product.sellerEmail}"
-                                th:data-product-name="${product.productName}">
+                                th:data-product-name="${product.productName}"
+                                th:disabled="${product.tradeStatus == '예약중'}"
+                                th:title="${product.tradeStatus == '예약중'} ? '현재 다른 구매자와 예약이 진행 중입니다.' : ''">
                             채팅하기
                         </button>
 
                         <button class="pd-btn pd-btn-pay" type="button"
                                 th:attr="data-product-no=${product.productNo}"
+                                th:disabled="${product.tradeStatus == '예약중'}"
+                                th:title="${product.tradeStatus == '예약중'} ? '현재 다른 구매자와 예약이 진행 중입니다.' : ''"
                                 onclick="goToPayment(this)">
                             안전결제
                         </button>

@@ -28,4 +28,13 @@ public interface ChatService {
 
     // roomId로 채팅방 조회
     ChatRoomDTO getRoomById(String roomId);
+
+    // 미읽음 카운트 증가 (수신자 이메일 기준으로 buyer/seller 판별)
+    void incrementUnread(String roomId, String recipientEmail, String sellerEmail);
+
+    // 미읽음 카운트 초기화
+    void resetAllUnread(String email);
+
+    // 총 미읽음 카운트 조회
+    int getTotalUnreadCount(String email);
 }

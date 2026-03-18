@@ -866,7 +866,8 @@
                     </div>
                     <div class="mp-product-actions">
                         <button class="mp-product-edit-btn" onclick="goProductEdit(${p.productNo})">수정</button>
-                        <button class="mp-product-delete-btn" onclick="deleteMyProduct(${p.productNo})">삭제</button>
+                        <button class="mp-product-delete-btn"
+                            ${p.tradeStatus === '예약중' ? 'disabled title="예약중인 상품은 삭제할 수 없습니다."' : `onclick="deleteMyProduct(${p.productNo})"`}>삭제</button>
                     </div>
                 </div>`;
         }).join('')}</div>`;
@@ -946,17 +947,19 @@
                 : 'wish-status-done';
             return `
                 <div class="mp-wish-card">
-                    <a href="${ctxPath}product/product_detail/${p.productNo}" class="mp-wish-img-wrap">
-                        <img src="${imgSrc}" alt="${p.productName}" onerror="this.src='${ctxPath}images/no_image.png'">
+                    <div class="mp-wish-img-wrap">
+                        <a href="${ctxPath}product/product_detail/${p.productNo}">
+                            <img src="${imgSrc}" alt="${p.productName}" onerror="this.src='${ctxPath}images/no_image.png'">
+                        </a>
                         <span class="mp-wish-status ${statusClass}">${p.tradeStatus}</span>
-                    </a>
+                        <button class="mp-wish-cancel" onclick="cancelWish(${p.productNo}, this)" title="찜 해제">
+                            <i class="fa-solid fa-heart"></i>
+                        </button>
+                    </div>
                     <div class="mp-wish-info">
                         <p class="mp-wish-name">${p.productName}</p>
                         <p class="mp-wish-price">${priceText}</p>
                     </div>
-                    <button class="mp-wish-cancel" onclick="cancelWish(${p.productNo}, this)">
-                        <i class="fas fa-heart"></i> 찜 해제
-                    </button>
                 </div>`;
         }).join('');
 

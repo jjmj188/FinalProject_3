@@ -39,4 +39,14 @@ public interface ChatMapper {
 
     // roomId로 채팅방 조회 (발신자/수신자 파악용)
     ChatRoomDTO selectRoomById(@Param("roomId") String roomId);
+
+    // 미읽음 카운트 증가
+    void incrementSellerUnread(String roomId);
+    void incrementBuyerUnread(String roomId);
+
+    // 미읽음 카운트 초기화 (채팅 팝업 열 때)
+    void resetAllUnread(@Param("email") String email);
+
+    // 총 미읽음 카운트 조회 (페이지 로드 시)
+    int getTotalUnreadCount(@Param("email") String email);
 }

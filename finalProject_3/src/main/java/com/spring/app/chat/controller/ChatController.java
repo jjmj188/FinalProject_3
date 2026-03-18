@@ -98,7 +98,7 @@ public class ChatController {
         // 3) 웹소켓을 통해 해당 방("/topic/room/방ID")을 열고 있는 모든 사람에게 즉시 메시지 쏘기!
         messagingTemplate.convertAndSend("/topic/room/" + message.getRoomId(), message);
 
-        // 4) 수신자의 채팅 뱃지 카운트 증가 알림
+        // 4) 수신자의 채팅 뱃지 카운트 증가 알림 + DB 저장
         try {
             ChatRoomDTO room = chatService.getRoomById(message.getRoomId());
             if (room != null && message.getSender() != null) {
@@ -106,10 +106,30 @@ public class ChatController {
                         ? room.getBuyerEmail()
                         : room.getSellerEmail();
                 if (recipient != null) {
+                    // DB에 미읽음 카운트 저장
+                    chatService.incrementUnread(message.getRoomId(), recipient, room.getSellerEmail());
+                    // WebSocket으로 실시간 알림
                     messagingTemplate.convertAndSend("/topic/chat-unread/" + recipient, Map.of("count", 1));
                 }
             }
         } catch (Exception ignored) {}
+    }
+
+    // 총 미읽음 채팅 카운트 조회 (페이지 로드 시 사용)
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/unread-count")
+    public Map<String, Object> getUnreadCount(Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("count", chatService.getTotalUnreadCount(principal.getName()));
+        return result;
+    }
+
+    // 미읽음 카운트 초기화 (채팅 팝업 열 때 호출)
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/reset-all-unread")
+    public Map<String, Object> resetAllUnread(Principal principal) {
+        chatService.resetAllUnread(principal.getName());
+        return Map.of("success", true);
     }
 
     // ★ 4. 새로운 채팅방 생성 (또는 기존 방 찾기) API 추가

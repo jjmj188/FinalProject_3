@@ -126,11 +126,27 @@
             function resetChatBadge() {
               const b = document.getElementById('chatBadge');
               if (b) { b.textContent = '0'; b.style.display = 'none'; }
+              // DB 미읽음 카운트 초기화
+              const _ctx = (/*[[@{/}]]*/ '/').replace(/\/$/, '');
+              fetch(_ctx + '/api/chat/reset-all-unread', { method: 'POST' }).catch(function(){});
             }
             (function() {
               const userEmail = /*[[${#authentication != null && #authentication.name != 'anonymousUser' ? #authentication.name : ''}]]*/ '';
               if (!userEmail) return;
               const _ctx = (/*[[@{/}]]*/ '/').replace(/\/$/, '');
+
+              // 페이지 로드 시 DB에서 미읽음 카운트 초기값 로드
+              fetch(_ctx + '/api/chat/unread-count').then(function(r){ return r.json(); }).then(function(d){
+                updateChatBadge(d.count);
+              }).catch(function(){});
+
+              function updateChatBadge(n) {
+                const b = document.getElementById('chatBadge');
+                if (!b) return;
+                b.textContent = n > 99 ? '99+' : n;
+                b.style.display = n > 0 ? '' : 'none';
+              }
+
               function connectChatBadge() {
                 if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') { setTimeout(connectChatBadge, 500); return; }
                 const client = Stomp.over(new SockJS(_ctx + '/ws-chat'));
