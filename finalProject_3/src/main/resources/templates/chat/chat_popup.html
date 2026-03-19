@@ -116,7 +116,7 @@
         .chat-product-banner img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; }
         .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .price-row { font-size: 16px; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-        .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 700; color: #fff; background: #16a34a; border: none; }
+        .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 700; color: #fff; background: #16a34a; border: none; transition: background 0.2s ease, opacity 0.2s ease; }
         .status-badge.reserved { background: #f59e0b; }
         .status-badge.done { background: #6b7280; }
         .name-row { font-size: 13px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
@@ -372,9 +372,20 @@
         
         window.renderRoomList = function(roomList) {
             const ul = document.getElementById('roomListArea');
-            ul.innerHTML = ''; 
+            ul.innerHTML = '';
             if(!roomList || roomList.length===0) return ul.innerHTML = '<li style="padding:15px; text-align:center; color:#fff;">대화가 없습니다.</li>';
-            
+
+            // 현재 열린 채팅방이 있으면 최신 상태로 배너 갱신
+            if (currentRoomId) {
+                const currentRoom = roomList.find(r => r.roomId === currentRoomId);
+                if (currentRoom) {
+                    currentTradeStatus    = currentRoom.tradeStatus    || currentTradeStatus;
+                    currentReservedRoomId = currentRoom.reservedRoomId || null;
+                    currentTradeMethod    = currentRoom.tradeMethod    || currentTradeMethod;
+                    window.applyRoomStatusUI();
+                }
+            }
+
             roomList.forEach(room => {
                 const li = document.createElement('li');
                 li.className = 'room-item';

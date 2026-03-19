@@ -30,6 +30,7 @@ public interface MyPageService {
     ProductDTO getInvoice(Map<String, Object> params);
     int updateMyProduct(Map<String, Object> params);
     int getProductTransactionCount(int productNo);
+    int getProductReportCount(int productNo);
     int deleteMyProduct(Map<String, Object> params);
 
     // 수정 페이지용 이미지/배송/위치

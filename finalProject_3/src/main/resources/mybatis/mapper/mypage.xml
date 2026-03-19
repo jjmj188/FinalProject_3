@@ -179,6 +179,11 @@
         SELECT COUNT(*) FROM TRANSACTIONS WHERE PRODUCT_NO = #{productNo}
     </select>
 
+    <!-- ===== 내 판매상품 신고 건수 조회 (삭제 가능 여부 확인) ===== -->
+    <select id="getProductReportCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM REPORTS WHERE PRODUCT_NUM = #{productNo}
+    </select>
+
     <!-- ===== 내 판매상품 삭제 ===== -->
     <delete id="deleteMyProduct" parameterType="map">
         DELETE FROM PRODUCTS

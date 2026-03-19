@@ -271,6 +271,13 @@ public class MyPageController {
             return result;
         }
 
+        int reportCount = myPageService.getProductReportCount(productNo);
+        if (reportCount > 0) {
+            result.put("success", false);
+            result.put("message", "신고가 접수된 상품은 삭제할 수 없습니다.");
+            return result;
+        }
+
         Map<String, Object> params = new HashMap<>();
         params.put("productNo", productNo);
         params.put("email", principal.getName());

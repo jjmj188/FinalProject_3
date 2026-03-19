@@ -26,6 +26,12 @@ public interface ChatMapper {
     // 방 번호로 채팅방을 삭제하는 메서드 추가
     int deleteChatRoom(@Param("roomId") String roomId);
 
+    // 채팅방에 신고 이력이 있는지 확인
+    int countReportsByRoomId(@Param("roomId") String roomId);
+
+    // roomId로 상품 번호 조회
+    Integer findProductNoByRoomId(@Param("roomId") String roomId);
+
 	void updateTradeStatus(Map<String, Object> map);
 
     // 예약 확정: TRADE_STATUS='예약중' + RESERVED_ROOM_ID 저장

@@ -26,6 +26,9 @@ public interface ChatService {
     // 현재 예약된 채팅방 ID 조회
     String getReservedRoomId(int productNo);
 
+    // roomId로 상품 번호 조회
+    Integer getProductNoByRoomId(String roomId);
+
     // roomId로 채팅방 조회
     ChatRoomDTO getRoomById(String roomId);
 

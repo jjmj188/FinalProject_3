@@ -81,6 +81,11 @@ public class MyPageDAO_imple implements MyPageDAO {
     }
 
     @Override
+    public int getProductReportCount(int productNo) {
+        return sqlsession.selectOne(ns + ".getProductReportCount", productNo);
+    }
+
+    @Override
     public int deleteMyProduct(Map<String, Object> params) {
         return sqlsession.delete(ns + ".deleteMyProduct", params);
     }

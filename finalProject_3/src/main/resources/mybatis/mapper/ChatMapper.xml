@@ -65,9 +65,17 @@
     </insert>
     
 	<delete id="deleteChatRoom" parameterType="String">
-	    DELETE FROM CHAT_ROOM 
+	    DELETE FROM CHAT_ROOM
 	    WHERE ROOM_ID = #{roomId}
 	</delete>
+
+	<select id="countReportsByRoomId" parameterType="String" resultType="int">
+	    SELECT COUNT(*) FROM REPORTS WHERE ROOM_ID = #{roomId}
+	</select>
+
+	<select id="findProductNoByRoomId" parameterType="String" resultType="Integer">
+	    SELECT PRODUCT_NO FROM CHAT_ROOM WHERE ROOM_ID = #{roomId}
+	</select>
 	
 	<!-- 예약 확정: TRADE_STATUS = '예약중' + RESERVED_ROOM_ID 저장 -->
     <update id="updateReserveStatus">

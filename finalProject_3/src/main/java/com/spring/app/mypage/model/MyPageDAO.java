@@ -26,6 +26,7 @@ public interface MyPageDAO {
     ProductDTO getMyProductByNo(Map<String, Object> params);
     int updateMyProduct(Map<String, Object> params);
     int getProductTransactionCount(int productNo);
+    int getProductReportCount(int productNo);
     int deleteMyProduct(Map<String, Object> params);
 
     // 송장번호

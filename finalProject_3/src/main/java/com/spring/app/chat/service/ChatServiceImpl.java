@@ -49,7 +49,21 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public boolean leaveChatRoom(String roomId) {
-        // 삭제된 행(row)의 개수가 1 이상이면 성공(true)
+        if (chatMapper.countReportsByRoomId(roomId) > 0) {
+            throw new IllegalStateException("신고가 접수된 채팅방은 나갈 수 없습니다.");
+        }
+
+        // 나가는 방이 예약 확정된 방이면 예약 취소 (판매중으로 복귀)
+        Integer productNo = chatMapper.findProductNoByRoomId(roomId);
+        if (productNo != null) {
+            String reservedRoomId = chatMapper.getReservedRoomId(productNo);
+            if (roomId.equals(reservedRoomId)) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("productNo", productNo);
+                chatMapper.cancelReserveStatus(map);
+            }
+        }
+
         int result = chatMapper.deleteChatRoom(roomId);
         return result > 0;
     }
@@ -81,6 +95,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public String getReservedRoomId(int productNo) {
         return chatMapper.getReservedRoomId(productNo);
+    }
+
+    @Override
+    public Integer getProductNoByRoomId(String roomId) {
+        return chatMapper.findProductNoByRoomId(roomId);
     }
 
     @Override

@@ -193,18 +193,37 @@ public class ChatController {
  // 5. 채팅방 나가기 API
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/leave/{roomId}")
-    public Map<String, Object> leaveRoom(@PathVariable("roomId") String roomId) {
+    public Map<String, Object> leaveRoom(@PathVariable("roomId") String roomId, Principal principal) {
         Map<String, Object> resultMap = new HashMap<>();
         try {
+            // 나가기 전에 예약된 방인지 확인 (예약 취소 알림용)
+            boolean wasReserved = false;
+            Integer productNo = chatService.getProductNoByRoomId(roomId);
+            if (productNo != null) {
+                wasReserved = roomId.equals(chatService.getReservedRoomId(productNo));
+            }
+
             boolean isDeleted = chatService.leaveChatRoom(roomId);
-            
+
             if (isDeleted) {
+                // 예약된 방이었으면 판매자에게 예약 취소 알림 전송
+                if (wasReserved) {
+                    ChatMessageDTO cancelMsg = new ChatMessageDTO();
+                    cancelMsg.setSender(principal.getName());
+                    cancelMsg.setContent("__CANCEL_RESERVE__:");
+                    cancelMsg.setRoomId(roomId);
+                    cancelMsg.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                    messagingTemplate.convertAndSend("/topic/room/" + roomId, cancelMsg);
+                }
                 resultMap.put("success", true);
                 resultMap.put("message", "채팅방을 나갔습니다.");
             } else {
                 resultMap.put("success", false);
                 resultMap.put("message", "이미 존재하지 않는 방입니다.");
             }
+        } catch (IllegalStateException e) {
+            resultMap.put("success", false);
+            resultMap.put("message", e.getMessage());
         } catch (Exception e) {
             resultMap.put("success", false);
             resultMap.put("message", "나가기 처리 중 오류가 발생했습니다.");
@@ -212,7 +231,7 @@ public class ChatController {
         }
         return resultMap;
     }
-    
+
     @RestController
     @RequestMapping("/api/chat")
     public class ChatReportController {
