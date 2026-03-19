@@ -959,46 +959,6 @@ textarea { resize: none; }
   background: #f3f4f6;
 }
 
-/* ===== responsive ===== */
-@media (max-width: 1100px) {
-  .area-modal__panel {
-    width: min(980px, calc(100% - 24px));
-    height: min(780px, calc(100vh - 24px));
-    margin: 12px auto;
-  }
-
-  .area-modal__layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: 180px 260px 1fr;
-  }
-
-  .area-modal__left,
-  .area-modal__center,
-  .area-modal__right {
-    height: auto;
-  }
-
-  .area-map-box {
-    min-height: 260px;
-  }
-}
-
-@media (max-width: 768px) {
-  .area-modal__panel {
-    width: calc(100% - 16px);
-    height: calc(100vh - 16px);
-    margin: 8px auto;
-  }
-
-  .area-modal__body {
-    padding: 12px;
-  }
-
-  .area-modal__layout {
-    grid-template-rows: 160px 300px 1fr;
-    gap: 12px;
-  }
-}
 
 /* =========================
    선택 위치 칩(최대 3개)
