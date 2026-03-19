@@ -1255,41 +1255,45 @@ $(function () {
 		const wished = Number(p.wished || 0) === 1;
 		const canAccessDetail = Number(p.canAccessDetail || 0);
 
+		const finalImgUrl = imgUrl
+			? (imgUrl.startsWith("http://") || imgUrl.startsWith("https://") ? imgUrl : ctxPath + imgUrl)
+			: ctxPath + "/images/no-image.png";
+
 		return `
-		<a class="card"
-		   href="/finalProject_3/product/product_detail/${p.productNo}"
-		   data-trade-status="${escapeHtml(p.tradeStatus)}"
-		   data-can-access="${canAccessDetail}">
-			<div class="thumb">
-				${makeTradeStatusBadge(p.tradeStatus)}
-				<button class="heart ${wished ? "on" : ""}"
-				        type="button"
-				        aria-label="찜"
-				        data-product-no="${p.productNo}"
-				        data-login="${isLogin}">
-					<i class="${wished ? "fa-solid" : "fa-regular"} fa-heart"></i>
-				</button>
-				<img src="${escapeHtml(imgUrl)}" alt="">
-			</div>
-			<div class="card-body">
-				<div class="item-title">${escapeHtml(p.productName)}</div>
-				<div class="price">${formatPrice(p.saleType, p.productPrice)}</div>
-				<div class="meta">
-					<span>
-						<i class="fa-solid fa-location-dot"></i>
-						<span>${escapeHtml(placeName)}</span>
-					</span>
-					<span>
-						<i class="fa-regular fa-clock"></i>
-						<span class="time-ago" data-time="${escapeHtml(regDate)}">${formatTimeAgo(regDate)}</span>
-					</span>
-					<span>
-						<i class="fa-solid fa-eye"></i>
-						<span>${p.viewCount != null ? p.viewCount : 0}</span>
-					</span>
+			<a class="card"
+			   href="${ctxPath}/product/product_detail/${p.productNo}"
+			   data-trade-status="${escapeHtml(p.tradeStatus)}"
+			   data-can-access="${canAccessDetail}">
+				<div class="thumb">
+					${makeTradeStatusBadge(p.tradeStatus)}
+					<button class="heart ${wished ? "on" : ""}"
+					        type="button"
+					        aria-label="찜"
+					        data-product-no="${p.productNo}"
+					        data-login="${isLogin}">
+						<i class="${wished ? "fa-solid" : "fa-regular"} fa-heart"></i>
+					</button>
+					<img src="${escapeHtml(finalImgUrl)}" alt="">
 				</div>
-			</div>
-		</a>
+				<div class="card-body">
+					<div class="item-title">${escapeHtml(p.productName)}</div>
+					<div class="price">${formatPrice(p.saleType, p.productPrice)}</div>
+					<div class="meta">
+						<span>
+							<i class="fa-solid fa-location-dot"></i>
+							<span>${escapeHtml(placeName)}</span>
+						</span>
+						<span>
+							<i class="fa-regular fa-clock"></i>
+							<span class="time-ago" data-time="${escapeHtml(regDate)}">${formatTimeAgo(regDate)}</span>
+						</span>
+						<span>
+							<i class="fa-solid fa-eye"></i>
+							<span>${p.viewCount != null ? p.viewCount : 0}</span>
+						</span>
+					</div>
+				</div>
+			</a>
 		`;
 	}
 
