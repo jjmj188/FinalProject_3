@@ -31,7 +31,20 @@
 	                 WHEN C.SELLER_EMAIL = #{loginUserEmail} THEN C.BUYER_EMAIL
 	                 ELSE C.SELLER_EMAIL
 	             END
-	         )) AS nickname FROM CHAT_ROOM C
+	         )) AS nickname,
+	        (SELECT T.PAY_STATUS FROM TRANSACTIONS T
+	         WHERE T.ROOM_ID = C.ROOM_ID
+	           AND T.BUYER_EMAIL = #{loginUserEmail}
+	           AND T.PAY_STATUS = 'DONE'
+	           AND (T.TRADE_STATUS IS NULL OR T.TRADE_STATUS != '거래완료')
+	           AND ROWNUM = 1) AS payStatus,
+	        (SELECT T.TRANSACTION_ID FROM TRANSACTIONS T
+	         WHERE T.ROOM_ID = C.ROOM_ID
+	           AND T.BUYER_EMAIL = #{loginUserEmail}
+	           AND T.PAY_STATUS = 'DONE'
+	           AND (T.TRADE_STATUS IS NULL OR T.TRADE_STATUS != '거래완료')
+	           AND ROWNUM = 1) AS transactionId
+	    FROM CHAT_ROOM C
 	    JOIN PRODUCTS P ON C.PRODUCT_NO = P.PRODUCT_NO
 	    WHERE C.SELLER_EMAIL = #{loginUserEmail} OR C.BUYER_EMAIL = #{loginUserEmail}
 	    ORDER BY C.LAST_MESSAGE_AT DESC NULLS LAST

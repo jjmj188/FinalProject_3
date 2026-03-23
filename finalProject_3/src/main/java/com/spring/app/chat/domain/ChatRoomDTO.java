@@ -28,4 +28,6 @@ public class ChatRoomDTO {
     private String productImgUrl;   // 상품 대표 이미지
     private String tradeMethod;     // 거래방식 (택배/직거래)
     private String saleType;        // 판매유형 (판매/나눔/경매)
+    private String payStatus;       // 결제 상태 (DONE = 안전결제 완료, 구매확정 대기 중)
+    private Integer transactionId;  // 결제 완료된 거래 ID (구매확정 시 사용)
 }
