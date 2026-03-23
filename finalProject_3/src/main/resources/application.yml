@@ -169,10 +169,6 @@ file:
   adminupload-dir: file_adminupload
   profile-dir: file_profile
   reports-dir: file_reports
-  
-gemini:
-  api-key: 1234
-  text-model: gemini-2.5-flash
 
 gemini:
   api-key: ${GEMINI_API_KEY:AIzaSyC8iivsP0Sk099ihDHbvmKokbSRe4BjYUc}
