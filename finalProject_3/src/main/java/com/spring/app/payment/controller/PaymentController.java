@@ -51,6 +51,7 @@ public class PaymentController {
      */
     @GetMapping("checkout")
     public String checkout(@RequestParam("productNo") int productNo,
+                           @RequestParam(value = "roomId", required = false) String roomId,
                            Authentication authentication,
                            Model model) {
 
@@ -78,6 +79,7 @@ public class PaymentController {
         model.addAttribute("product", product);
         model.addAttribute("tossClientKey", tossClientKey);
         model.addAttribute("buyerEmail", buyerEmail);
+        model.addAttribute("roomId", roomId != null ? roomId : "");
 
         return "payment/checkout";
     }
@@ -102,9 +104,10 @@ public class PaymentController {
         int productNo = ((Number) params.get("productNo")).intValue();
         String paymentType = (String) params.getOrDefault("paymentType", "카드결제");
         int requestAmount = params.get("amount") != null ? ((Number) params.get("amount")).intValue() : 0;
+        String roomId = (String) params.getOrDefault("roomId", null);
 
         try {
-            TransactionDTO txn = paymentService.createTransaction(productNo, buyerEmail, paymentType, requestAmount);
+            TransactionDTO txn = paymentService.createTransaction(productNo, buyerEmail, paymentType, requestAmount, roomId);
 
             result.put("success", true);
             result.put("orderId", txn.getTossOrderId());

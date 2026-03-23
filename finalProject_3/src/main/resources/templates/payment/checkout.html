@@ -197,6 +197,7 @@
 <input type="hidden" id="productPrice" th:value="${product.productPrice != null ? product.productPrice : 0}">
 <input type="hidden" id="totalAmount" value="0"><!-- JS에서 계산 -->
 <input type="hidden" id="buyerEmail" th:value="${buyerEmail}">
+<input type="hidden" id="roomId" th:value="${roomId}">
 <input type="hidden" id="contextPath" th:value="@{/}">
 
 <script th:inline="javascript">
@@ -208,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const clientKey  = document.getElementById('tossClientKey').value;
     const contextPath = document.getElementById('contextPath').value.replace(/\/$/, '');
     const productNo  = document.getElementById('productNo').value;
+    const roomId     = document.getElementById('roomId').value;
     const productName = document.getElementById('productName').value;
     const productPrice = parseInt(document.getElementById('productPrice').value) || 0;
     const buyerEmail = document.getElementById('buyerEmail').value;
@@ -296,7 +298,8 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({
                 productNo: parseInt(productNo),
                 paymentType: amount === 0 ? '무료나눔' : paymentType,
-                amount: amount
+                amount: amount,
+                roomId: roomId || null
             })
         })
         .then(function(res) { return res.json(); })

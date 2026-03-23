@@ -59,7 +59,7 @@ public class PaymentService_imple implements PaymentService {
      */
     @Override
     @Transactional
-    public TransactionDTO createTransaction(int productNo, String buyerEmail, String paymentType, int amount) {
+    public TransactionDTO createTransaction(int productNo, String buyerEmail, String paymentType, int amount, String roomId) {
 
         // 동일 상품+구매자의 READY 거래가 이미 있으면 재사용 (중복 방지)
         Map<String, Object> checkMap = new HashMap<>();
@@ -95,6 +95,7 @@ public class PaymentService_imple implements PaymentService {
             dto.setUseEscrow("Y");
         }
 
+        dto.setRoomId(roomId);
         paymentDAO.insertTransaction(dto);
 
         if (dto.getTossOrderId() == null) {
@@ -117,6 +118,7 @@ public class PaymentService_imple implements PaymentService {
             Map<String, Object> productMap = new HashMap<>();
             productMap.put("productNo", txn.getProductNo());
             productMap.put("tradeStatus", "예약중");
+            productMap.put("reservedRoomId", txn.getRoomId());  // 채팅방 키 → 안전결제 버튼 복원
             paymentDAO.updateProductTradeStatus(productMap);
         }
     }
@@ -302,12 +304,13 @@ public class PaymentService_imple implements PaymentService {
         String paymentType = txn.getPaymentType();
 
         if (TOSS_ESCROW_TYPES.contains(paymentType)) {
-            // ── 4-A. 토스 결제: 에스크로 구매확정 API 호출 ──────────────────
-            boolean tossOk = callTossEscrowConfirm(txn, result);
-            if (!tossOk) {
-                // API 실패 시 트랜잭션 롤백 (거래완료/상품상태 변경도 함께 롤백됨)
-                throw new RuntimeException("토스 에스크로 구매확정 API 호출 실패");
-            }
+            // ── 4-A. 토스 결제 ──────────────────────────────────────────────
+            // 카드/가상계좌/간편결제: PAY_STATUS=DONE 승인 시점에 토스가 자동 정산 대기.
+            // 별도 에스크로 API 호출 불필요. (/escrow/orders 는 결제 요청 시
+            // useEscrow:true 옵션을 명시한 경우에만 사용 가능하므로,
+            // 일반 결제에 호출하면 4xx 오류 발생)
+            log.info("[정산-토스] transactionId={} paymentType={} 거래완료 처리 (토스 자동 정산)",
+                    transactionId, paymentType);
 
         } else if ("캐시결제".equals(paymentType)) {
             // ── 4-B. 캐시결제: 판매자 CASH_BALANCE 직접 증가 ────────────────

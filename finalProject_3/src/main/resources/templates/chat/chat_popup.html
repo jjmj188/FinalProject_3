@@ -123,7 +123,6 @@
         .btn-reserve { background: #222; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
         .btn-cancel-reserve { background: #e74c3c; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
         .btn-safe-pay { background: #4CB050; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
-        .btn-complete-trade { background: #1a73e8; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
         .chat-blocked-notice { display: none; padding: 12px 20px; background: #fff3f3; border-top: 1px solid #ffd0d0; text-align: center; font-size: 13px; color: #e74c3c; font-weight: bold; }
 
         /* 메시지 영역 */
@@ -224,7 +223,6 @@
                     <button class="btn-reserve" id="btnReserve" onclick="actionReserve()">예약잡기</button>
                     <button class="btn-cancel-reserve" id="btnCancelReserve" style="display:none;" onclick="actionCancelReserve()">예약취소</button>
                     <button class="btn-safe-pay" id="btnSafePay" style="display:none;" onclick="actionSafePay()">안전결제</button>
-                    <button class="btn-complete-trade" id="btnCompleteTrade" style="display:none;" onclick="actionCompleteTrade()">거래완료</button>
                 </div>
 
                 <div id="msgDisplayArea"></div>
@@ -324,7 +322,6 @@
         let currentReservedRoomId = null;
         let currentSellerEmail = null;
         let currentTradeMethod = null;
-        let currentSaleType = null;
         let currentIsSeller = false;
         let currentTradeStatus = null;
         const currentUserEmail = /*[[${#authentication.name}]]*/ 'guest';
@@ -404,8 +401,7 @@
                     room.sellerEmail,
                     room.productNo,
                     room.reservedRoomId,
-                    room.tradeMethod,
-                    room.saleType
+                    room.tradeMethod
                 );
                 
                 li.innerHTML = `
@@ -416,11 +412,10 @@
             });
         };
 
-        window.openChatRoom = function(roomId, targetUser, productName, imgUrl, price, status, sellerEmail, productNo, reservedRoomId, tradeMethod, saleType) {
+        window.openChatRoom = function(roomId, targetUser, productName, imgUrl, price, status, sellerEmail, productNo, reservedRoomId, tradeMethod) {
             currentRoomId = roomId;
             currentProductNo = productNo;
             currentTradeMethod = tradeMethod || null;
-            currentSaleType = saleType || null;
             currentTradeStatus = status || null;
             currentIsSeller = (currentUserEmail === sellerEmail);
             currentReservedRoomId = reservedRoomId || null;
@@ -434,7 +429,7 @@
             // 이미지 세팅 (방어 코드 포함)
             const bannerImg = document.getElementById('bannerImg');
             if(imgUrl) {
-                bannerImg.src = imgUrl.startsWith('http') ? imgUrl : ctxPath + (imgUrl.startsWith('/') ? '' : '/') + imgUrl;
+                bannerImg.src = imgUrl.startsWith('/') ? ctxPath + imgUrl : imgUrl;
             } else {
                 bannerImg.src = 'https://via.placeholder.com/50?text=No+Image';
             }
@@ -470,13 +465,11 @@
             btnReserve.style.display = 'none';
             btnCancelReserve.style.display = 'none';
             btnSafePay.style.display = 'none';
-            document.getElementById('btnCompleteTrade').style.display = 'none';
             chatBlockedNotice.style.display = 'none';
             chatInputWrapper.style.display = 'flex';
             document.getElementById('btnAccountSend').style.display = 'none';
 
             const isSeller = (currentUserEmail === sellerEmail);
-            const isDirectOrFree = (tradeMethod === '직거래' || saleType === '나눔');
 
             if (isSeller) {
                 document.getElementById('btnAccountSend').style.display = 'block';
@@ -484,8 +477,10 @@
                     btnReserve.style.display = 'block';
                 } else if (status === '예약중') {
                     if (reservedRoomId && reservedRoomId === roomId) {
+                        // 이 방이 정확히 예약 확정된 방 → 예약취소 버튼만 표시
                         btnCancelReserve.style.display = 'block';
                     } else {
+                        // 다른 구매자와 예약된 방이거나 데이터 불일치 → 차단
                         chatBlockedNotice.innerText = '🔒 현재 다른 구매자와 예약이 진행 중입니다. 해당 채팅방에서 예약을 취소하면 다시 대화할 수 있습니다.';
                         chatBlockedNotice.style.display = 'block';
                         chatInputWrapper.style.display = 'none';
@@ -494,15 +489,15 @@
             } else {
                 // 구매자 분기
                 if (status === '예약중' && reservedRoomId && reservedRoomId !== roomId) {
+                    // 다른 구매자와 예약 중 → 채팅 차단
                     chatBlockedNotice.innerText = '🔒 현재 판매자가 다른 구매자와 예약 중입니다. 예약이 취소될 때까지 대화가 불가능합니다.';
                     chatBlockedNotice.style.display = 'block';
                     chatInputWrapper.style.display = 'none';
-                } else if (status === '예약중' && reservedRoomId === roomId && isDirectOrFree) {
-                    // 직거래/나눔 + 예약 확정된 구매자 → 거래완료 버튼
-                    document.getElementById('btnCompleteTrade').style.display = 'block';
-                } else if (status === '판매중' && tradeMethod === '택배' && saleType !== '나눔') {
+                } else if (status === '판매중' && tradeMethod === '택배') {
+                    // 판매중 + 택배 → 모든 구매자에게 안전결제 표시
                     btnSafePay.style.display = 'block';
-                } else if (status === '예약중' && reservedRoomId === roomId && tradeMethod === '택배' && saleType !== '나눔') {
+                } else if (status === '예약중' && reservedRoomId === roomId && tradeMethod === '택배') {
+                    // 예약중 + 택배 + 예약 잡힌 구매자에게만 안전결제 표시
                     btnSafePay.style.display = 'block';
                 }
             }
@@ -541,7 +536,6 @@
             btnReserve.style.display       = 'none';
             btnCancelReserve.style.display = 'none';
             btnSafePay.style.display       = 'none';
-            document.getElementById('btnCompleteTrade').style.display = 'none';
             chatBlockedNotice.style.display = 'none';
             chatInputWrapper.style.display  = 'flex';
 
@@ -552,8 +546,6 @@
                 if (currentTradeStatus === '예약중') statusEl.classList.add('reserved');
                 else if (currentTradeStatus === '판매완료') statusEl.classList.add('done');
             }
-
-            const isDirectOrFree = (currentTradeMethod === '직거래' || currentSaleType === '나눔');
 
             if (currentIsSeller) {
                 document.getElementById('btnAccountSend').style.display = 'block';
@@ -573,11 +565,9 @@
                     chatBlockedNotice.innerText = '🔒 현재 판매자가 다른 구매자와 예약 중입니다. 예약이 취소될 때까지 대화가 불가능합니다.';
                     chatBlockedNotice.style.display = 'block';
                     chatInputWrapper.style.display = 'none';
-                } else if (currentTradeStatus === '예약중' && currentReservedRoomId === currentRoomId && isDirectOrFree) {
-                    document.getElementById('btnCompleteTrade').style.display = 'block';
-                } else if (currentTradeStatus === '판매중' && currentTradeMethod === '택배' && currentSaleType !== '나눔') {
+                } else if (currentTradeStatus === '판매중' && currentTradeMethod === '택배') {
                     btnSafePay.style.display = 'block';
-                } else if (currentTradeStatus === '예약중' && currentReservedRoomId === currentRoomId && currentTradeMethod === '택배' && currentSaleType !== '나눔') {
+                } else if (currentTradeStatus === '예약중' && currentReservedRoomId === currentRoomId && currentTradeMethod === '택배') {
                     btnSafePay.style.display = 'block';
                 }
             }
@@ -661,18 +651,9 @@
                     <div class="cr-title">❌ 예약이 취소되었습니다</div>
                     <div class="cr-notice">상품이 다시 '판매중' 상태로 변경되었습니다.</div>
                 </div>`;
+                // 예약 취소 → UI 실시간 갱신
                 currentReservedRoomId = null;
                 currentTradeStatus = '판매중';
-                window.applyRoomStatusUI();
-                window.loadChatRoomList();
-            } else if (message.content && message.content.startsWith('__COMPLETE_TRADE__:')) {
-                bubbleHtml = `
-                <div class="msg-reserve-card" style="border-color:#1a73e8;">
-                    <div class="rv-title" style="color:#1a73e8;">🎉 거래가 완료되었습니다!</div>
-                    <div class="rv-row"><span class="rv-text">구매자가 거래완료를 확인했습니다. 판매완료 처리되었습니다.</span></div>
-                </div>`;
-                currentTradeStatus = '판매완료';
-                currentReservedRoomId = null;
                 window.applyRoomStatusUI();
                 window.loadChatRoomList();
             } else {
@@ -843,22 +824,7 @@
 
         window.actionSafePay = function() {
             if (!currentProductNo) { alert("상품 정보를 불러올 수 없습니다."); return; }
-            location.href = ctxPath + '/payment/checkout?productNo=' + currentProductNo;
-        };
-
-        window.actionCompleteTrade = function() {
-            if (!currentProductNo || !currentRoomId) return;
-            if (!confirm("거래완료 처리하시겠습니까?\n확인 후 판매완료 상태로 변경됩니다.")) return;
-            fetch(`${ctxPath}/api/chat/completeTrade`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productNo: currentProductNo, roomId: currentRoomId })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (!data.success) alert(data.message || "거래완료 처리에 실패했습니다.");
-            })
-            .catch(() => alert("서버 오류가 발생했습니다."));
+            location.href = ctxPath + '/payment/checkout?productNo=' + currentProductNo + '&roomId=' + currentRoomId;
         };
 
 

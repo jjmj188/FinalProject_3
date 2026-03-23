@@ -493,7 +493,7 @@
     </select>
     
     <select id="getMyPurchaseList" parameterType="String"
-        resultType="com.spring.app.mypage.domain.TransactionDTO">
+        resultType="com.spring.app.payment.domain.TransactionDTO">
     SELECT t.PRODUCT_NO     AS productNo,
            p.PRODUCT_NAME   AS productName,
            p.SALE_TYPE      AS saleType,
