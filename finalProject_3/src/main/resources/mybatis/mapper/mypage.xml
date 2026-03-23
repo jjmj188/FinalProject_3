@@ -491,5 +491,39 @@
         WHERE r.TARGET_EMAIL = #{email}
         ORDER BY r.REPORT_DATE DESC
     </select>
+    
+    <select id="getMyPurchaseList" parameterType="String"
+        resultType="com.spring.app.mypage.domain.TransactionDTO">
+    SELECT t.PRODUCT_NO     AS productNo,
+           p.PRODUCT_NAME   AS productName,
+           p.SALE_TYPE      AS saleType,
+           t.AMOUNT         AS amount,
+           t.PAYMENT_TYPE   AS paymentType,
+           t.TRADE_STATUS   AS tradeStatus,
+           t.PAY_STATUS     AS payStatus,
+           TO_CHAR(t.TRADE_DATE, 'YYYY-MM-DD HH24:MI') AS tradeDate,
+           pi.IMG_URL       AS imgUrl,
+           t.TRANSACTION_ID AS transactionId,
+           t.SELLER_EMAIL   AS sellerEmail,
+           p.CARRIER_CODE   AS carrierCode,
+           p.INVOICE_NO     AS invoiceNo,
+           /* ↓ 채팅 거래 추가 컬럼 */
+           cr.ROOM_ID       AS roomId,
+           cr.RESERVE_TIME  AS reserveTime,
+           cr.RESERVE_PLACE AS reservePlace,
+           CASE WHEN EXISTS (
+               SELECT 1 FROM REVIEWS r WHERE r.TRANSACTION_ID = t.TRANSACTION_ID
+           ) THEN 1 ELSE 0 END AS hasReview
+    FROM TRANSACTIONS t
+    JOIN PRODUCTS p ON t.PRODUCT_NO = p.PRODUCT_NO
+    LEFT JOIN PRODUCT_IMAGE pi ON pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_MAIN = 'Y'
+    /* ↓ 이 JOIN 추가 */
+    LEFT JOIN CHAT_ROOM cr ON  cr.PRODUCT_NO   = t.PRODUCT_NO
+                           AND cr.SELLER_EMAIL = t.SELLER_EMAIL
+                           AND cr.BUYER_EMAIL  = t.BUYER_EMAIL
+    WHERE t.BUYER_EMAIL = #{email}
+      AND t.PAY_STATUS != 'READY'
+    ORDER BY t.TRADE_DATE DESC
+	</select>
 
 </mapper>

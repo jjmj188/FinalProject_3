@@ -33,4 +33,9 @@ public class TransactionDTO {
     private String imgUrl;
     private String sellerName;
     private String buyerName;
+    
+    // 채팅거래 조회 
+    private String  roomId;        // 채팅방 키
+    private String  reserveTime;   // 예약 시간
+    private String  reservePlace;  // 예약 장소
 }
