@@ -1,7 +1,6 @@
 package com.spring.app.payment.service;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,8 +19,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spring.app.payment.domain.SettlementDTO;
 import com.spring.app.payment.domain.TransactionDTO;
 import com.spring.app.payment.model.PaymentDAO;
+import com.spring.app.security.model.MemberDAO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentService_imple implements PaymentService {
 
     private final PaymentDAO paymentDAO;
+    private final MemberDAO  memberDAO;       // 캐시 잔액 업데이트용
     private final ObjectMapper objectMapper;
 
     @Value("${toss.payments.secret-key:test_sk_XXXXXXXXXXXXXXXXXXXXXXXX}")
@@ -41,6 +43,16 @@ public class PaymentService_imple implements PaymentService {
     private String tossApiUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  결제 수단 분류 상수
+    // ─────────────────────────────────────────────────────────────────────
+
+    /** 토스 에스크로 API로 정산이 처리되는 결제 수단 */
+    private static final java.util.Set<String> TOSS_ESCROW_TYPES =
+            java.util.Set.of("카드결제", "가상계좌", "간편결제");
+
+    // ─────────────────────────────────────────────────────────────────────
 
     /**
      * 결제 준비 — TRANSACTIONS 테이블에 READY 상태로 INSERT
@@ -68,7 +80,7 @@ public class PaymentService_imple implements PaymentService {
         dto.setProductNo(productNo);
         dto.setBuyerEmail(buyerEmail);
         dto.setPayStatus("READY");
-        dto.setAmount(amount);  // JS에서 계산한 총 결제금액 사용
+        dto.setAmount(amount);
 
         // 무료나눔: 토스 결제 없이 처리 (DB 제약조건에 맞게 '캐시결제' + NULL toss keys)
         if ("무료나눔".equals(paymentType)) {
@@ -85,7 +97,6 @@ public class PaymentService_imple implements PaymentService {
 
         paymentDAO.insertTransaction(dto);
 
-        // 무료나눔이어도 orderId를 반환 (JS 리다이렉트용, DB에는 저장 안 됨)
         if (dto.getTossOrderId() == null) {
             dto.setTossOrderId(orderId);
         }
@@ -99,10 +110,8 @@ public class PaymentService_imple implements PaymentService {
     @Override
     @Transactional
     public void completeFreeOrder(int transactionId) {
-        // 무료나눔 거래 완료 처리 (PAY_STATUS=DONE)
         paymentDAO.updateFreeOrderComplete(transactionId);
 
-        // 상품 상태를 '예약중'으로 변경
         TransactionDTO txn = paymentDAO.selectTransactionById(transactionId);
         if (txn != null) {
             Map<String, Object> productMap = new HashMap<>();
@@ -120,7 +129,6 @@ public class PaymentService_imple implements PaymentService {
     public Map<String, Object> confirmPayment(String paymentKey, String orderId, int amount, String requestIp) {
         Map<String, Object> result = new LinkedHashMap<>();
 
-        // 1) DB에서 거래 확인
         TransactionDTO txn = paymentDAO.selectTransactionByOrderId(orderId);
         if (txn == null) {
             result.put("success", false);
@@ -128,14 +136,12 @@ public class PaymentService_imple implements PaymentService {
             return result;
         }
 
-        // 금액 검증
         if (txn.getAmount() != amount) {
             result.put("success", false);
             result.put("message", "결제 금액이 일치하지 않습니다.");
             return result;
         }
 
-        // 2) 토스 결제 승인 API 호출
         try {
             String authHeader = "Basic " +
                     Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes(StandardCharsets.UTF_8));
@@ -151,12 +157,10 @@ public class PaymentService_imple implements PaymentService {
 
             String bodyJson = objectMapper.writeValueAsString(body);
 
-            // 요청 로그 저장
             savePaymentLog(txn.getTransactionId(), "REQUEST", tossApiUrl + "/payments/confirm",
                     "POST", bodyJson, null, null, null, null, requestIp);
 
             HttpEntity<String> entity = new HttpEntity<>(bodyJson, headers);
-
             ResponseEntity<String> response = restTemplate.exchange(
                     tossApiUrl + "/payments/confirm",
                     HttpMethod.POST,
@@ -167,29 +171,24 @@ public class PaymentService_imple implements PaymentService {
             String responseBody = response.getBody();
             int httpStatus = response.getStatusCode().value();
 
-            // 응답 로그 저장
             savePaymentLog(txn.getTransactionId(), "RESPONSE", tossApiUrl + "/payments/confirm",
                     "POST", null, responseBody, httpStatus, null, null, requestIp);
 
             @SuppressWarnings("unchecked")
             Map<String, Object> tossResult = objectMapper.readValue(responseBody, Map.class);
 
-            // 3) 승인 성공 → DB 업데이트
             Map<String, Object> updateMap = new HashMap<>();
             updateMap.put("transactionId", txn.getTransactionId());
             updateMap.put("tossPayKey", paymentKey);
             updateMap.put("payStatus", "DONE");
             updateMap.put("approvedAt", tossResult.get("approvedAt"));
-
             paymentDAO.updateTransactionApproved(updateMap);
 
-            // 상품 상태를 '예약중'으로 변경
             Map<String, Object> productMap = new HashMap<>();
             productMap.put("productNo", txn.getProductNo());
             productMap.put("tradeStatus", "예약중");
             paymentDAO.updateProductTradeStatus(productMap);
 
-            // 카드결제 상세 저장
             @SuppressWarnings("unchecked")
             Map<String, Object> cardInfo = (Map<String, Object>) tossResult.get("card");
             if (cardInfo != null) {
@@ -207,7 +206,6 @@ public class PaymentService_imple implements PaymentService {
                 paymentDAO.insertCardPayment(cardMap);
             }
 
-            // 간편결제 상세 저장
             @SuppressWarnings("unchecked")
             Map<String, Object> easyPayInfo = (Map<String, Object>) tossResult.get("easyPay");
             if (easyPayInfo != null) {
@@ -226,7 +224,6 @@ public class PaymentService_imple implements PaymentService {
         } catch (HttpClientErrorException e) {
             log.error("토스 결제 승인 실패: {}", e.getResponseBodyAsString(), e);
 
-            // 에러 로그 저장
             try {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> errBody = objectMapper.readValue(e.getResponseBodyAsString(), Map.class);
@@ -238,7 +235,6 @@ public class PaymentService_imple implements PaymentService {
                         requestIp);
             } catch (Exception ignore) {}
 
-            // 거래 상태를 ABORTED로
             Map<String, Object> abortMap = new HashMap<>();
             abortMap.put("transactionId", txn.getTransactionId());
             abortMap.put("payStatus", "ABORTED");
@@ -257,13 +253,23 @@ public class PaymentService_imple implements PaymentService {
     }
 
     /**
-     * 에스크로 구매확인 — 구매자가 상품 수령 후 구매확인
+     * 에스크로 구매확정 — 구매자가 상품 수령 후 구매확인.
+     *
+     * <p>결제 수단에 따라 정산 방식이 다르다.</p>
+     * <ul>
+     *   <li>카드결제 / 가상계좌 / 간편결제 → 토스 에스크로 구매확정 API 호출
+     *       (토스가 보관 중인 결제금을 판매자에게 정산)</li>
+     *   <li>캐시결제 → 판매자 CASH_BALANCE 직접 증가</li>
+     *   <li>계좌이체 → SETTLEMENTS 테이블에 정산 대기 row 삽입
+     *       (관리자가 수동 송금 후 '완료' 처리)</li>
+     * </ul>
      */
     @Override
     @Transactional
     public Map<String, Object> confirmEscrow(int transactionId, String buyerEmail) {
         Map<String, Object> result = new LinkedHashMap<>();
 
+        // ── 1. 거래 조회 및 기본 검증 ──────────────────────────────────────
         TransactionDTO txn = paymentDAO.selectTransactionById(transactionId);
         if (txn == null) {
             result.put("success", false);
@@ -283,19 +289,69 @@ public class PaymentService_imple implements PaymentService {
             return result;
         }
 
-        // 거래완료 처리
+        // ── 2. TRANSACTIONS 거래완료 처리 (공통) ─────────────────────────────
         paymentDAO.updateEscrowConfirm(transactionId);
 
-        // 상품 상태를 '판매완료'로 변경
+        // ── 3. 상품 상태 → '판매완료' (공통) ─────────────────────────────────
         Map<String, Object> productMap = new HashMap<>();
         productMap.put("productNo", txn.getProductNo());
         productMap.put("tradeStatus", "판매완료");
         paymentDAO.updateProductTradeStatus(productMap);
 
+        // ── 4. 결제 수단별 판매자 정산 처리 ─────────────────────────────────
+        String paymentType = txn.getPaymentType();
+
+        if (TOSS_ESCROW_TYPES.contains(paymentType)) {
+            // ── 4-A. 토스 결제: 에스크로 구매확정 API 호출 ──────────────────
+            boolean tossOk = callTossEscrowConfirm(txn, result);
+            if (!tossOk) {
+                // API 실패 시 트랜잭션 롤백 (거래완료/상품상태 변경도 함께 롤백됨)
+                throw new RuntimeException("토스 에스크로 구매확정 API 호출 실패");
+            }
+
+        } else if ("캐시결제".equals(paymentType)) {
+            // ── 4-B. 캐시결제: 판매자 CASH_BALANCE 직접 증가 ────────────────
+            Map<String, Object> cashMap = new HashMap<>();
+            cashMap.put("email",  txn.getSellerEmail());
+            cashMap.put("amount", txn.getAmount());
+            memberDAO.updateCashBalance(cashMap);
+            log.info("[정산-캐시] transactionId={} seller={} amount={}원 캐시 지급 완료",
+                    transactionId, txn.getSellerEmail(), txn.getAmount());
+
+        } else if ("계좌이체".equals(paymentType)) {
+            // ── 4-C. 계좌이체: SETTLEMENTS 테이블에 정산 대기 row 삽입 ───────
+            Integer primaryAccountId = paymentDAO.selectPrimaryAccountId(txn.getSellerEmail());
+
+            SettlementDTO settlement = new SettlementDTO();
+            settlement.setTransactionId(transactionId);
+            settlement.setSellerEmail(txn.getSellerEmail());
+            settlement.setAccountId(primaryAccountId);   // 계좌 미등록 시 null
+            settlement.setAmount(txn.getAmount());
+
+            paymentDAO.insertSettlement(settlement);
+
+            if (primaryAccountId == null) {
+                log.warn("[정산-계좌이체] transactionId={} seller={} 대표 계좌 미등록 — 관리자 수동 확인 필요",
+                        transactionId, txn.getSellerEmail());
+            } else {
+                log.info("[정산-계좌이체] transactionId={} seller={} amount={}원 정산 대기 등록 (accountId={})",
+                        transactionId, txn.getSellerEmail(), txn.getAmount(), primaryAccountId);
+            }
+
+        } else {
+            // 정의되지 않은 결제수단 — 로그만 남기고 정산 누락 경고
+            log.error("[정산-미처리] transactionId={} paymentType={} — 정산 로직 없음, 수동 처리 필요",
+                    transactionId, paymentType);
+        }
+
         result.put("success", true);
         result.put("message", "구매확인이 완료되었습니다.");
         return result;
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  조회
+    // ─────────────────────────────────────────────────────────────────────
 
     @Override
     public TransactionDTO getTransactionByOrderId(String orderId) {
@@ -305,6 +361,74 @@ public class PaymentService_imple implements PaymentService {
     @Override
     public TransactionDTO getTransactionById(int transactionId) {
         return paymentDAO.selectTransactionById(transactionId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  내부 헬퍼 메서드
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * 토스 에스크로 구매확정 API 호출.
+     *
+     * <pre>
+     * POST /v1/payments/{paymentKey}/escrow/orders
+     * Body: {"status": "CONFIRMED"}
+     * </pre>
+     *
+     * 성공이면 true, 실패이면 false를 반환하고 result에 에러 메시지를 담는다.
+     */
+    private boolean callTossEscrowConfirm(TransactionDTO txn, Map<String, Object> result) {
+        String paymentKey = txn.getTossPayKey();
+        String url = tossApiUrl + "/payments/" + paymentKey + "/escrow/orders";
+
+        try {
+            String authHeader = "Basic " +
+                    Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes(StandardCharsets.UTF_8));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authHeader);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("status", "CONFIRMED");
+            String bodyJson = objectMapper.writeValueAsString(body);
+
+            savePaymentLog(txn.getTransactionId(), "REQUEST", url, "POST",
+                    bodyJson, null, null, null, null, null);
+
+            HttpEntity<String> entity = new HttpEntity<>(bodyJson, headers);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+            int httpStatus = response.getStatusCode().value();
+            savePaymentLog(txn.getTransactionId(), "RESPONSE", url, "POST",
+                    null, response.getBody(), httpStatus, null, null, null);
+
+            log.info("[정산-토스에스크로] transactionId={} paymentKey={} 구매확정 API 성공 (HTTP {})",
+                    txn.getTransactionId(), paymentKey, httpStatus);
+            return true;
+
+        } catch (HttpClientErrorException e) {
+            String errBody = e.getResponseBodyAsString();
+            log.error("[정산-토스에스크로] transactionId={} 구매확정 API 실패: {}", txn.getTransactionId(), errBody, e);
+
+            try {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> errMap = objectMapper.readValue(errBody, Map.class);
+                savePaymentLog(txn.getTransactionId(), "ERROR", url, "POST",
+                        null, errBody, e.getStatusCode().value(),
+                        (String) errMap.get("code"), (String) errMap.get("message"), null);
+            } catch (Exception ignore) {}
+
+            result.put("success", false);
+            result.put("message", "토스 에스크로 구매확정 중 오류가 발생했습니다.");
+            return false;
+
+        } catch (Exception e) {
+            log.error("[정산-토스에스크로] transactionId={} 예기치 못한 오류", txn.getTransactionId(), e);
+            result.put("success", false);
+            result.put("message", "구매확정 처리 중 오류가 발생했습니다.");
+            return false;
+        }
     }
 
     /**

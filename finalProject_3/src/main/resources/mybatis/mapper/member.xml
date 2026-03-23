@@ -212,5 +212,18 @@
         INSERT INTO AUTHORITIES (AUTH_NO, EMAIL, AUTHORITY)
         VALUES (SEQ_AUTHORITIES_NO.NEXTVAL, #{email}, 'ROLE_USER')
     </insert>
+    
+    <!-- ===================== 캐시 잔액 증가/차감 ===================== -->
+    <!--
+        구매확정(캐시결제) 시 판매자 정산에 사용.
+        amount에 양수를 전달하면 증가, 음수를 전달하면 차감.
+        호출부에서 반드시 양수를 넘길 것 (정산 목적이므로 증가만 사용).
+    -->
+    <update id="updateCashBalance" parameterType="Map">
+        UPDATE MEMBER
+           SET CASH_BALANCE = CASH_BALANCE + #{amount}
+         WHERE EMAIL  = #{email}
+           AND STATUS = 1
+    </update>
 
 </mapper>

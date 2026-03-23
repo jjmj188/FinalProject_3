@@ -19,7 +19,7 @@ public interface MemberDAO {
     // 회원가입
     int insertMember(MemberDTO member);
     
-    // ★ [추가] 로그인 시 이메일로 사용자 정보(DTO) 가져오기
+    // 로그인 시 이메일로 사용자 정보(DTO) 가져오기
     MemberDTO findByEmail(String email);
     
     String findEmailByPhone(String phone);
@@ -60,4 +60,16 @@ public interface MemberDAO {
     // 소셜 로그인 자동 회원가입
     int insertSocialMember(MemberDTO member);
     void insertAuthority(String email);
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  캐시 잔액 변경 (구매확정 시 판매자 정산)
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * 캐시결제 구매확정: 특정 회원의 CASH_BALANCE를 amount만큼 증가시킨다.
+     * amount가 음수이면 차감이므로, 호출부에서 반드시 양수 값을 전달할 것.
+     *
+     * @param paraMap {"email": targetEmail, "amount": positiveAmount}
+     */
+    void updateCashBalance(Map<String, Object> paraMap);
 }

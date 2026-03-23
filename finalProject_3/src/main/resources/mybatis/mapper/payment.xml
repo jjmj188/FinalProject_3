@@ -213,5 +213,45 @@
             #{discountAmt, jdbcType=NUMERIC}
         )
     </insert>
+    
+    <!-- ===================== 캐시결제 구매확정: 판매자 캐시 증가 ===================== -->
+    <!--
+        MEMBER.CASH_BALANCE를 amount만큼 원자적으로 증가시킨다.
+        UPDATE 실패(0 rows) 시 서비스 계층에서 예외로 처리한다.
+    -->
+    <update id="updateSellerCashBalance" parameterType="Map">
+        UPDATE MEMBER
+           SET CASH_BALANCE = CASH_BALANCE + #{amount}
+         WHERE EMAIL  = #{email}
+           AND STATUS = 1
+    </update>
+
+    <!-- ===================== 계좌이체 구매확정: 정산 대기 row 삽입 ===================== -->
+    <!--
+        관리자가 판매자에게 수동 송금 후 STATUS를 '완료'로 갱신하는 방식.
+        ACCOUNT_ID는 판매자가 대표 계좌를 등록하지 않은 경우 NULL로 저장된다.
+    -->
+    <insert id="insertSettlement" parameterType="com.spring.app.payment.domain.SettlementDTO">
+        INSERT INTO SETTLEMENTS (
+            SETTLEMENT_ID, TRANSACTION_ID, SELLER_EMAIL,
+            ACCOUNT_ID, AMOUNT, STATUS, CREATED_AT
+        ) VALUES (
+            SEQ_SETTLEMENT_ID.NEXTVAL,
+            #{transactionId},
+            #{sellerEmail},
+            #{accountId, jdbcType=NUMERIC},
+            #{amount},
+            '대기',
+            SYSTIMESTAMP
+        )
+    </insert>
+
+    <!-- ===================== 판매자 대표 정산계좌 ID 조회 ===================== -->
+    <select id="selectPrimaryAccountId" parameterType="String" resultType="Integer">
+        SELECT ACCOUNT_ID
+          FROM ACCOUNTS
+         WHERE EMAIL      = #{sellerEmail}
+           AND IS_PRIMARY = 'Y'
+    </select>
 
 </mapper>
