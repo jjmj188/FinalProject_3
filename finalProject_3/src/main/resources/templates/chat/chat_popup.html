@@ -89,7 +89,7 @@
         .room-item:hover { background: rgba(255,255,255,0.15); }
         
         /* 우측: 실제 채팅창 */
-        .chat-main { width: 65%; display: flex; flex-direction: column; background: #fff; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; background: #fff; }
         
         /* 헤더 영역 */
         .chat-header { padding: 10px 20px; background: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ebebeb; height: 60px; z-index: 10; }
@@ -338,6 +338,7 @@
 		    if (modal.style.display === 'none' || modal.style.display === '') {
 		        modal.style.display = 'block';
 		        overlay.style.display = 'block';
+		        document.body.style.overflow = 'hidden';
 		
 		        // ⭐ 핵심: 여기서 먼저 guest인지 체크해서 서버 요청을 아예 막아야 합니다!
 		        if (currentUserEmail === 'anonymousUser' || currentUserEmail === 'guest' || !currentUserEmail) {
@@ -355,6 +356,7 @@
 		    } else {
 			        modal.style.display = 'none';
 			        overlay.style.display = 'none';
+			        document.body.style.overflow = '';
 			    }
 		};
 

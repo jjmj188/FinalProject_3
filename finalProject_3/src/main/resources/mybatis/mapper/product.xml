@@ -859,7 +859,7 @@
           AND PRODUCT_NO = #{productNo}
     </select>
 
-      <!-- 시세조회: 통계 -->
+          <!-- 시세조회: 통계 -->
     <select id="selectPriceCheckStats"
         parameterType="hashMap"
         resultType="com.spring.app.product.domain.ProductPriceStatsDTO">
@@ -876,7 +876,6 @@
                   ON TRANSACTIONS.PRODUCT_NO = PRODUCTS.PRODUCT_NO
                 WHERE TRANSACTIONS.AMOUNT IS NOT NULL
                   AND TRANSACTIONS.PAY_STATUS = 'DONE'
-                  AND TRANSACTIONS.TRADE_STATUS IN ('거래중', '거래완료')
                   AND NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) >= TRUNC(SYSDATE) - 29
                   <if test="searchWord != null and searchWord != ''">
                       AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
@@ -944,7 +943,6 @@
               ON TRANSACTIONS.PRODUCT_NO = PRODUCTS.PRODUCT_NO
             WHERE TRANSACTIONS.AMOUNT IS NOT NULL
               AND TRANSACTIONS.PAY_STATUS = 'DONE'
-              AND TRANSACTIONS.TRADE_STATUS IN ('거래중', '거래완료')
               AND NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) >= TRUNC(SYSDATE) - 29
               <if test="searchWord != null and searchWord != ''">
                   AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
@@ -969,7 +967,11 @@
                     PRODUCTS.PRODUCT_NAME AS productName,
                     PRODUCTS.SALE_TYPE AS saleType,
                     TRANSACTIONS.AMOUNT AS productPrice,
-                    TRANSACTIONS.TRADE_STATUS AS tradeStatus,
+                    CASE
+                        WHEN TRANSACTIONS.TRADE_STATUS = '거래중' THEN '예약중'
+                        WHEN TRANSACTIONS.TRADE_STATUS = '거래완료' THEN '판매완료'
+                        ELSE TRANSACTIONS.TRADE_STATUS
+                    END AS tradeStatus,
                     NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) AS regDate,
                     PRODUCTS.VIEW_COUNT AS viewCount,
                     PRODUCTS.CATEGORY_NO AS categoryNo,
@@ -1012,7 +1014,6 @@
                   ON TRANSACTIONS.PRODUCT_NO = PRODUCTS.PRODUCT_NO
                 WHERE TRANSACTIONS.AMOUNT IS NOT NULL
                   AND TRANSACTIONS.PAY_STATUS = 'DONE'
-                  AND TRANSACTIONS.TRADE_STATUS IN ('거래중', '거래완료')
                   AND NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) >= TRUNC(SYSDATE) - 29
                   <if test="searchWord != null and searchWord != ''">
                       AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'

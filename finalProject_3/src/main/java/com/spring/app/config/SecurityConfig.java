@@ -104,6 +104,7 @@ public class SecurityConfig {
                     "/product/product_list",
                     "/product/price_check",
                     "/product/share",
+                    "/product/product_list_more",
                     "/product/product_detail/**",
                     "/product/wordSearchShow",
                     "/actuator/**",
