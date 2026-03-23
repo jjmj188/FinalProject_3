@@ -591,22 +591,12 @@ public class MyPageController {
         Map<String, Object> result = new HashMap<>();
         if (principal == null) { result.put("success", false); return result; }
 
-        int productNo = Integer.parseInt(String.valueOf(payload.get("productNo")));
+        int transactionId = Integer.parseInt(String.valueOf(payload.get("transactionId")));
         String carrierCode = String.valueOf(payload.get("carrierCode"));
         String invoiceNo = String.valueOf(payload.get("invoiceNo")).replaceAll("[^0-9]", "");
 
-        // 본인 상품 여부 확인
-        Map<String, Object> checkParams = new HashMap<>();
-        checkParams.put("productNo", productNo);
-        checkParams.put("email", principal.getName());
-        if (myPageService.getMyProductByNo(checkParams) == null) {
-            result.put("success", false);
-            result.put("message", "상품을 찾을 수 없습니다.");
-            return result;
-        }
-
         Map<String, Object> params = new HashMap<>();
-        params.put("productNo", productNo);
+        params.put("transactionId", transactionId);
         params.put("carrierCode", carrierCode);
         params.put("invoiceNo", invoiceNo);
         params.put("email", principal.getName());
@@ -617,12 +607,12 @@ public class MyPageController {
 
     @GetMapping("/product/track")
     @ResponseBody
-    public Map<String, Object> trackDelivery(@RequestParam("productNo") int productNo, Principal principal) {
+    public Map<String, Object> trackDelivery(@RequestParam("transactionId") int transactionId, Principal principal) {
         Map<String, Object> result = new HashMap<>();
         if (principal == null) { result.put("success", false); return result; }
 
         Map<String, Object> params = new HashMap<>();
-        params.put("productNo", productNo);
+        params.put("transactionId", transactionId);
         params.put("email", principal.getName());
         ProductDTO product = myPageService.getInvoice(params);
 

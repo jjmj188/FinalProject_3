@@ -23,6 +23,9 @@ public interface ChatService {
     // 예약 취소
     void cancelReserve(int productNo);
 
+    // 거래완료 (직거래/나눔)
+    boolean completeTrade(int productNo, String roomId, String buyerEmail);
+
     // 현재 예약된 채팅방 ID 조회
     String getReservedRoomId(int productNo);
 

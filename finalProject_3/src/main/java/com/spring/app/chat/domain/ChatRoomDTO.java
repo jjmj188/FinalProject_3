@@ -27,4 +27,5 @@ public class ChatRoomDTO {
     private String productName;     // 상품명 (Product 테이블과 조인)
     private String productImgUrl;   // 상품 대표 이미지
     private String tradeMethod;     // 거래방식 (택배/직거래)
+    private String saleType;        // 판매유형 (판매/나눔/경매)
 }

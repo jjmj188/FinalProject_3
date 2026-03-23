@@ -93,6 +93,33 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public boolean completeTrade(int productNo, String roomId, String buyerEmail) {
+        ChatRoomDTO room = chatMapper.selectRoomById(roomId);
+        if (room == null || !buyerEmail.equals(room.getBuyerEmail())) return false;
+
+        // 상품 정보 조회 (가격, 판매유형)
+        ChatRoomDTO productInfo = chatMapper.selectProductInfoForChat(productNo, room.getSellerEmail());
+
+        // TRANSACTIONS 레코드 생성 (직거래/나눔은 결제 없이 완료되므로 직접 INSERT)
+        Map<String, Object> txMap = new HashMap<>();
+        txMap.put("productNo", productNo);
+        txMap.put("sellerEmail", room.getSellerEmail());
+        txMap.put("buyerEmail", buyerEmail);
+        String saleType = productInfo != null ? productInfo.getSaleType() : null;
+        txMap.put("paymentType", "나눔".equals(saleType) ? "나눔" : "직거래");
+        int price = productInfo != null ? productInfo.getProductPrice() : 0;
+        txMap.put("amount", "나눔".equals(saleType) ? 0 : price);
+        chatMapper.insertDirectTrade(txMap);
+
+        // 상품 판매완료 처리
+        Map<String, Object> map = new HashMap<>();
+        map.put("productNo", productNo);
+        map.put("roomId", roomId);
+        chatMapper.completeTrade(map);
+        return true;
+    }
+
+    @Override
     public String getReservedRoomId(int productNo) {
         return chatMapper.getReservedRoomId(productNo);
     }

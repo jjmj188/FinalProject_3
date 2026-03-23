@@ -40,6 +40,12 @@ public interface ChatMapper {
     // 예약 취소: TRADE_STATUS='판매중' + RESERVED_ROOM_ID=NULL
     void cancelReserveStatus(Map<String, Object> map);
 
+    // 거래완료: TRADE_STATUS='판매완료' + RESERVED_ROOM_ID=NULL
+    void completeTrade(Map<String, Object> map);
+
+    // 직거래/나눔 거래완료 시 TRANSACTIONS 레코드 생성
+    void insertDirectTrade(Map<String, Object> map);
+
     // 상품의 현재 예약된 채팅방 ID 조회
     String getReservedRoomId(@Param("productNo") int productNo);
 

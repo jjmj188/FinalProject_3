@@ -461,7 +461,7 @@
     <div id="trackingModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:480px; max-height:80vh; overflow-y:auto; background:#fff; border-radius:12px; padding:30px; box-sizing:border-box;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 style="margin:0; font-size:18px; font-weight:bold;">배송조회</h3>
+                <h3 style="margin:0; font-size:18px; font-weight:bold;">배송현황</h3>
                 <button onclick="closeTrackingModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#333;">✕</button>
             </div>
             <div id="trackingContent" style="font-size:14px; color:#333;"></div>
@@ -858,8 +858,10 @@
                         <span style="font-size:11px; color:#aaa;">${p.paymentType || ''}</span>
                     </div>
                     <div style="margin:0 12px 12px; display:flex; gap:6px; flex-wrap:wrap;">
-                        <button class="mp-purchase-btn" onclick="openDeliveryStatusModal('${p.tradeStatus}','${p.paymentType || ''}','${p.tradeDate || ''}','${p.productName.replace(/'/g, "\\'")}')">배송현황</button>
-                        ${p.invoiceNo ? `<button class="mp-purchase-btn" style="background:#4CB050; color:#fff; border:none; cursor:pointer;" onclick="trackDeliveryByInfo('${p.carrierCode || ''}','${p.invoiceNo}','${p.productName.replace(/'/g, "\\'")}')">배송조회</button>` : ''}
+                        ${p.invoiceNo
+                            ? `<button class="mp-purchase-btn" style="background:#4CB050; color:#fff; border:none; cursor:pointer;" onclick="trackDeliveryByInfo('${p.carrierCode || ''}','${p.invoiceNo}','${p.productName.replace(/'/g, "\\'")}')">배송현황</button>`
+                            : `<button class="mp-purchase-btn" onclick="openNoInvoiceModal()">배송현황</button>`
+                        }
                         <button class="mp-purchase-btn" style="${reviewBtnStyle}" ${reviewBtnAttr}>${p.hasReview ? '리뷰완료' : '리뷰작성'}</button>
                     </div>
                 </div>`;
@@ -918,11 +920,11 @@
                     ${showInvoice ? `
                     <div style="margin:0 12px 6px;">
                         <button class="mp-product-edit-btn" style="width:100%; font-size:12px; padding:6px 0;"
-                            onclick="openInvoiceModal(${p.productNo}, '${p.carrierCode || ''}', '${p.invoiceNo || ''}')">
+                            onclick="openInvoiceModal(${p.transactionId}, '${p.carrierCode || ''}', '${p.invoiceNo || ''}')">
                             ${hasInvoice ? '송장수정' : '송장입력'}
                         </button>
                         ${hasInvoice ? `<button class="mp-product-edit-btn" style="width:100%; font-size:12px; padding:6px 0; margin-top:4px; background:#4CB050; color:#fff; border:none;"
-                            onclick="trackDelivery(${p.productNo})">배송조회</button>` : ''}
+                            onclick="trackDelivery(${p.transactionId})">배송조회</button>` : ''}
                     </div>` : ''}
                     <div class="mp-product-actions">
                         <button class="mp-product-edit-btn" onclick="goProductEdit(${p.productNo})">수정</button>
@@ -1542,8 +1544,8 @@
     }
 
     // ===== 송장번호 / 배송조회 =====
-    window.openInvoiceModal = function(productNo, carrierCode, invoiceNo) {
-        document.getElementById('invoiceProductNo').value = productNo;
+    window.openInvoiceModal = function(transactionId, carrierCode, invoiceNo) {
+        document.getElementById('invoiceProductNo').value = transactionId;
         document.getElementById('invoiceCarrierCode').value = carrierCode || '';
         document.getElementById('invoiceNo').value = invoiceNo || '';
         document.getElementById('invoiceModal').style.display = 'block';
@@ -1554,7 +1556,7 @@
     }
 
     window.saveInvoice = function() {
-        const productNo = parseInt(document.getElementById('invoiceProductNo').value);
+        const transactionId = parseInt(document.getElementById('invoiceProductNo').value);
         const carrierCode = document.getElementById('invoiceCarrierCode').value;
         const invoiceNo = document.getElementById('invoiceNo').value.trim();
 
@@ -1565,7 +1567,7 @@
         fetch(`${ctxPath}mypage/product/invoice`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productNo, carrierCode, invoiceNo })
+            body: JSON.stringify({ transactionId, carrierCode, invoiceNo })
         })
         .then(r => r.json())
         .then(data => {
@@ -1616,12 +1618,12 @@
             <div>${detailsHtml}</div>`;
     }
 
-    window.trackDelivery = function(productNo) {
+    window.trackDelivery = function(transactionId) {
         const content = document.getElementById('trackingContent');
         content.innerHTML = '<p style="text-align:center; color:#999;">조회 중...</p>';
         document.getElementById('trackingModal').style.display = 'block';
 
-        fetch(`${ctxPath}mypage/product/track?productNo=${productNo}`)
+        fetch(`${ctxPath}mypage/product/track?transactionId=${transactionId}`)
         .then(r => r.json())
         .then(data => {
             if (!data.success) { content.innerHTML = `<p style="text-align:center; color:#e33;">${data.message || '조회에 실패했습니다.'}</p>`; return; }
@@ -1634,6 +1636,13 @@
 
     window.closeTrackingModal = function() {
         document.getElementById('trackingModal').style.display = 'none';
+    }
+
+    // 송장번호 미입력 안내
+    window.openNoInvoiceModal = function() {
+        const content = document.getElementById('trackingContent');
+        content.innerHTML = '<p style="text-align:center; padding:40px 0; color:#888; font-size:15px;">판매자가 아직 송장번호를 입력하지 않았습니다.<br>잠시 후 다시 확인해주세요.</p>';
+        document.getElementById('trackingModal').style.display = 'block';
     }
 
     // 구매자용 - carrierCode/invoiceNo 직접 전달

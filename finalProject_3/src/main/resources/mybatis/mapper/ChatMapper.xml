@@ -16,6 +16,7 @@
 	        P.PRODUCT_PRICE AS productPrice,
 	        P.TRADE_STATUS AS tradeStatus,
 	        P.TRADE_METHOD AS tradeMethod,
+	        P.SALE_TYPE AS saleType,
 	        P.RESERVED_ROOM_ID AS reservedRoomId,
 	        (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = C.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
 	        CASE
@@ -41,6 +42,7 @@
             P.PRODUCT_PRICE AS productPrice,
             P.TRADE_STATUS AS tradeStatus,
             P.TRADE_METHOD AS tradeMethod,
+            P.SALE_TYPE AS saleType,
             P.RESERVED_ROOM_ID AS reservedRoomId,
             (SELECT IMG_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_MAIN = 'Y' AND ROWNUM = 1) AS productImgUrl,
             M.NICKNAME AS nickname
@@ -92,6 +94,26 @@
             RESERVED_ROOM_ID = NULL
         WHERE PRODUCT_NO = #{productNo}
     </update>
+
+	<!-- 거래완료: TRADE_STATUS='판매완료' + RESERVED_ROOM_ID=NULL -->
+    <update id="completeTrade">
+        UPDATE PRODUCTS
+        SET TRADE_STATUS = '판매완료',
+            RESERVED_ROOM_ID = NULL
+        WHERE PRODUCT_NO = #{productNo}
+          AND RESERVED_ROOM_ID = #{roomId}
+    </update>
+
+    <!-- 직거래/나눔 거래완료 시 TRANSACTIONS 레코드 생성 -->
+    <insert id="insertDirectTrade" parameterType="map">
+        INSERT INTO TRANSACTIONS (
+            TRANSACTION_ID, PRODUCT_NO, SELLER_EMAIL, BUYER_EMAIL,
+            PAYMENT_TYPE, AMOUNT, TRADE_STATUS, PAY_STATUS, COMPLETE_DATE
+        ) VALUES (
+            SEQ_TRANSACTION_ID.NEXTVAL, #{productNo}, #{sellerEmail}, #{buyerEmail},
+            #{paymentType}, #{amount}, '거래완료', 'DONE', SYSTIMESTAMP
+        )
+    </insert>
 
 	<!-- 기존 updateTradeStatus (다른 곳에서 사용 중일 수 있으므로 유지) -->
 	<update id="updateTradeStatus">

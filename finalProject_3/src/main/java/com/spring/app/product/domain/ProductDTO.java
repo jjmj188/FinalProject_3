@@ -24,8 +24,9 @@ public class ProductDTO {
     private String tradeStatus;
     private String tradeMethod;
 
-    private String carrierCode;  // 택배사 코드
-    private String invoiceNo;    // 송장번호
+    private String carrierCode;   // 택배사 코드
+    private String invoiceNo;     // 송장번호
+    private Integer transactionId; // 거래 ID (송장 저장용)
 
     private Integer viewCount;
     private Date regDate;

@@ -182,6 +182,7 @@ public class ChatController {
                 resultMap.put("productPrice", productInfo.getProductPrice());
                 resultMap.put("tradeStatus", productInfo.getTradeStatus());
                 resultMap.put("tradeMethod", productInfo.getTradeMethod());
+                resultMap.put("saleType", productInfo.getSaleType());
                 resultMap.put("reservedRoomId", productInfo.getReservedRoomId());
             }
         } catch (Exception e) {
@@ -286,6 +287,38 @@ public class ChatController {
         } catch (Exception e) {
             resultMap.put("success", false);
             resultMap.put("message", "상태 변경 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+        return resultMap;
+    }
+
+    // 8. 거래완료 API (직거래/나눔) - 구매자만 호출
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/completeTrade")
+    public Map<String, Object> completeTrade(@RequestBody Map<String, Object> payload, Principal principal) {
+        Map<String, Object> resultMap = new HashMap<>();
+        try {
+            int productNo = Integer.parseInt(payload.get("productNo").toString());
+            String roomId = payload.get("roomId").toString();
+            boolean ok = chatService.completeTrade(productNo, roomId, principal.getName());
+            if (!ok) {
+                resultMap.put("success", false);
+                resultMap.put("message", "거래완료 처리에 실패했습니다.");
+                return resultMap;
+            }
+            // 채팅방에 거래완료 안내 메시지 전송
+            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            ChatMessageDTO msg = new ChatMessageDTO();
+            msg.setSender(principal.getName());
+            msg.setContent("__COMPLETE_TRADE__:");
+            msg.setRoomId(roomId);
+            msg.setTimestamp(now);
+            firebaseService.saveMessage(msg);
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, msg);
+            resultMap.put("success", true);
+        } catch (Exception e) {
+            resultMap.put("success", false);
+            resultMap.put("message", "거래완료 처리 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
         return resultMap;
