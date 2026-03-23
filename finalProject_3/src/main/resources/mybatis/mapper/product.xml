@@ -859,7 +859,7 @@
           AND PRODUCT_NO = #{productNo}
     </select>
 
-    <!-- 시세조회: 통계 -->
+       <!-- 시세조회: 통계 -->
     <select id="selectPriceCheckStats"
         parameterType="hashMap"
         resultType="com.spring.app.product.domain.ProductPriceStatsDTO">
@@ -867,16 +867,18 @@
         <choose>
             <when test="priceMode == 'sale'">
                 SELECT
-                    NVL(ROUND(AVG(TRANSACTIONS.AMOUNT)), 0) AS avgPrice,
-                    NVL(MAX(TRANSACTIONS.AMOUNT), 0) AS maxPrice,
-                    NVL(MIN(TRANSACTIONS.AMOUNT), 0) AS minPrice,
+                    NVL(ROUND(AVG(SETTLEMENTS.AMOUNT)), 0) AS avgPrice,
+                    NVL(MAX(SETTLEMENTS.AMOUNT), 0) AS maxPrice,
+                    NVL(MIN(SETTLEMENTS.AMOUNT), 0) AS minPrice,
                     COUNT(*) AS sampleCount
-                FROM TRANSACTIONS
+                FROM SETTLEMENTS
+                JOIN TRANSACTIONS
+                  ON SETTLEMENTS.TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
                 JOIN PRODUCTS
                   ON TRANSACTIONS.PRODUCT_NO = PRODUCTS.PRODUCT_NO
-                WHERE TRANSACTIONS.AMOUNT IS NOT NULL
-                  AND TRANSACTIONS.PAY_STATUS = 'DONE'
-                  AND NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) >= TRUNC(SYSDATE) - 29
+                WHERE SETTLEMENTS.AMOUNT IS NOT NULL
+                  AND SETTLEMENTS.STATUS = '완료'
+                  AND SETTLEMENTS.COMPLETED_AT >= TRUNC(SYSDATE) - 29
                   <if test="searchWord != null and searchWord != ''">
                       AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
                   </if>
@@ -936,18 +938,20 @@
         LEFT JOIN
         (
             SELECT
-                TRUNC(NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT)) AS PRICE_DATE,
-                ROUND(AVG(TRANSACTIONS.AMOUNT)) AS SALE_AVG_PRICE
-            FROM TRANSACTIONS
+                TRUNC(SETTLEMENTS.COMPLETED_AT) AS PRICE_DATE,
+                ROUND(AVG(SETTLEMENTS.AMOUNT)) AS SALE_AVG_PRICE
+            FROM SETTLEMENTS
+            JOIN TRANSACTIONS
+              ON SETTLEMENTS.TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
             JOIN PRODUCTS
               ON TRANSACTIONS.PRODUCT_NO = PRODUCTS.PRODUCT_NO
-            WHERE TRANSACTIONS.AMOUNT IS NOT NULL
-              AND TRANSACTIONS.PAY_STATUS = 'DONE'
-              AND NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) >= TRUNC(SYSDATE) - 29
+            WHERE SETTLEMENTS.AMOUNT IS NOT NULL
+              AND SETTLEMENTS.STATUS = '완료'
+              AND SETTLEMENTS.COMPLETED_AT >= TRUNC(SYSDATE) - 29
               <if test="searchWord != null and searchWord != ''">
                   AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
               </if>
-            GROUP BY TRUNC(NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT))
+            GROUP BY TRUNC(SETTLEMENTS.COMPLETED_AT)
         ) SALE_DATA
           ON DATE_LIST.PRICE_DATE = SALE_DATA.PRICE_DATE
 
@@ -966,9 +970,9 @@
                     PRODUCTS.PRODUCT_NO AS productNo,
                     PRODUCTS.PRODUCT_NAME AS productName,
                     PRODUCTS.SALE_TYPE AS saleType,
-                    TRANSACTIONS.AMOUNT AS productPrice,
+                    SETTLEMENTS.AMOUNT AS productPrice,
                     PRODUCTS.TRADE_STATUS AS tradeStatus,
-                    NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) AS regDate,
+                    SETTLEMENTS.COMPLETED_AT AS regDate,
                     PRODUCTS.VIEW_COUNT AS viewCount,
                     PRODUCTS.CATEGORY_NO AS categoryNo,
 
@@ -1005,12 +1009,14 @@
                         </otherwise>
                     </choose>
 
-                FROM TRANSACTIONS
+                FROM SETTLEMENTS
+                JOIN TRANSACTIONS
+                  ON SETTLEMENTS.TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
                 JOIN PRODUCTS
                   ON TRANSACTIONS.PRODUCT_NO = PRODUCTS.PRODUCT_NO
-                WHERE TRANSACTIONS.AMOUNT IS NOT NULL
-                  AND TRANSACTIONS.PAY_STATUS = 'DONE'
-                  AND NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) >= TRUNC(SYSDATE) - 29
+                WHERE SETTLEMENTS.AMOUNT IS NOT NULL
+                  AND SETTLEMENTS.STATUS = '완료'
+                  AND SETTLEMENTS.COMPLETED_AT >= TRUNC(SYSDATE) - 29
                   <if test="searchWord != null and searchWord != ''">
                       AND LOWER(PRODUCTS.PRODUCT_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
                   </if>
@@ -1018,18 +1024,18 @@
                 <choose>
                     <when test="sortType == 'view'">
                         ORDER BY PRODUCTS.VIEW_COUNT DESC,
-                                 NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) DESC
+                                 SETTLEMENTS.COMPLETED_AT DESC
                     </when>
                     <when test="sortType == 'priceAsc'">
-                        ORDER BY TRANSACTIONS.AMOUNT ASC,
-                                 NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) DESC
+                        ORDER BY SETTLEMENTS.AMOUNT ASC,
+                                 SETTLEMENTS.COMPLETED_AT DESC
                     </when>
                     <when test="sortType == 'priceDesc'">
-                        ORDER BY TRANSACTIONS.AMOUNT DESC,
-                                 NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) DESC
+                        ORDER BY SETTLEMENTS.AMOUNT DESC,
+                                 SETTLEMENTS.COMPLETED_AT DESC
                     </when>
                     <otherwise>
-                        ORDER BY NVL(TRANSACTIONS.COMPLETE_DATE, TRANSACTIONS.APPROVED_AT) DESC
+                        ORDER BY SETTLEMENTS.COMPLETED_AT DESC
                     </otherwise>
                 </choose>
             </when>
