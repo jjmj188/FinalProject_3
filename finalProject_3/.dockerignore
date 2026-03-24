@@ -8,3 +8,6 @@ gradle/
 gradlew
 gradlew.bat
 Dockerfile
+build/
+!build/libs/
+!build/libs/*.jar
