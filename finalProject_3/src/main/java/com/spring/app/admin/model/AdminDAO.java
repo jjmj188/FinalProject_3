@@ -106,6 +106,12 @@ public interface AdminDAO {
 	// 리뷰 관리
 	List<ReviewAdminDTO> getReviewList(Map<String, Object> params);
 	int countReviews();
+	int countReviewsFiltered(Map<String, Object> params);
+	int countSuspectReviews();
+	int countLowRatingReviews();
+	int countRecentReviews();
+	List<Map<String, Object>> getDailyReviewCounts();
+	List<Map<String, Object>> getRatingDistribution();
 	void deleteReview(int reviewNo);
 
 	// 거래 관리

@@ -2,111 +2,301 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>리뷰 내역 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 리뷰 관리</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; font-size: 14px; color: #333; }
+        .main-content { flex: 1; padding: 30px; background-color: #f8f9fc; min-height: 100vh; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 0.15rem 1.75rem rgba(58,59,69,.1); margin-bottom: 20px; padding: 20px; background: white; }
+        .chart-wrapper { position: relative; width: 100%; }
+
+        /* stat cards */
+        .stat-card-link {
+            display: block; text-decoration: none; color: inherit;
+            border-radius: 12px;
+            box-shadow: 0 0.15rem 1.75rem rgba(58,59,69,.1);
+            padding: 16px 20px;
+            background: white;
+            transition: transform .15s, box-shadow .15s;
+            border-left: 4px solid #dee2e6;
+        }
+        .stat-card-link:hover { transform: translateY(-2px); box-shadow: 0 0.5rem 2rem rgba(58,59,69,.2); color: inherit; }
+        .stat-card-link.border-primary   { border-left-color: #4e73df !important; }
+        .stat-card-link.border-warning   { border-left-color: #f6c23e !important; }
+        .stat-card-link.border-danger    { border-left-color: #e74a3b !important; }
+        .stat-card-link.border-success   { border-left-color: #1cc88a !important; }
+        .stat-card-link.border-primary.active-filter  { box-shadow: 0 0 0 3px #4e73df, 0 0.15rem 1.75rem rgba(58,59,69,.1); }
+        .stat-card-link.border-warning.active-filter  { box-shadow: 0 0 0 3px #f6c23e, 0 0.15rem 1.75rem rgba(58,59,69,.1); }
+        .stat-card-link.border-danger.active-filter   { box-shadow: 0 0 0 3px #e74a3b, 0 0.15rem 1.75rem rgba(58,59,69,.1); }
+        .stat-card-link.border-success.active-filter  { box-shadow: 0 0 0 3px #1cc88a, 0 0.15rem 1.75rem rgba(58,59,69,.1); }
+
+        /* rating */
         .rating-star { color: #f6c23e; }
+
+        /* table */
+        .table { background: white; border-radius: 10px; }
+        .table thead th { background: #f8f9fc; color: #858796; font-size: .8rem; text-transform: uppercase; border-bottom: 1px solid #e3e6f0; }
+        .bg-light-warning { background: #fffcf0 !important; }
+        .bg-light-danger  { background: #fff5f5 !important; }
+        .table-warning-subtle { background: #fff9db !important; }
+
+        /* filter banner */
+        .filter-active-bar {
+            background: linear-gradient(90deg, #f6c23e, #e74a3b);
+            color: #fff; border-radius: 10px;
+            padding: 9px 16px; font-size: .875rem;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        /* pagination */
+        .page-link { border-radius: 6px !important; margin: 0 2px; }
+        .page-item.active .page-link { background: #4e73df; border-color: #4e73df; }
     </style>
 </head>
 <body class="d-flex">
-    <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
-    <main class="main-content">
-        <div class="container-fluid">
-            <h4 class="fw-bold mb-4">리뷰 콘텐츠 관리</h4>
 
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="dashboard-card">
-                        <div class="small text-muted fw-bold">전체 리뷰 수</div>
-                        <div class="h3 fw-bold mb-0" th:text="${totalCount + '건'}">0건</div>
-                    </div>
-                </div>
-            </div>
+<aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
 
-            <!-- 검색 폼 -->
-            <form method="get" th:action="@{/admin/review}" class="mb-3 d-flex gap-2">
-                <input type="text" class="form-control form-control-sm" name="keyword"
-                       th:value="${searchKeyword}" placeholder="작성자/내용 검색" style="width:220px;">
-                <button class="btn btn-sm btn-primary">검색</button>
-            </form>
+<main class="main-content">
+    <h4 class="mb-4 fw-bold text-gray-800">⭐ 리뷰 콘텐츠 관리 대시보드</h4>
 
-            <div class="dashboard-card">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>번호</th>
-                                <th>작성자</th>
-                                <th>별점</th>
-                                <th>한줄평</th>
-                                <th>리뷰 내용</th>
-                                <th>작성일</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:if="${#lists.isEmpty(reviewList)}">
-                                <td colspan="7" class="text-center text-muted">리뷰가 없습니다.</td>
-                            </tr>
-                            <tr th:each="review : ${reviewList}">
-                                <td th:text="${review.reviewNo}"></td>
-                                <td th:text="${review.nickname}"></td>
-                                <td>
-                                    <span class="rating-star">
-                                        <th:block th:each="i : ${#numbers.sequence(1, 5)}">
-                                            <i th:class="${i <= review.rating ? 'bi bi-star-fill' : 'bi bi-star'}"></i>
-                                        </th:block>
-                                    </span>
-                                    <small th:text="${review.rating}"></small>
-                                </td>
-                                <td th:text="${review.oneLineCat}"></td>
-                                <td th:text="${#strings.abbreviate(review.reviewContent, 50)}"></td>
-                                <td th:text="${#dates.format(review.createdAt, 'yyyy-MM-dd')}"></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            th:attr="onclick='deleteReview(' + ${review.reviewNo} + ')'">삭제</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- 페이징 -->
-                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
-                    <ul class="pagination justify-content-center mt-3">
-                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/review(page=${currentPage-1}, keyword=${searchKeyword})}">이전</a>
-                        </li>
-                        <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
-                            th:classappend="${p == currentPage} ? 'active'">
-                            <a class="page-link" th:href="@{/admin/review(page=${p}, keyword=${searchKeyword})}" th:text="${p}"></a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/review(page=${currentPage+1}, keyword=${searchKeyword})}">다음</a>
-                        </li>
-                    </ul>
-                </nav>
+    <!-- ── 차트 + 통계 카드 ── -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-5">
+            <div class="card h-100">
+                <div class="fw-bold mb-3 small text-primary text-uppercase">📈 일별 리뷰 등록 현황 (최근 7일)</div>
+                <div class="chart-wrapper" style="height:220px;"><canvas id="reviewChart"></canvas></div>
             </div>
         </div>
-    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function deleteReview(reviewNo) {
-            if (!confirm("이 리뷰를 삭제 처리하시겠습니까?")) return;
-            fetch('/admin/review/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'reviewNo=' + reviewNo
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) { alert('삭제되었습니다.'); location.reload(); }
-                else alert('삭제 실패');
-            });
+        <div class="col-md-3">
+            <div class="card h-100 text-center">
+                <div class="fw-bold mb-3 small text-start text-warning text-uppercase">⭐ 별점 분포</div>
+                <div class="chart-wrapper" style="height:220px;"><canvas id="ratingChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- 클릭 가능한 stat 카드 -->
+        <div class="col-md-4">
+            <div class="d-flex flex-column gap-2 h-100">
+                <!-- 전체 리뷰 -->
+                <a th:href="@{/admin/review}" class="stat-card-link border-primary flex-fill py-2 text-center"
+                   th:classappend="${(selectedFilter==null or selectedFilter=='')} ? ' active-filter' : ''">
+                    <div class="text-muted small">전체 리뷰</div>
+                    <div class="h5 fw-bold mb-0 text-dark" th:text="${totalCount + '건'}">0건</div>
+                </a>
+                <!-- 금지어 의심 -->
+                <a th:href="@{/admin/review(filter='suspect')}" class="stat-card-link border-warning flex-fill py-2 text-center bg-light-warning"
+                   th:classappend="${selectedFilter=='suspect'} ? ' active-filter' : ''">
+                    <div class="text-muted small">금지어 의심 <i class="bi bi-funnel-fill ms-1" style="font-size:.7rem;"></i></div>
+                    <div class="h5 fw-bold mb-0 text-warning" th:text="${suspectCount != null ? suspectCount + '건' : '0건'}">0건</div>
+                </a>
+                <!-- 낮은 별점 (1~2점) -->
+                <a th:href="@{/admin/review(filter='lowRating')}" class="stat-card-link border-danger flex-fill py-2 text-center bg-light-danger"
+                   th:classappend="${selectedFilter=='lowRating'} ? ' active-filter' : ''">
+                    <div class="text-muted small">낮은 별점 (1-2점) <i class="bi bi-funnel-fill ms-1" style="font-size:.7rem;"></i></div>
+                    <div class="h5 fw-bold mb-0 text-danger" th:text="${lowRatingCount != null ? lowRatingCount + '건' : '0건'}">0건</div>
+                </a>
+                <!-- 최근 7일 리뷰 -->
+                <a th:href="@{/admin/review(filter='recent')}" class="stat-card-link border-success flex-fill py-2 text-center"
+                   th:classappend="${selectedFilter=='recent'} ? ' active-filter' : ''">
+                    <div class="text-muted small text-success">최근 7일 리뷰 <i class="bi bi-funnel-fill ms-1" style="font-size:.7rem;"></i></div>
+                    <div class="h5 fw-bold mb-0 text-success" th:text="${recentCount != null ? recentCount + '건' : '0건'}">0건</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 필터 활성 배너 ── -->
+    <div th:if="${selectedFilter != null and selectedFilter != ''}" class="filter-active-bar">
+        <span>
+            <i class="bi bi-funnel-fill me-2"></i>
+            <span th:if="${selectedFilter=='suspect'}">⚠️ 금지어 의심 리뷰만 표시 중</span>
+            <span th:if="${selectedFilter=='lowRating'}">낮은 별점(1-2점) 리뷰만 표시 중</span>
+            <span th:if="${selectedFilter=='recent'}">최근 7일 리뷰만 표시 중</span>
+            &nbsp;— 총 <strong th:text="${filteredTotal != null ? filteredTotal : totalCount}">0</strong>건
+        </span>
+        <a th:href="@{/admin/review}" class="btn btn-sm btn-light rounded-pill px-3 py-1">✕ 필터 해제</a>
+    </div>
+
+    <!-- ── 검색 바 ── -->
+    <div class="card py-3 mb-3 border-0 shadow-sm">
+        <form th:action="@{/admin/review}" method="get" class="d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-2">
+                <select name="rating" class="form-select form-select-sm" style="width:130px;">
+                    <option value="" th:selected="${selectedRating==null or selectedRating==''}">전체 별점</option>
+                    <option value="5" th:selected="${selectedRating=='5'}">★★★★★ 5점</option>
+                    <option value="4" th:selected="${selectedRating=='4'}">★★★★☆ 4점</option>
+                    <option value="3" th:selected="${selectedRating=='3'}">★★★☆☆ 3점</option>
+                    <option value="2" th:selected="${selectedRating=='2'}">★★☆☆☆ 2점</option>
+                    <option value="1" th:selected="${selectedRating=='1'}">★☆☆☆☆ 1점</option>
+                </select>
+                <input type="hidden" name="filter" th:value="${selectedFilter}">
+                <input type="text" name="keyword" class="form-control form-control-sm"
+                       th:value="${searchKeyword}" placeholder="작성자/내용 검색" style="width:250px;">
+                <button type="submit" class="btn btn-dark btn-sm px-3">검색</button>
+            </div>
+            <div class="text-muted small">
+                조회 결과 : <span class="fw-bold text-primary"
+                              th:text="${filteredTotal != null ? filteredTotal : totalCount}">0</span>개
+            </div>
+        </form>
+    </div>
+
+    <!-- ── 테이블 ── -->
+    <div class="card p-0 overflow-hidden border-0 shadow-sm">
+        <table class="table table-hover mb-0 text-center align-middle" style="table-layout:fixed;">
+            <colgroup>
+                <col style="width:56px;">
+                <col style="width:13%;">
+                <col style="width:10%;">
+                <col style="width:12%;">
+                <col>
+                <col style="width:10%;">
+                <col style="width:9%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>작성자</th>
+                    <th>별점</th>
+                    <th>한줄평</th>
+                    <th class="text-start">리뷰 내용</th>
+                    <th>작성일</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(reviewList)}">
+                    <td colspan="7" class="py-5 text-muted">해당하는 리뷰가 없습니다.</td>
+                </tr>
+                <tr th:each="review, stat : ${reviewList}"
+                    th:classappend="${review.flagged} ? 'table-warning-subtle' : ''">
+                    <td class="text-muted small" th:text="${(currentPage-1)*10 + stat.count}">1</td>
+                    <td class="text-truncate" style="max-width:0;">
+                        <small class="fw-bold" th:text="${review.nickname}" th:title="${review.nickname}">작성자</small>
+                    </td>
+                    <td>
+                        <span class="rating-star" style="font-size:.85rem;">
+                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                <i th:class="${i <= review.rating ? 'bi bi-star-fill' : 'bi bi-star'}"></i>
+                            </th:block>
+                        </span>
+                        <small class="text-muted ms-1" th:text="${review.rating}"></small>
+                    </td>
+                    <td class="text-truncate" style="max-width:0;">
+                        <small th:text="${review.oneLineCat}" th:title="${review.oneLineCat}"></small>
+                    </td>
+                    <td class="text-start text-truncate" style="max-width:0;">
+                        <span th:text="${#strings.abbreviate(review.reviewContent, 50)}"
+                              th:title="${review.reviewContent}"></span>
+                        <span th:if="${review.flagged}"
+                              class="badge bg-danger ms-1" style="font-size:.65rem;padding:2px 5px;">⚠️ 의심</span>
+                    </td>
+                    <td th:text="${#dates.format(review.createdAt, 'yyyy-MM-dd')}"></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill px-2"
+                                th:attr="onclick='deleteReview(' + ${review.reviewNo} + ')'">삭제</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── 페이지네이션 ── -->
+    <nav th:if="${totalPages > 1}" class="mt-4">
+        <ul class="pagination justify-content-center pagination-sm">
+            <li class="page-item" th:classappend="${currentPage==1} ? 'disabled'">
+                <a class="page-link shadow-none"
+                   th:href="@{/admin/review(page=${currentPage-1},keyword=${searchKeyword},filter=${selectedFilter},rating=${selectedRating})}">이전</a>
+            </li>
+            <li class="page-item"
+                th:each="p : ${#numbers.sequence(1, totalPages)}"
+                th:classappend="${p==currentPage} ? 'active'">
+                <a class="page-link shadow-none"
+                   th:href="@{/admin/review(page=${p},keyword=${searchKeyword},filter=${selectedFilter},rating=${selectedRating})}"
+                   th:text="${p}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${currentPage==totalPages} ? 'disabled'">
+                <a class="page-link shadow-none"
+                   th:href="@{/admin/review(page=${currentPage+1},keyword=${searchKeyword},filter=${selectedFilter},rating=${selectedRating})}">다음</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 일별 리뷰 등록 차트
+    const reviewDailyLabels = /*[[${dailyLabels}]]*/ [];
+    const reviewDailyData   = /*[[${dailyData}]]*/ [];
+
+    new Chart(document.getElementById('reviewChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: reviewDailyLabels,
+            datasets: [{
+                label: '등록 건수', data: reviewDailyData,
+                borderColor: '#f6c23e',
+                backgroundColor: 'rgba(246,194,62,0.1)',
+                fill: true, tension: 0.4, pointRadius: 3,
+                pointBackgroundColor: '#f6c23e'
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { display: true, drawBorder: false } },
+                x: { grid: { display: false } }
+            }
         }
-    </script>
+    });
+
+    // 별점 분포 차트
+    const ratingLabels = /*[[${ratingLabels}]]*/ ['5점','4점','3점','2점','1점'];
+    const ratingData   = /*[[${ratingData}]]*/ [0,0,0,0,0];
+
+    new Chart(document.getElementById('ratingChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ratingLabels,
+            datasets: [{
+                data: ratingData,
+                backgroundColor: ['#1cc88a','#4e73df','#36b9cc','#f6c23e','#e74a3b'],
+                hoverBorderColor: 'rgba(234,236,244,1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 }, padding: 10 } }
+            },
+            cutout: '65%'
+        }
+    });
+
+    function deleteReview(reviewNo) {
+        if (!confirm("이 리뷰를 삭제 처리하시겠습니까?")) return;
+        fetch('/admin/review/delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'reviewNo=' + reviewNo
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { alert('삭제되었습니다.'); location.reload(); }
+            else alert('삭제 실패');
+        });
+    }
+    /*]]>*/
+</script>
 </body>
 </html>

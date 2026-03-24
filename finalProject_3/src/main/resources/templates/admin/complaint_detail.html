@@ -190,12 +190,12 @@
                     </div>
                 </div>
                 <span class="header-badge"
-                      th:classappend="${report.reportStatus == '처리완료'} ? 'hb-done' : (${report.reportStatus == '기각'} ? 'hb-rejected' : 'hb-pending')"
+                      th:classappend="${report.reportStatus == '완료'} ? 'hb-done' : (${report.reportStatus == '처리중'} ? 'hb-pending' : 'hb-pending')"
                       th:text="${report.reportStatus}"></span>
             </div>
 
             <!-- 처리완료 배너 -->
-            <div class="accepted-banner" th:if="${report.reportStatus == '처리완료'}">
+            <div class="accepted-banner" th:if="${report.reportStatus == '완료'}">
                 <div class="ab-icon"><i class="bi bi-check2"></i></div>
                 <div>
                     <div class="ab-title">신고가 인정되었습니다</div>
@@ -205,24 +205,30 @@
 
             <!-- ① 신고내용 + 처리상태 (상단) -->
             <div class="row g-3 mb-3">
-                <div class="col-md-7">
+                <div class="col-md-6">
                     <div class="info-card">
                         <div class="section-title"><i class="bi bi-chat-left-text"></i>신고 내용</div>
                         <div class="detail-box" th:text="${report.reportDetail}">신고 내용이 없습니다.</div>
                     </div>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <div class="info-card">
                         <div class="section-title"><i class="bi bi-check2-circle"></i>처리 상태 변경</div>
                         <select id="statusSelect" class="form-select mb-3"
-                                onchange="onStatusChange(this.value)">
-                            <option value="처리대기"  th:selected="${report.reportStatus == '처리대기'}">⏳ 처리대기</option>
-                            <option value="처리완료" th:selected="${report.reportStatus == '처리완료'}">✅ 처리완료 — 신고 인정</option>
-                            <option value="기각"     th:selected="${report.reportStatus == '기각'}">❌ 기각 — 신고 반려</option>
+                                onchange="onStatusChange(this.value)"
+                                th:disabled="${report.reportStatus == '완료'}">
+                            <option value="접수"   th:selected="${report.reportStatus == '접수'}">⏳ 접수 — 검토 대기</option>
+                            <option value="처리중" th:selected="${report.reportStatus == '처리중'}">🔍 처리중 — 검토 진행</option>
+                            <option value="완료"   th:selected="${report.reportStatus == '완료'}">✅ 완료 — 처리 완료</option>
                         </select>
-                        <button class="btn-save" onclick="processReport()">
+                        <button class="btn-save" onclick="processReport()"
+                                th:disabled="${report.reportStatus == '완료'}"
+                                th:style="${report.reportStatus == '완료'} ? 'opacity:.45;cursor:not-allowed;' : ''">
                             <i class="bi bi-save me-1"></i>상태 저장 및 알림 자동 작성
                         </button>
+                        <div th:if="${report.reportStatus == '완료'}" class="mt-2 small text-success">
+                            <i class="bi bi-lock-fill me-1"></i>처리 완료된 신고는 상태를 변경할 수 없습니다.
+                        </div>
                         <div id="processResult" class="mt-2 d-none"></div>
                     </div>
                 </div>
@@ -238,6 +244,9 @@
                             <div class="role-badge role-reporter"><i class="bi bi-person me-1"></i>신고자</div>
                             <div class="u-name" th:text="${report.reporterName != null ? report.reporterName : '알 수 없음'}"></div>
                             <div class="u-email" th:text="${report.reporterEmail}"></div>
+                            <span th:if="${report.reporterStatus == 0}" class="member-chip chip-ban">영구정지</span>
+                            <span th:if="${report.reporterStatus != 0 and report.reporterSuspended == 1}" class="member-chip chip-suspend">일시정지 중</span>
+                            <span th:if="${report.reporterStatus != 0 and report.reporterSuspended == 0}" class="member-chip chip-normal">정상</span>
                         </div>
                         <div class="user-card-body">
                             <!-- 제재 버튼 -->
@@ -351,19 +360,13 @@
         /*]]>*/
 
         function onStatusChange(status) {
-            if (status === '처리완료') {
+            if (status === '완료') {
                 document.getElementById('r1Title').value = '[처리완료] 신고 인정 안내';
                 document.getElementById('r1Msg').value =
                     REPORTER_NAME + '님 안녕하세요.\n\n접수하신 신고(' + REPORT_TYPE + ')가 검토 결과 인정되었습니다.\n관련 조치가 처리되었으며, 더 안전한 서비스를 위해 최선을 다하겠습니다.\n\n감사합니다.\n관리자 드림';
                 document.getElementById('r2Title').value = '[처리완료] 신고 처리 결과 안내';
                 document.getElementById('r2Msg').value =
                     TARGET_NAME + '님 안녕하세요.\n\n귀하에 대한 신고(' + REPORT_TYPE + ')가 접수되어 검토한 결과,\n해당 신고 내용이 인정되어 조치가 이루어졌음을 안내드립니다.\n이의가 있으시면 고객센터로 문의해 주세요.\n\n관리자 드림';
-            } else if (status === '기각') {
-                document.getElementById('r1Title').value = '[처리결과] 신고 검토 결과 안내';
-                document.getElementById('r1Msg').value =
-                    REPORTER_NAME + '님 안녕하세요.\n\n접수하신 신고(' + REPORT_TYPE + ')를 검토한 결과,\n충분한 근거가 확인되지 않아 이번 신고는 기각 처리되었습니다.\n추가 문의사항이 있으시면 고객센터를 이용해 주세요.\n\n관리자 드림';
-                document.getElementById('r2Title').value = '신고 처리 안내';
-                document.getElementById('r2Msg').value = '';
             } else {
                 document.getElementById('r1Title').value = '신고 접수 안내';
                 document.getElementById('r1Msg').value = '';
@@ -381,18 +384,11 @@
             const el = document.getElementById('processResult');
 
             // 상태별 메시지 전송 필수 검증
-            if (status === '처리완료') {
+            if (status === '완료') {
                 if (!sentR1 || !sentR2) {
                     el.classList.remove('d-none');
                     el.className = 'mt-2 small text-danger';
-                    el.textContent = '✗ 승인 시 신고자·피신고자 모두에게 알림을 전송해야 합니다.';
-                    return;
-                }
-            } else if (status === '기각') {
-                if (!sentR1) {
-                    el.classList.remove('d-none');
-                    el.className = 'mt-2 small text-danger';
-                    el.textContent = '✗ 기각 시 신고자에게 알림을 전송해야 합니다.';
+                    el.textContent = '✗ 완료 처리 시 신고자·피신고자 모두에게 알림을 전송해야 합니다.';
                     return;
                 }
             }

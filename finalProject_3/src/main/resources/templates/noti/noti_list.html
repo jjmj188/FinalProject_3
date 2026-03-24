@@ -4,33 +4,69 @@
 <head>
     <link rel="stylesheet" th:href="@{/css/mypage/mypage.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <title>알림함</title>
+    <title>메시지함</title>
     <style>
         .noti-card {
-            background: #fff; border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.07);
-            margin-bottom: 10px; padding: 18px 20px;
-            display: flex; gap: 14px; align-items: flex-start;
-            cursor: pointer; transition: box-shadow .15s;
-            text-decoration: none; color: inherit;
+            background: #fff;
+            border: 1px solid #e8f5e9;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.06);
+            margin-bottom: 12px;
+            padding: 18px 20px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            text-decoration: none;
+            color: inherit;
         }
-        .noti-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); }
-        .noti-card.unread { border-left: 4px solid #4e73df; background: #f8f9ff; }
-        .noti-card.read   { border-left: 4px solid transparent; opacity: .8; }
+        .noti-card:hover {
+            border-color: #86efac;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.12);
+        }
+        .noti-card.unread {
+            border-left: 4px solid #16a34a;
+            background: #f0fdf4;
+        }
+        .noti-card.read {
+            border-left: 4px solid transparent;
+            opacity: .85;
+        }
         .noti-icon {
-            width: 42px; height: 42px; border-radius: 50%;
+            width: 44px; height: 44px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.1rem; flex-shrink: 0;
         }
-        .noti-icon.admin { background: #e8edff; color: #4e73df; }
+        .noti-icon.admin { background: #e8f5e9; color: #16a34a; }
         .noti-icon.trade { background: #e8fff5; color: #1cc88a; }
         .noti-icon.other { background: #fff3e0; color: #f6c23e; }
-        .noti-title { font-weight: 700; font-size: .95rem; color: #2e3750; margin-bottom: 4px; }
+        .noti-title { font-weight: 700; font-size: .95rem; color: #1a1a1a; margin-bottom: 4px; }
         .noti-msg   { font-size: .85rem; color: #555; line-height: 1.5; }
         .noti-date  { font-size: .75rem; color: #aaa; margin-top: 6px; }
-        .unread-dot { width: 8px; height: 8px; background: #4e73df; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-        .empty-box  { text-align: center; padding: 60px 0; color: #bbb; }
-        .empty-box i { font-size: 3rem; display: block; margin-bottom: 12px; }
+        .unread-dot { width: 8px; height: 8px; background: #16a34a; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+        .empty-box  { text-align: center; padding: 80px 0; color: #bbb; }
+        .empty-box i { font-size: 3rem; display: block; margin-bottom: 12px; color: #d1fae5; }
+        .noti-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .noti-read-all-btn {
+            padding: 7px 16px;
+            border: 1px solid #16a34a;
+            border-radius: 6px;
+            background: #fff;
+            color: #16a34a;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .noti-read-all-btn:hover { background: #f0fdf4; }
+        .noti-read-all-btn:disabled { border-color: #ddd; color: #bbb; cursor: not-allowed; }
+        .noti-count-text { font-size: 13px; color: #999; margin-bottom: 16px; }
     </style>
 </head>
 <main>
@@ -41,12 +77,11 @@
             <nav class="mp-nav">
                 <ul>
                     <li><a th:href="@{/mypage/main}">내 정보</a></li>
-                    <li><a th:href="@{/mypage/main}">구매관리</a></li>
                     <li><a th:href="@{/mypage/main}">계좌/배송지 관리</a></li>
                     <li><a th:href="@{/mypage/main}">후기관리</a></li>
                     <li><a th:href="@{/mypage/main}">찜내역</a></li>
                     <li><a th:href="@{/mypage/main}">신고관리</a></li>
-                    <li><a th:href="@{/noti/list}" class="active">알림함</a></li>
+                    <li><a th:href="@{/noti/list}" class="active">메시지함</a></li>
                 </ul>
             </nav>
             <div class="mp-exit-wrap">
@@ -54,24 +89,24 @@
             </div>
         </aside>
 
-        <!-- 알림 컨텐츠 -->
+        <!-- 메시지함 컨텐츠 -->
         <section class="mp-content">
-            <div class="mp-section-title" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>
-                    알림함
-                    <span class="badge bg-primary ms-1" th:if="${unreadCount > 0}" th:text="${unreadCount}"></span>
-                </span>
-                <button class="btn btn-outline-secondary btn-sm" onclick="readAll()"
-                        th:disabled="${unreadCount == 0}">
+            <div class="mp-section-title">
+                메시지함
+                <span class="mp-count-badge ms-2" th:if="${unreadCount > 0}" th:text="${unreadCount} + '개 안읽음'"></span>
+            </div>
+
+            <div class="noti-header-bar">
+                <span class="noti-count-text" th:text="${#lists.size(notiList)} + '개의 메시지'"></span>
+                <button class="noti-read-all-btn" onclick="readAll()" th:disabled="${unreadCount == 0}">
                     <i class="bi bi-check2-all me-1"></i>전체 읽음
                 </button>
             </div>
-            <span class="text-muted small d-block mb-3" th:text="${#lists.size(notiList)} + '개의 알림'"></span>
 
             <!-- 알림 없음 -->
             <div class="empty-box" th:if="${#lists.isEmpty(notiList)}">
                 <i class="bi bi-bell-slash"></i>
-                <p>알림이 없습니다.</p>
+                <p>메시지가 없습니다.</p>
             </div>
 
             <!-- 알림 목록 -->
@@ -111,11 +146,11 @@
                     card.classList.add('read');
                     const dot = card.querySelector('.unread-dot');
                     if (dot) dot.remove();
-                    const badge = document.querySelector('.badge.bg-primary');
+                    const badge = document.querySelector('.mp-count-badge');
                     if (badge) {
                         const cur = parseInt(badge.textContent) - 1;
                         if (cur <= 0) badge.remove();
-                        else badge.textContent = cur;
+                        else badge.textContent = cur + '개 안읽음';
                     }
                 }
             });

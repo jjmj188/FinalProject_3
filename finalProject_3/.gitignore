@@ -35,3 +35,13 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Secrets ###
+# Firebase service account keys
+*firebase*adminsdk*.json
+serviceAccountKey.json
+google-services.json
+
+# Spring Boot config with secrets
+src/main/resources/application.yml
+src/main/resources/application-*.yml

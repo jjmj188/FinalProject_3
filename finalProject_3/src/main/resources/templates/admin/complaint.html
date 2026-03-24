@@ -7,64 +7,181 @@
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        .status-pending { color: #e74a3b; font-weight: bold; }
-        .status-solved { color: #858796; }
-        .text-truncate-custom { max-width: 200px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .report-stat-card { background: white; border-radius: 12px; padding: 20px 24px; border-left: 5px solid; box-shadow: 0 0.15rem 1.75rem rgba(58,59,69,.08); }
-        .report-stat-card.blue { border-color: #4e73df; }
-        .report-stat-card.orange { border-color: #f6c23e; }
-        .report-stat-card.red { border-color: #e74a3b; }
-        .report-stat-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #858796; letter-spacing: .05em; }
-        .report-stat-value { font-size: 1.5rem; font-weight: 800; color: #2e3750; }
+        body { background: #f0f2f5; }
+
+        /* ── 페이지 헤더 ── */
+        .page-header {
+            background: linear-gradient(135deg, #1a1f36 0%, #2e3750 100%);
+            border-radius: 16px; padding: 22px 28px; color: #fff;
+            margin-bottom: 22px; display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 6px 24px rgba(30,40,80,.18);
+        }
+        .page-header-icon {
+            width: 48px; height: 48px; background: rgba(255,255,255,.12);
+            border-radius: 13px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+        }
+        .page-header h4 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+        .page-header p  { margin: 3px 0 0; font-size: 0.78rem; opacity: .55; }
+
+        /* ── 통계 카드 ── */
+        .stat-card {
+            background: #fff; border-radius: 14px; padding: 18px 22px;
+            box-shadow: 0 1px 8px rgba(58,59,69,.07);
+            display: flex; align-items: center; gap: 14px;
+        }
+        .stat-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+        .stat-icon.blue   { background: #eff6ff; color: #4e73df; }
+        .stat-icon.orange { background: #fff7ed; color: #f6c23e; }
+        .stat-icon.red    { background: #fef2f2; color: #e74a3b; }
+        .stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: .05em; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: #1e2340; line-height: 1.1; }
+        .stat-value.danger { color: #e74a3b; }
+
+        /* ── 필터 바 ── */
+        .filter-bar {
+            background: #fff; border-radius: 12px; padding: 14px 20px;
+            box-shadow: 0 1px 8px rgba(58,59,69,.06);
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .filter-bar .filter-label { font-size: 0.8rem; font-weight: 700; color: #6b7280; }
+        .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .filter-tab {
+            padding: 5px 14px; border-radius: 20px; font-size: 0.78rem;
+            font-weight: 700; border: 1.5px solid #e5e7eb; color: #6b7280;
+            background: #fff; cursor: pointer; text-decoration: none;
+            transition: all .15s; outline: none; line-height: 1.5;
+        }
+        .filter-tab:hover { border-color: #4e73df; color: #4e73df; }
+        .filter-tab.active { background: #4e73df; border-color: #4e73df; color: #fff; }
+        .total-count { margin-left: auto; font-size: 0.8rem; color: #9ca3af; }
+        .total-count strong { color: #1e2340; }
+
+        /* ── 테이블 카드 ── */
+        .table-card {
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 1px 8px rgba(58,59,69,.07);
+            overflow: hidden;
+        }
+        .table-card .table { margin: 0; }
+        .table-card .table thead th {
+            background: #f8f9fc; font-size: 0.72rem; font-weight: 800;
+            text-transform: uppercase; color: #9ca3af; letter-spacing: .06em;
+            border-bottom: 1px solid #eef0f8; padding: 12px 16px;
+        }
+        .table-card .table tbody td {
+            padding: 12px 16px; font-size: 0.85rem; vertical-align: middle;
+            border-color: #f3f4f8; color: #374151;
+        }
+        .table-card .table tbody tr:hover { background: #fafbff; }
+
+        .report-id-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; background: #f0f2f8;
+            border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: #4e73df;
+        }
+        .category-badge {
+            display: inline-block; padding: 2px 9px; border-radius: 20px;
+            font-size: 0.7rem; font-weight: 700;
+        }
+        .cat-illegal { background: #fef2f2; color: #dc2626; }
+        .cat-fraud   { background: #fff7ed; color: #ea580c; }
+        .cat-manner  { background: #fefce8; color: #ca8a04; }
+        .cat-spam    { background: #fdf4ff; color: #9333ea; }
+        .cat-other   { background: #f3f4f6; color: #6b7280; }
+
+        .status-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 700; white-space: nowrap;
+        }
+        .sb-pending  { background: #fef2f2; color: #e74a3b; }
+        .sb-process  { background: #fff7ed; color: #ea580c; }
+        .sb-done     { background: #f0fdf4; color: #16a34a; }
+
+        .text-truncate-custom {
+            max-width: 180px; display: inline-block;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .btn-detail {
+            font-size: 0.75rem; padding: 4px 12px; border-radius: 7px;
+            border: 1.5px solid #e5e7eb; color: #4e73df; background: #fff;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+            transition: all .15s;
+        }
+        .btn-detail:hover { background: #4e73df; color: #fff; border-color: #4e73df; }
+
+        /* ── 페이징 ── */
+        .pagination .page-link {
+            border-radius: 8px !important; margin: 0 2px;
+            font-size: 0.82rem; color: #4e73df; border-color: #e5e7eb;
+        }
+        .pagination .page-item.active .page-link {
+            background: #4e73df; border-color: #4e73df; color: #fff;
+        }
     </style>
 </head>
 <body class="d-flex">
     <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
     <main class="main-content">
         <div class="container-fluid">
-            <h4 class="fw-bold mb-4">신고 내역 관리</h4>
 
-            <!-- 신고 유형 대시보드 카드 -->
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <div class="page-header-icon"><i class="bi bi-flag-fill"></i></div>
+                <div>
+                    <h4>신고 내역 관리</h4>
+                    <p>접수된 신고를 검토하고 처리 상태를 관리합니다.</p>
+                </div>
+            </div>
+
+            <!-- 통계 카드 -->
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <div class="report-stat-card blue">
-                        <div class="report-stat-label mb-2"><i class="bi bi-box-seam me-1"></i>상품 신고</div>
-                        <div class="report-stat-value" th:text="${reportStats != null ? reportStats.productReportCount : 0}">0</div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="bi bi-flag"></i></div>
+                        <div>
+                            <div class="stat-label">전체 신고</div>
+                            <div class="stat-value" th:text="${totalCount != null ? totalCount : 0}">0</div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="report-stat-card orange">
-                        <div class="report-stat-label mb-2"><i class="bi bi-chat-dots me-1"></i>채팅 신고</div>
-                        <div class="report-stat-value" th:text="${reportStats != null ? reportStats.chatReportCount : 0}">0</div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="bi bi-hourglass-split"></i></div>
+                        <div>
+                            <div class="stat-label">처리중</div>
+                            <div class="stat-value" th:text="${reportStats != null ? reportStats.chatReportCount : 0}">0</div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="report-stat-card red">
-                        <div class="report-stat-label mb-2"><i class="bi bi-exclamation-triangle me-1"></i>미처리 신고</div>
-                        <div class="report-stat-value text-danger" th:text="${reportStats != null ? reportStats.pendingReportCount : 0}">0</div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+                        <div>
+                            <div class="stat-label">미처리 (접수)</div>
+                            <div class="stat-value danger" th:text="${reportStats != null ? reportStats.pendingReportCount : 0}">0</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 필터 폼 -->
-            <form method="get" th:action="@{/admin/complaint}" class="mb-3 d-flex gap-2 align-items-center">
-                <label class="fw-bold me-2">유형 필터:</label>
-                <select name="type" class="form-select form-select-sm" style="width:160px;" onchange="this.form.submit()">
-                    <option value="ALL" th:selected="${selectedType == 'ALL'}">전체</option>
-                    <option value="채팅" th:selected="${selectedType == '채팅'}">채팅 신고</option>
-                    <option value="거래" th:selected="${selectedType == '거래'}">거래 신고</option>
-                    <option value="상품" th:selected="${selectedType == '상품'}">상품 신고</option>
-                    <option value="리뷰" th:selected="${selectedType == '리뷰'}">리뷰 신고</option>
-                </select>
-                <span class="text-muted small">전체 <strong th:text="${totalCount}"></strong>건</span>
-            </form>
+            <!-- 건수 표시 -->
+            <div class="d-flex align-items-center mb-3 px-1">
+                <span style="font-size:0.82rem; color:#9ca3af;">전체 <strong style="color:#1e2340;" th:text="${totalCount}">0</strong>건</span>
+            </div>
 
-            <div class="dashboard-card">
+            <!-- 테이블 -->
+            <div class="table-card">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th>신고번호</th>
+                                <th>#</th>
                                 <th>유형</th>
                                 <th>세부유형</th>
                                 <th>신고자</th>
@@ -72,31 +189,42 @@
                                 <th>신고 사유</th>
                                 <th>날짜</th>
                                 <th>상태</th>
-                                <th>관리</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:if="${#lists.isEmpty(reportList)}">
-                                <td colspan="9" class="text-center text-muted">신고 내역이 없습니다.</td>
+                                <td colspan="9" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox d-block mb-2" style="font-size:2rem;opacity:.3;"></i>
+                                    신고 내역이 없습니다.
+                                </td>
                             </tr>
                             <tr th:each="report : ${reportList}">
-                                <td th:text="${report.reportId}"></td>
-                                <td th:text="${report.mainCategory}"></td>
-                                <td th:text="${report.typeName}"></td>
-                                <td th:text="${report.reporterEmail}"></td>
-                                <td th:text="${report.targetEmail}"></td>
+                                <td><span class="report-id-badge" th:text="${report.reportId}"></span></td>
+                                <td>
+                                    <span class="category-badge"
+                                          th:classappend="${report.mainCategory == '불법 행위'} ? 'cat-illegal' : (${report.mainCategory == '사기 피해'} ? 'cat-fraud' : (${report.mainCategory == '비매너 행위'} ? 'cat-manner' : (${report.mainCategory == '스팸성 홍보'} ? 'cat-spam' : 'cat-other')))"
+                                          th:text="${report.mainCategory}"></span>
+                                </td>
+                                <td th:text="${report.typeName}" style="font-size:0.82rem;"></td>
+                                <td>
+                                    <div style="font-size:0.82rem; font-weight:600;" th:text="${report.reporterEmail}"></div>
+                                </td>
+                                <td>
+                                    <div style="font-size:0.82rem; font-weight:600;" th:text="${report.targetEmail}"></div>
+                                </td>
                                 <td>
                                     <span class="text-truncate-custom" th:text="${report.reportDetail}"></span>
                                 </td>
-                                <td th:text="${#dates.format(report.reportDate, 'yyyy-MM-dd')}"></td>
+                                <td style="font-size:0.8rem; color:#9ca3af;" th:text="${#dates.format(report.reportDate, 'yyyy-MM-dd')}"></td>
                                 <td>
-                                    <span th:class="${report.reportStatus == '처리완료' or report.reportStatus == '기각' ? 'status-solved' : 'status-pending'}"
+                                    <span class="status-badge"
+                                          th:classappend="${report.reportStatus == '완료'} ? 'sb-done' : (${report.reportStatus == '처리중'} ? 'sb-process' : 'sb-pending')"
                                           th:text="${report.reportStatus}"></span>
                                 </td>
                                 <td>
-                                    <a th:href="@{/admin/complaint/detail(reportId=${report.reportId})}"
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-search me-1"></i>상세보기
+                                    <a th:href="@{/admin/complaint/detail(reportId=${report.reportId})}" class="btn-detail">
+                                        <i class="bi bi-search"></i>상세
                                     </a>
                                 </td>
                             </tr>
@@ -105,24 +233,30 @@
                 </div>
 
                 <!-- 페이징 -->
-                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
-                    <ul class="pagination justify-content-center mt-3">
-                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/complaint(page=${currentPage-1}, type=${selectedType})}">이전</a>
-                        </li>
-                        <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
-                            th:classappend="${p == currentPage} ? 'active'">
-                            <a class="page-link" th:href="@{/admin/complaint(page=${p}, type=${selectedType})}" th:text="${p}"></a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/complaint(page=${currentPage+1}, type=${selectedType})}">다음</a>
-                        </li>
-                    </ul>
-                </nav>
+                <div class="px-3 pb-3" th:if="${totalPages > 1}">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mt-3 mb-0">
+                            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/complaint(page=${currentPage-1}, type=${selectedType})}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
+                                th:classappend="${p == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/complaint(page=${p}, type=${selectedType})}" th:text="${p}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/complaint(page=${currentPage+1}, type=${selectedType})}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
+
         </div>
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

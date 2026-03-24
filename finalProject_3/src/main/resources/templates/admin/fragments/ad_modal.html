@@ -8,24 +8,27 @@
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
 
             <!-- 헤더 -->
-            <div class="modal-header border-0 px-4 pt-4 pb-2" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);">
-                <div>
-                    <h5 class="modal-title fw-bold text-white mb-1">
-                        <i class="bi bi-megaphone-fill me-2 text-warning"></i>광고 신청 상세
-                    </h5>
-                    <span id="adStatusBadge" class="badge fs-6 px-3 py-1"></span>
+            <div class="modal-header border-0 px-4 pt-4 pb-3"
+                 style="background:linear-gradient(135deg,#1a1f36 0%,#2e3750 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:42px;height:42px;background:rgba(255,255,255,.12);border-radius:12px;
+                                display:flex;align-items:center;justify-content:center;font-size:1.2rem;">
+                        <i class="bi bi-megaphone-fill text-warning"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-1">광고 신청 상세</h5>
+                        <span id="adStatusBadge" class="badge fs-6 px-3 py-1"></span>
+                    </div>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body p-0">
-                <div class="row g-0">
+                <div class="row g-0" style="min-height:520px;">
 
-                    <!-- 좌측: 광고 정보 -->
-                    <div class="col-lg-7 p-4 border-end">
-                        <h6 class="fw-bold text-muted text-uppercase small mb-3 letter-spacing">
-                            <i class="bi bi-file-text me-1"></i> 신청 정보
-                        </h6>
+                    <!-- ── 좌측: 광고 정보 ── -->
+                    <div class="col-lg-7 p-4 border-end" style="background:#fff;">
+                        <div class="sec-label mb-3"><i class="bi bi-file-text me-1"></i>신청 정보</div>
 
                         <div class="info-grid mb-4">
                             <div class="info-row">
@@ -56,112 +59,132 @@
                             </div>
                         </div>
 
-                        <hr class="my-3">
-
-                        <div class="mb-3">
-                            <h6 class="fw-bold small text-muted mb-2">광고 문구 / 상세 내용</h6>
-                            <div id="content" class="p-3 rounded-3 border bg-light small" style="min-height:80px; white-space:pre-wrap; line-height:1.7;"></div>
-                        </div>
+                        <div class="sec-label mb-2"><i class="bi bi-chat-left-text me-1"></i>광고 문구 / 상세 내용</div>
+                        <div id="content" class="ad-content-box mb-4"></div>
 
                         <!-- 이미지 -->
-                        <div id="imageSection">
-                            <h6 class="fw-bold small text-muted mb-2">첨부 배너 이미지</h6>
-                            <div class="text-center p-3 rounded-3 border bg-light">
-                                <img id="adImage" class="img-fluid rounded-3 shadow-sm mb-2"
-                                     style="max-height:220px; cursor:zoom-in; display:none;"
-                                     onclick="window.open(this.src)"
-                                     onerror="this.style.display='none'; document.getElementById('noImageText').style.display=''">
-                                <p id="noImageText" class="text-muted small mb-0" style="display:none;">이미지 없음</p>
-                                <div class="mt-2">
-                                    <a id="downloadBtn" class="btn btn-outline-secondary btn-sm" style="display:none;">
-                                        <i class="bi bi-download me-1"></i>원본 다운로드
-                                    </a>
-                                </div>
+                        <div class="sec-label mb-2"><i class="bi bi-image me-1"></i>첨부 배너 이미지</div>
+                        <div class="ad-image-box text-center">
+                            <img id="adImage" class="img-fluid rounded-3 shadow-sm mb-2"
+                                 style="max-height:200px;cursor:zoom-in;display:none;"
+                                 onclick="window.open(this.src)"
+                                 onerror="this.style.display='none';document.getElementById('noImageText').style.display=''">
+                            <p id="noImageText" class="text-muted small mb-0 py-3" style="display:none;">
+                                <i class="bi bi-image d-block mb-1" style="font-size:1.5rem;opacity:.3;"></i>이미지 없음
+                            </p>
+                            <div class="mt-2">
+                                <a id="downloadBtn" class="btn btn-outline-secondary btn-sm" style="display:none;">
+                                    <i class="bi bi-download me-1"></i>원본 다운로드
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 우측: 처리 -->
-                    <div class="col-lg-5 p-4 bg-light">
+                    <!-- ── 우측: 처리 ── -->
+                    <div class="col-lg-5 p-4 d-flex flex-column gap-3" style="background:#f8f9fc;">
 
-                        <!-- 확정/반려 상태 표시 (CONFIRM or REJECT) -->
-                        <div id="statusCompleted" class="d-none mb-3 p-4 rounded-4 text-center shadow-sm">
-                            <div id="statusIcon" class="mb-2" style="font-size:2.5rem;"></div>
+                        <!-- 요약 미니 카드 -->
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="mini-stat-card">
+                                    <div class="mini-stat-icon" style="background:#eff6ff;color:#4e73df;">
+                                        <i class="bi bi-calendar3"></i>
+                                    </div>
+                                    <div class="mini-stat-label">광고 기간</div>
+                                    <div class="mini-stat-value" id="summaryWeeks">-주</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mini-stat-card">
+                                    <div class="mini-stat-icon" style="background:#f0fdf4;color:#16a34a;">
+                                        <i class="bi bi-currency-won"></i>
+                                    </div>
+                                    <div class="mini-stat-label">결제 금액</div>
+                                    <div class="mini-stat-value" id="summaryAmount" style="font-size:.82rem;">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 확정/반려 상태 표시 -->
+                        <div id="statusCompleted" class="d-none status-banner rounded-4 text-center p-4 shadow-sm">
+                            <div id="statusIcon" class="mb-2" style="font-size:2.8rem;"></div>
                             <h5 class="fw-bold mb-1" id="statusText"></h5>
                             <small class="text-muted" id="processedAtText"></small>
                         </div>
-                        <!-- 조기 철회 (CONFIRM 상태일 때만 표시) -->
-                        <div id="withdrawArea" class="d-none mb-3">
-                            <div class="card border-warning border-2 rounded-4 shadow-sm">
-                                <div class="card-body p-3">
-                                    <h6 class="fw-bold text-warning mb-2">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> 조기 철회
-                                    </h6>
-                                    <div class="mb-2">
-                                        <label class="form-label small text-muted mb-1">철회 사유 <span class="text-danger">*</span></label>
-                                        <textarea id="withdrawReason" class="form-control form-control-sm" rows="3" placeholder="철회 사유를 입력하세요."></textarea>
-                                    </div>
-                                    <button class="btn btn-warning btn-sm w-100 fw-bold" onclick="withdrawAd()">
-                                        <i class="bi bi-stop-circle me-1"></i>광고 조기 철회
-                                    </button>
+
+                        <!-- 조기 철회 -->
+                        <div id="withdrawArea" class="d-none">
+                            <div class="action-card border-warning">
+                                <div class="action-card-title text-warning">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>조기 철회
                                 </div>
+                                <label class="form-label small text-muted mb-1">철회 사유 <span class="text-danger">*</span></label>
+                                <textarea id="withdrawReason" class="form-control form-control-sm mb-2" rows="3"
+                                          placeholder="철회 사유를 입력하세요."></textarea>
+                                <button class="btn btn-warning btn-sm w-100 fw-bold" onclick="withdrawAd()">
+                                    <i class="bi bi-stop-circle me-1"></i>광고 조기 철회
+                                </button>
                             </div>
                         </div>
-                        <!-- 반려 사유 박스 -->
-                        <div id="rejectReasonBox" class="d-none mb-3 p-3 rounded-3 border border-danger bg-white">
-                            <div class="fw-bold small text-danger mb-1"><i class="bi bi-x-circle-fill me-1"></i>반려 사유</div>
-                            <div id="rejectReasonText" class="small text-secondary" style="white-space:pre-wrap;"></div>
+
+                        <!-- 반려 사유 -->
+                        <div id="rejectReasonBox" class="d-none">
+                            <div class="action-card border-danger">
+                                <div class="action-card-title text-danger">
+                                    <i class="bi bi-x-circle-fill me-1"></i>반려 사유
+                                </div>
+                                <div id="rejectReasonText" class="small text-secondary" style="white-space:pre-wrap;"></div>
+                            </div>
                         </div>
 
                         <!-- 처리 영역 (WAIT) -->
-                        <div id="actionArea">
-                            <div id="conflictMessage" class="alert alert-warning py-2 small d-none mb-3">
+                        <div id="actionArea" class="d-flex flex-column gap-3 flex-grow-1">
+                            <div id="conflictMessage" class="alert alert-warning py-2 small d-none mb-0">
                                 <i class="bi bi-exclamation-triangle-fill me-1"></i>
                             </div>
 
-                            <div class="card border-0 shadow-sm rounded-4 mb-3">
-                                <div class="card-body p-4">
-                                    <h6 class="fw-bold mb-3">
-                                        <i class="bi bi-envelope-paper text-primary me-1"></i> 피드백 메일 발송
-                                    </h6>
-                                    <div class="mb-3">
-                                        <label class="form-label small text-muted mb-1">수신 이메일</label>
-                                        <input type="text" id="targetEmail" class="form-control form-control-sm bg-white" readonly>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small text-muted mb-1">메일 제목</label>
-                                        <input id="mailTitle" class="form-control form-control-sm" placeholder="제목 입력">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small text-muted mb-1">메일 내용 <span class="text-danger">(반려 시 사유 필수)</span></label>
-                                        <textarea id="mailContent" class="form-control form-control-sm" rows="5" placeholder="내용을 입력하세요."></textarea>
-                                    </div>
-                                    <div class="d-flex gap-2 justify-content-end">
-                                        <button class="btn btn-sm btn-outline-danger" onclick="setRejectTemplate()">
-                                            <i class="bi bi-x-circle me-1"></i>반려 양식
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="setApproveTemplate()">
-                                            <i class="bi bi-check-circle me-1"></i>승인 양식
-                                        </button>
-                                    </div>
+                            <div class="action-card border-0 shadow-sm flex-grow-1">
+                                <div class="action-card-title text-primary">
+                                    <i class="bi bi-envelope-paper me-1"></i>피드백 메일 발송
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted mb-1">수신 이메일</label>
+                                    <input type="text" id="targetEmail" class="form-control form-control-sm bg-white" readonly>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted mb-1">메일 제목</label>
+                                    <input id="mailTitle" class="form-control form-control-sm" placeholder="제목 입력">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted mb-1">메일 내용 <span class="text-danger small">(반려 시 사유 필수)</span></label>
+                                    <textarea id="mailContent" class="form-control form-control-sm" rows="4"
+                                              placeholder="내용을 입력하세요."></textarea>
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end mb-0">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="setRejectTemplate()">
+                                        <i class="bi bi-x-circle me-1"></i>반려 양식
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="setApproveTemplate()">
+                                        <i class="bi bi-check-circle me-1"></i>승인 양식
+                                    </button>
                                 </div>
                             </div>
 
-                            <div class="row g-2">
+                            <div class="row g-2 mt-auto">
                                 <div class="col-6">
-                                    <button class="btn btn-danger w-100 fw-bold rounded-3" onclick="rejectAd()">
+                                    <button class="btn btn-danger w-100 fw-bold rounded-3 py-2" onclick="rejectAd()">
                                         <i class="bi bi-x-lg me-1"></i>최종 반려
                                     </button>
                                 </div>
                                 <div class="col-6">
-                                    <button id="approveBtn" class="btn btn-primary w-100 fw-bold rounded-3" onclick="approveAd()">
+                                    <button id="approveBtn" class="btn btn-primary w-100 fw-bold rounded-3 py-2" onclick="approveAd()">
                                         <i class="bi bi-check-lg me-1"></i>최종 승인
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                    </div>
+                    </div><!-- /col-lg-5 -->
                 </div>
             </div>
         </div>
@@ -169,10 +192,48 @@
 </div>
 
 <style>
-.info-grid { display: flex; flex-direction: column; gap: 10px; }
-.info-row  { display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; background: #f8f9fc; border-radius: 8px; }
-.info-label { min-width: 80px; font-size: .78rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; flex-shrink: 0; }
-.info-value { font-size: .92rem; color: #2e3750; }
+/* ── 정보 그리드 ── */
+.info-grid { display:flex; flex-direction:column; gap:8px; }
+.info-row  { display:flex; align-items:baseline; gap:8px; padding:9px 12px;
+             background:#f8f9fc; border-radius:9px; border:1px solid #eef0f8; }
+.info-label { min-width:76px; font-size:.72rem; color:#9ca3af; font-weight:700;
+              text-transform:uppercase; letter-spacing:.04em; flex-shrink:0; }
+.info-value { font-size:.9rem; color:#1e2340; }
+
+/* ── 섹션 레이블 ── */
+.sec-label { font-size:.68rem; font-weight:800; text-transform:uppercase;
+             letter-spacing:.08em; color:#9ca3af;
+             display:flex; align-items:center; gap:4px; }
+
+/* ── 광고 내용 박스 ── */
+.ad-content-box { background:#f8f9fc; border:1px solid #eef0f8; border-radius:10px;
+                  padding:14px 16px; font-size:.875rem; color:#374151;
+                  min-height:72px; white-space:pre-wrap; line-height:1.75; }
+
+/* ── 이미지 박스 ── */
+.ad-image-box { background:#f8f9fc; border:1px solid #eef0f8;
+                border-radius:10px; padding:12px; }
+
+/* ── 미니 통계 카드 ── */
+.mini-stat-card { background:#fff; border-radius:12px; padding:14px;
+                  border:1px solid #eef0f8; box-shadow:0 1px 6px rgba(58,59,69,.06); }
+.mini-stat-icon { width:32px; height:32px; border-radius:9px; display:flex;
+                  align-items:center; justify-content:center; font-size:.9rem;
+                  margin-bottom:8px; }
+.mini-stat-label { font-size:.65rem; font-weight:700; text-transform:uppercase;
+                   letter-spacing:.05em; color:#9ca3af; margin-bottom:3px; }
+.mini-stat-value { font-size:.92rem; font-weight:800; color:#1e2340; }
+
+/* ── 상태 배너 ── */
+.status-banner { border:1.5px solid rgba(0,0,0,.06); }
+
+/* ── 액션 카드 ── */
+.action-card { background:#fff; border-radius:12px; padding:16px 18px;
+               border:1.5px solid #eef0f8;
+               box-shadow:0 1px 6px rgba(58,59,69,.06); }
+.action-card-title { font-size:.78rem; font-weight:800; text-transform:uppercase;
+                     letter-spacing:.05em; margin-bottom:12px;
+                     display:flex; align-items:center; gap:4px; }
 </style>
 
 </th:block>

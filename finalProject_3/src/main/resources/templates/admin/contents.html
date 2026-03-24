@@ -36,46 +36,69 @@
     .section-body { padding:20px 22px; }
 
     /* 캘린더 */
+    .cal-wrap { overflow:visible; }
     .calendar-table { width:100%; border-collapse:collapse; table-layout:fixed; }
     .calendar-table th {
         text-align:center; padding:10px 4px; font-size:11px;
-        font-weight:700; background:#f8f9fc; color:#858796; text-transform:uppercase;
+        font-weight:700; background:linear-gradient(135deg,#f8f9fc,#eef0f8);
+        color:#6c757d; border-bottom:2px solid #e3e6f0; letter-spacing:.04em;
     }
     .calendar-table td {
-        border:1px solid #f1f4f8; height:90px; vertical-align:top;
-        padding:6px; background:#fff; transition:background .15s;
+        border:1px solid #eef0f6; vertical-align:top;
+        padding:0; background:#fff; transition:background .15s;
+        position:relative;
     }
-    .calendar-table td:hover { background:#fafbff; }
-    .calendar-table th:nth-child(6),
+    .calendar-table td:hover { background:#f8f9ff; }
+    .calendar-table th:nth-child(6) { color:#e74a3b; }
     .calendar-table th:nth-child(7) { color:#e74a3b; }
-    .day-num { font-size:11px; font-weight:800; color:#c5c7d0; margin-bottom:4px; }
-
-    .ad-tag {
-        font-size:10px; padding:3px 7px; border-radius:6px;
-        margin-top:3px; display:block; white-space:nowrap;
-        overflow:hidden; text-overflow:ellipsis; cursor:pointer;
-        font-weight:700; border:1px solid transparent;
-        transition:transform .15s, box-shadow .15s;
+    .calendar-table td:nth-child(6) { background:#fffafa; }
+    .calendar-table td:nth-child(7) { background:#fffafa; }
+    .calendar-table td:nth-child(6) .day-num,
+    .calendar-table td:nth-child(7) .day-num { color:#e74a3b; }
+    .calendar-table td.today-cell { background:#f0f4ff !important; }
+    .calendar-table td.today-cell .day-num {
+        background:#4e73df; color:#fff; border-radius:50%;
+        width:22px; height:22px; display:flex; align-items:center;
+        justify-content:center; font-size:11px; margin:4px 0 2px 4px; padding:0;
     }
-    .ad-tag:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
+    .day-num { font-size:11px; font-weight:800; color:#c5c7d0; padding:5px 6px 2px; }
+    /* td는 높이 고정 안 함 — cell-inner만 고정해서 scroll 유도 */
+    .cell-inner { height:76px; overflow-y:auto; overflow-x:hidden; padding:0 3px 3px; }
+    .cell-inner::-webkit-scrollbar { width:2px; }
+    .cell-inner::-webkit-scrollbar-thumb { background:#cdd; border-radius:2px; }
+    .ad-tag {
+        font-size:10px; padding:2px 5px; border-radius:4px;
+        margin-top:2px; display:block; white-space:nowrap;
+        overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+        font-weight:700; border:none;
+        transition:opacity .15s, transform .15s;
+    }
+    .ad-tag:hover { opacity:.85; transform:translateY(-1px); }
 
     /* 상태 뱃지 */
-    .badge-confirm { background:#e8faf4; color:#1cc88a; padding:3px 10px; border-radius:6px; font-weight:700; font-size:.78rem; }
-    .badge-wait    { background:#fff9e6; color:#d4a200; padding:3px 10px; border-radius:6px; font-weight:700; font-size:.78rem; }
-    .badge-reject  { background:#fff2f1; color:#e74a3b; padding:3px 10px; border-radius:6px; font-weight:700; font-size:.78rem; }
-    .badge-cancel { background:#fd7e14; color:#fff; padding:3px 10px; border-radius:20px; font-size:.78rem; font-weight:600; }
+    .badge-confirm { background:#d1fae5; color:#065f46; padding:3px 10px; border-radius:20px; font-weight:700; font-size:.75rem; }
+    .badge-wait    { background:#fef3c7; color:#92400e; padding:3px 10px; border-radius:20px; font-weight:700; font-size:.75rem; }
+    .badge-reject  { background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-weight:700; font-size:.75rem; }
+    .badge-cancel  { background:#ffedd5; color:#c2410c; padding:3px 10px; border-radius:20px; font-size:.75rem; font-weight:700; }
+    .badge-expired { background:#f3f4f6; color:#6b7280; padding:3px 10px; border-radius:20px; font-weight:700; font-size:.75rem; }
 
     /* 테이블 */
-    .ad-table th  { font-size:11px; text-transform:uppercase; color:#858796; letter-spacing:.05em; font-weight:700; }
-    .ad-table td  { vertical-align:middle; font-size:.88rem; }
+    .ad-table th  { font-size:11px; text-transform:uppercase; color:#858796; letter-spacing:.05em; font-weight:700; position:sticky; top:0; background:#f8f9fc; z-index:1; border-bottom:2px solid #e3e6f0 !important; }
+    .ad-table td  { vertical-align:middle; font-size:.875rem; }
+    .ad-table tbody tr { border-bottom:1px solid #f1f3f9; transition:background .12s; }
+    .ad-table tbody tr:hover { background:#f8f9ff; }
     .brand-cell   { font-weight:700; color:#2e3750; }
     .amount-cell  { font-weight:700; color:var(--primary); }
+    .period-cell  { font-size:.75rem; color:#8a93a2; line-height:1.6; }
     .detail-btn   {
-        font-size:.78rem; padding:5px 14px; border-radius:20px;
-        border:1.5px solid #dee2e6; background:#fff; color:#444;
-        font-weight:600; transition:all .15s; cursor:pointer;
+        font-size:.75rem; padding:4px 12px; border-radius:20px;
+        border:1.5px solid #d1d5db; background:#fff; color:#555;
+        font-weight:600; transition:all .15s; cursor:pointer; white-space:nowrap;
     }
     .detail-btn:hover { background:#2e3750; color:#fff; border-color:#2e3750; }
+    .table-scroll-wrap { overflow-y:auto; max-height:520px; }
+    .table-scroll-wrap::-webkit-scrollbar { width:4px; }
+    .table-scroll-wrap::-webkit-scrollbar-thumb { background:#d0d5e8; border-radius:4px; }
 
     /* 진행중 리스트 */
     .running-item {
@@ -216,7 +239,7 @@
     <div class="row g-3 mb-4">
         <!-- 캘린더 -->
         <div class="col-lg-5">
-            <div class="section-card">
+            <div class="section-card h-100">
                 <div class="section-header">
                     <button class="month-nav-btn" onclick="moveMonth(-1)">
                         <i class="bi bi-chevron-left" style="font-size:.75rem;"></i>
@@ -227,6 +250,7 @@
                     </button>
                 </div>
                 <div class="section-body p-2">
+                    <div class="cal-wrap">
                     <table class="calendar-table">
                         <thead>
                             <tr><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th></tr>
@@ -234,60 +258,82 @@
                         <tbody>
                             <tr th:each="week : ${calendarWeeks}">
                                 <td th:each="day : ${week}">
-                                    <div class="day-num" th:if="${day != null}" th:text="${#temporals.day(day)}"></div>
-                                    <div th:each="ad : ${adList}"
-                                         th:if="${day != null and ad.status == 'CONFIRM' and day >= ad.startDate and day <= ad.endDate}">
-                                        <span class="ad-tag"
-                                              th:text="${ad.brandName}"
-                                              th:attr="data-brand=${ad.brandName}, data-adid=${ad.adId}"
-                                              data-bs-toggle="modal"
-                                              data-bs-target="#adDetailModal"></span>
+                                    <div class="cell-inner">
+                                        <div class="day-num" th:if="${day != null}" th:text="${#temporals.day(day)}"></div>
+                                        <div th:each="ad : ${adList}"
+                                             th:if="${day != null and ad.status == 'CONFIRM' and day >= ad.startDate and day <= ad.endDate}">
+                                            <span class="ad-tag"
+                                                  th:text="${ad.brandName}"
+                                                  th:attr="data-brand=${ad.brandName}, data-adid=${ad.adId}"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#adDetailModal"></span>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                    </div><!-- /cal-wrap -->
                 </div>
             </div>
         </div>
 
         <!-- 신청 내역 테이블 -->
         <div class="col-lg-7">
-            <div class="section-card">
+            <div class="section-card h-100">
                 <div class="section-header">
                     <h6><i class="bi bi-list-ul me-2 text-primary"></i>광고 신청 내역</h6>
                 </div>
-                <div class="section-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 ad-table">
-                            <thead class="table-light">
+                <div class="section-body p-0 d-flex flex-column" style="min-height:0;">
+                    <div class="table-responsive table-scroll-wrap flex-grow-1">
+                        <table class="table mb-0 ad-table">
+                            <thead>
                                 <tr>
-                                    <th class="ps-4 py-3">브랜드</th>
+                                    <th class="ps-3 py-3">브랜드</th>
                                     <th>담당자</th>
+                                    <th>기간</th>
                                     <th>금액</th>
                                     <th>상태</th>
-                                    <th class="pe-4">관리</th>
+                                    <th class="pe-3 text-center">관리</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="ad : ${adList}">
-                                    <td class="brand-cell ps-4 py-3" th:text="${ad.brandName}"></td>
-                                    <td class="text-muted" th:text="${ad.managerName}"></td>
-                                    <td class="amount-cell" th:text="${#numbers.formatInteger(ad.amount, 3, 'COMMA')} + '원'"></td>
-                                    <td>
-                                        <span th:class="${ad.status == 'CONFIRM' ? 'badge-confirm' :
-                                                          (ad.status == 'WAIT'   ? 'badge-wait'   :
-                                                          (ad.status == 'CANCEL' ? 'badge-cancel' : 'badge-reject'))}"
-                                              th:text="${ad.status == 'CONFIRM' ? '확정' :
-                                                         (ad.status == 'WAIT'   ? '대기' :
-                                                         (ad.status == 'CANCEL' ? '조기철회' : '반려'))}"></span>
+                                    <td class="ps-3" th:with="c=${ad.brandName}">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="brand-dot" th:attr="data-brand=${ad.brandName}"
+                                                 style="width:8px;height:8px;border-radius:50%;background:#4e73df;flex-shrink:0;"></div>
+                                            <span class="brand-cell" th:text="${ad.brandName}"></span>
+                                        </div>
                                     </td>
-                                    <td class="pe-4">
+                                    <td class="text-muted small" th:text="${ad.managerName}"></td>
+                                    <td class="period-cell">
+                                        <div th:if="${ad.startDate != null}">
+                                            <i class="bi bi-calendar3 me-1" style="color:#a0aec0;"></i>
+                                            <span th:text="${ad.startDate}"></span>
+                                        </div>
+                                        <div th:if="${ad.endDate != null}">
+                                            <i class="bi bi-arrow-right me-1" style="color:#a0aec0;"></i>
+                                            <span th:text="${ad.endDate}"></span>
+                                        </div>
+                                    </td>
+                                    <td class="amount-cell fw-bold" th:text="${#numbers.formatInteger(ad.amount, 3, 'COMMA')} + '원'"></td>
+                                    <td th:with="expired=${ad.status == 'CONFIRM' and ad.endDate != null and ad.endDate.isBefore(#temporals.createToday())}">
+                                        <span th:class="${expired ? 'badge-expired' :
+                                                          (ad.status == 'CONFIRM' ? 'badge-confirm' :
+                                                          (ad.status == 'WAIT'    ? 'badge-wait'    :
+                                                          (ad.status == 'CANCEL'  ? 'badge-cancel'  : 'badge-reject')))}"
+                                              th:text="${expired ? '기간만료' :
+                                                         (ad.status == 'CONFIRM' ? '✓ 확정' :
+                                                         (ad.status == 'WAIT'    ? '⏳ 대기' :
+                                                         (ad.status == 'CANCEL'  ? '🚫 철회' : '✗ 반려')))}"></span>
+                                    </td>
+                                    <td class="pe-3 text-center">
                                         <button class="detail-btn"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#adDetailModal"
                                                 th:attr="data-adid=${ad.adId}">
-                                            <i class="bi bi-search me-1"></i>상세보기
+                                            <i class="bi bi-search me-1"></i>보기
                                         </button>
                                     </td>
                                 </tr>
@@ -355,6 +401,9 @@
                 document.getElementById('period').innerText       = (ad.startDate || '') + ' ~ ' + (ad.endDate || '');
                 document.getElementById('durationWeeks').innerText = ad.durationWeeks || '';
                 document.getElementById('amount').innerText       = Number(ad.amount).toLocaleString();
+                // 요약 미니 카드
+                document.getElementById('summaryWeeks').innerText  = (ad.durationWeeks || '-') + '주';
+                document.getElementById('summaryAmount').innerText = Number(ad.amount).toLocaleString() + '원';
 
                 // 이미지
                 const adImage   = document.getElementById('adImage');
@@ -398,14 +447,29 @@
 
                 if (ad.status === 'CONFIRM') {
                     actionArea.classList.add('d-none');
-                    if (withdrawArea) withdrawArea.classList.remove('d-none');
                     rejectReasonBox.classList.add('d-none');
                     statusCompleted.classList.remove('d-none');
-                    statusCompleted.style.background = '#e8faf4';
-                    statusIcon.textContent  = '✅';
-                    statusText.textContent  = '광고 확정 완료';
-                    statusText.style.color  = '#1cc88a';
-                    processedAtText.textContent = ad.approvedAt ? '승인일시: ' + ad.approvedAt : '';
+
+                    // 기간만료 여부 체크
+                    const _end = ad.endDate ? new Date(ad.endDate) : null;
+                    const _today = new Date(); _today.setHours(0,0,0,0);
+                    const _expired = _end && _end < _today;
+
+                    if (_expired) {
+                        if (withdrawArea) withdrawArea.classList.add('d-none');
+                        statusCompleted.style.background = '#f5f5f5';
+                        statusIcon.textContent  = '⏰';
+                        statusText.textContent  = '기간 만료';
+                        statusText.style.color  = '#888';
+                        processedAtText.textContent = ad.endDate ? '만료일: ' + ad.endDate : '';
+                    } else {
+                        if (withdrawArea) withdrawArea.classList.remove('d-none');
+                        statusCompleted.style.background = '#e8faf4';
+                        statusIcon.textContent  = '✅';
+                        statusText.textContent  = '광고 확정 완료';
+                        statusText.style.color  = '#1cc88a';
+                        processedAtText.textContent = ad.approvedAt ? '승인일시: ' + ad.approvedAt : '';
+                    }
                 } else if (ad.status === 'CANCEL') {
                     actionArea.classList.add('d-none');
                     if (withdrawArea) withdrawArea.classList.add('d-none');
@@ -471,9 +535,15 @@
         document.getElementById('statCancel').textContent  = cancel;
         document.getElementById('confirmCount').textContent = confirm;
 
-        // 진행중 리스트
+        // 진행중 리스트 (기간만료 제외)
         const runningList = document.getElementById('runningList');
-        const confirmAds  = ads.filter(a => a.status === 'CONFIRM');
+        const today       = new Date(); today.setHours(0,0,0,0);
+        const confirmAds  = ads.filter(a => {
+            if (a.status !== 'CONFIRM') return false;
+            const endDate = a.endDate ? new Date(a.endDate) : null;
+            return !endDate || endDate >= today;
+        });
+        document.getElementById('confirmCount').textContent = confirmAds.length;
         if (confirmAds.length === 0) {
             runningList.innerHTML = `<li class="list-group-item text-center text-muted py-4 border-0">
                 <i class="bi bi-info-circle me-1"></i>진행중인 광고가 없습니다.</li>`;
@@ -484,7 +554,7 @@
                             style="border-left:5px solid ${c.border}!important; background:${c.bg}; border-radius:10px;">
                     <div class="d-flex justify-content-between align-items-center">
                         <b style="color:${c.text}">${ad.brandName}</b>
-                        <span class="badge bg-white text-dark border small">진행중</span>
+                        <span class="badge bg-success small">진행중</span>
                     </div>
                     <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${ad.startDate} ~ ${ad.endDate}</small>
                 </li>`;
@@ -499,6 +569,26 @@
                 tag.style.backgroundColor = c.bg;
                 tag.style.color           = c.text;
                 tag.style.borderColor     = c.border;
+            }
+        });
+
+        // 테이블 브랜드 dot 색상
+        document.querySelectorAll('.brand-dot').forEach(dot => {
+            const bn = dot.getAttribute('data-brand');
+            if (bn) dot.style.background = getBrandColor(bn).text;
+        });
+
+        // 오늘 날짜 셀 하이라이트
+        const todayStr = new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit'})
+            .replace(/\. /g,'-').replace('.','').trim();
+        const todayDay = new Date().getDate();
+        document.querySelectorAll('.calendar-table td').forEach(td => {
+            const dayEl = td.querySelector('.day-num');
+            if (dayEl && parseInt(dayEl.textContent) === todayDay) {
+                // 현재 달 표시 중일 때만 today 하이라이트
+                if (year === new Date().getFullYear() && month === new Date().getMonth() + 1) {
+                    td.classList.add('today-cell');
+                }
             }
         });
 

@@ -316,6 +316,7 @@ public class AdminController {
         model.addAttribute("month", month);
         model.addAttribute("chartLabels", adStats.get("labels"));
         model.addAttribute("chartData", adStats.get("data"));
+        model.addAttribute("promoBanner", adminService.getBanner());
 
         return "admin/contents";
     }
@@ -429,15 +430,32 @@ public class AdminController {
     // 리뷰 관리 페이지
     @GetMapping("/review")
     public String review(Model model,
-                         @RequestParam(value = "page", defaultValue = "1") int page,
-                         @RequestParam(value = "size", defaultValue = "20") int size,
-                         @RequestParam(value = "keyword", defaultValue = "") String keyword) {
-        Map<String, Object> data = adminService.getReviewListPaged(page, size, keyword);
-        model.addAttribute("reviewList", data.get("list"));
-        model.addAttribute("totalCount", data.get("total"));
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", data.get("totalPages"));
+                         @RequestParam(value = "page",    defaultValue = "1")  int page,
+                         @RequestParam(value = "size",    defaultValue = "20") int size,
+                         @RequestParam(value = "keyword", defaultValue = "")   String keyword,
+                         @RequestParam(value = "filter",  defaultValue = "")   String filter,
+                         @RequestParam(value = "rating",  defaultValue = "")   String rating) {
+        Map<String, Object> data  = adminService.getReviewListPaged(page, size, keyword, filter, rating);
+        Map<String, Object> stats = adminService.getReviewStats();
+        Map<String, Object> chart = adminService.getReviewChartData();
+
+        model.addAttribute("reviewList",    data.get("list"));
+        model.addAttribute("totalCount",    data.get("total"));
+        model.addAttribute("filteredTotal", data.get("filteredTotal"));
+        model.addAttribute("currentPage",   page);
+        model.addAttribute("totalPages",    data.get("totalPages"));
         model.addAttribute("searchKeyword", keyword);
+        model.addAttribute("selectedFilter", filter);
+        model.addAttribute("selectedRating", rating);
+
+        model.addAttribute("suspectCount",   stats.get("suspectCount"));
+        model.addAttribute("lowRatingCount", stats.get("lowRatingCount"));
+        model.addAttribute("recentCount",    stats.get("recentCount"));
+
+        model.addAttribute("dailyLabels",  chart.get("dailyLabels"));
+        model.addAttribute("dailyData",    chart.get("dailyData"));
+        model.addAttribute("ratingLabels", chart.get("ratingLabels"));
+        model.addAttribute("ratingData",   chart.get("ratingData"));
         return "admin/review";
     }
 

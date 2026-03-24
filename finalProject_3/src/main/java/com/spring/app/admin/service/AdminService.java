@@ -118,7 +118,9 @@ public interface AdminService {
 
 
 	 // 리뷰 관리
-	 Map<String, Object> getReviewListPaged(int page, int size, String keyword);
+	 Map<String, Object> getReviewListPaged(int page, int size, String keyword, String filter, String rating);
+	 Map<String, Object> getReviewStats();
+	 Map<String, Object> getReviewChartData();
 	 void deleteReview(int reviewNo);
 
 	 // 거래 관리

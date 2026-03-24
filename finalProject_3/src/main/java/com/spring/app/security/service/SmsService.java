@@ -2,13 +2,17 @@ package com.spring.app.security.service;
 
 import net.nurigo.java_sdk.api.Message;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 
 @Service
 public class SmsService {
-    private final String api_key = "NCSYHJLRBPFOP4R4"; // 이시형 key 입력
-    private final String api_secret = "XC1M69J0IJ9OKHUBTGZOLWKFKCNCJP4K"; // key 입력
+    @Value("${coolsms.api-key}")
+    private String api_key;
+
+    @Value("${coolsms.api-secret}")
+    private String api_secret;
 
     public void sendSms(String to, String randomNumber) {
         Message coolsms = new Message(api_key, api_secret);

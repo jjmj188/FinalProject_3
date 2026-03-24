@@ -27,21 +27,21 @@ if (window.__priceCheckInitialized) {
 
             let url = ctxPath + "/product/price_check?searchWord=" + encodeURIComponent(searchWord);
             url += "&sortType=" + encodeURIComponent(sortType || window.priceSortType || "latest");
-            url += "&priceMode=" + encodeURIComponent(priceMode || window.priceMode || "list");
+            url += "&priceMode=" + encodeURIComponent(priceMode || window.priceMode || "all");
 
             location.href = url;
         }
 
         searchBtn?.addEventListener("click", function () {
             hideAutoComplete();
-            goPriceSearch("latest", window.priceMode || "list");
+            goPriceSearch("latest", window.priceMode || "all");
         });
 
         searchWordInput?.addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
                 e.preventDefault();
                 hideAutoComplete();
-                goPriceSearch(window.priceSortType || "latest", window.priceMode || "list");
+                goPriceSearch(window.priceSortType || "latest", window.priceMode || "all");
             }
         });
 
@@ -124,14 +124,14 @@ if (window.__priceCheckInitialized) {
             const word = item.textContent.trim();
             searchWordInput.value = word;
             hideAutoComplete();
-            goPriceSearch(window.priceSortType || "latest", window.priceMode || "list");
+            goPriceSearch(window.priceSortType || "latest", window.priceMode || "all");
         });
 
         document.querySelectorAll(".sps-sortBtn").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 const sortType = btn.dataset.sort || "latest";
                 hideAutoComplete();
-                goPriceSearch(sortType, window.priceMode || "list");
+                goPriceSearch(sortType, window.priceMode || "all");
             });
         });
 
@@ -266,6 +266,7 @@ if (window.__priceCheckInitialized) {
         const COLORS = {
             green: css.getPropertyValue("--green").trim() || "#16c36c",
             blue: css.getPropertyValue("--blue").trim() || "#2f7df6",
+            purple: "#8b5cf6",
             grid: css.getPropertyValue("--line").trim() || "#e9eef5",
             muted: css.getPropertyValue("--muted").trim() || "#6b7684"
         };
@@ -273,7 +274,7 @@ if (window.__priceCheckInitialized) {
         const serverChartData = Array.isArray(window.priceChartData) ? window.priceChartData : [];
         const statsData = window.priceStatsData || null;
 
-        let mode = window.priceMode || "list";
+        let mode = window.priceMode || "all";
         let hitPoints = [];
 
         function fmtMoney(v) {
@@ -298,17 +299,23 @@ if (window.__priceCheckInitialized) {
             return {
                 x: fmtMMDD(item.priceDate),
                 fullDate: item.priceDate,
-                list: Number(item.listAvgPrice || 0),
-                sale: Number(item.saleAvgPrice || 0)
+                list: item.listAvgPrice == null ? null : Number(item.listAvgPrice),
+                sale: item.saleAvgPrice == null ? null : Number(item.saleAvgPrice)
             };
         });
 
         function hasListData() {
-            return DATA.some(function (d) { return Number(d.list || 0) > 0; });
+            return DATA.some(function (d) { return d.list != null; });
         }
 
         function hasSaleData() {
-            return DATA.some(function (d) { return Number(d.sale || 0) > 0; });
+            return DATA.some(function (d) { return d.sale != null; });
+        }
+
+        function hasAllData() {
+            return DATA.some(function (d) {
+                return d.list != null || d.sale != null;
+            });
         }
 
         function syncTabUI() {
@@ -361,6 +368,12 @@ if (window.__priceCheckInitialized) {
         function drawLine(points, color, width) {
             if (!points || points.length === 0) return;
 
+            const validPoints = points.filter(function (p) {
+                return p.v != null;
+            });
+
+            if (validPoints.length === 0) return;
+
             ctx.save();
             ctx.strokeStyle = color;
             ctx.lineWidth = width;
@@ -368,10 +381,10 @@ if (window.__priceCheckInitialized) {
             ctx.lineCap = "round";
 
             ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
+            ctx.moveTo(validPoints[0].x, validPoints[0].y);
 
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(points[i].x, points[i].y);
+            for (let i = 1; i < validPoints.length; i++) {
+                ctx.lineTo(validPoints[i].x, validPoints[i].y);
             }
 
             ctx.stroke();
@@ -381,17 +394,19 @@ if (window.__priceCheckInitialized) {
         function drawPoints(points, color) {
             ctx.save();
 
-            points.forEach(function (p) {
-                ctx.fillStyle = "#fff";
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
-                ctx.fill();
+            points
+                .filter(function (p) { return p.v != null; })
+                .forEach(function (p) {
+                    ctx.fillStyle = "#fff";
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+                    ctx.fill();
 
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
 
             ctx.restore();
         }
@@ -444,12 +459,22 @@ if (window.__priceCheckInitialized) {
             }
 
             priceEl.innerHTML = `${fmtMoney(v)}<small>원</small>`;
-            priceEl.style.color = (mode === "sale") ? COLORS.blue : COLORS.green;
+
+            if (mode === "sale") {
+                priceEl.style.color = COLORS.blue;
+            }
+            else if (mode === "all") {
+                priceEl.style.color = COLORS.purple;
+            }
+            else {
+                priceEl.style.color = COLORS.green;
+            }
         }
 
         function updateEmptyMessage() {
             const listExists = hasListData();
             const saleExists = hasSaleData();
+            const allExists = hasAllData();
 
             if (!DATA.length) {
                 emptyMsg.style.display = "flex";
@@ -469,9 +494,9 @@ if (window.__priceCheckInitialized) {
                 return;
             }
 
-            if (mode === "all" && !listExists && !saleExists) {
+            if (mode === "all" && !allExists) {
                 emptyMsg.style.display = "flex";
-                emptyMsg.textContent = "최근 30일 기준 차트 데이터가 없습니다.";
+                emptyMsg.textContent = "전체 데이터가 없습니다.";
                 return;
             }
 
@@ -487,16 +512,36 @@ if (window.__priceCheckInitialized) {
             ctx.clearRect(0, 0, W, H);
             hideTip();
 
-            const listMax = Math.max(...DATA.map(function (d) { return d.list || 0; }), 0);
-            const saleMax = Math.max(...DATA.map(function (d) { return d.sale || 0; }), 0);
+            const listMax = Math.max(...DATA.map(function (d) {
+                return d.list == null ? 0 : d.list;
+            }), 0);
+
+            const saleMax = Math.max(...DATA.map(function (d) {
+                return d.sale == null ? 0 : d.sale;
+            }), 0);
+
+            const allMax = Math.max(...DATA.map(function (d) {
+                if (d.list != null && d.sale != null) {
+                    return (d.list + d.sale) / 2;
+                }
+                if (d.list != null) {
+                    return d.list;
+                }
+                if (d.sale != null) {
+                    return d.sale;
+                }
+                return 0;
+            }), 0);
 
             let modeMax = 0;
             if (mode === "list") {
                 modeMax = listMax;
-            } else if (mode === "sale") {
+            }
+            else if (mode === "sale") {
                 modeMax = saleMax;
-            } else {
-                modeMax = Math.max(listMax, saleMax);
+            }
+            else {
+                modeMax = allMax;
             }
 
             const Y_MIN = 0;
@@ -546,7 +591,7 @@ if (window.__priceCheckInitialized) {
             const listPts = DATA.map(function (d, i) {
                 return {
                     x: xToPx(i),
-                    y: yToPx(d.list),
+                    y: d.list == null ? null : yToPx(d.list),
                     v: d.list,
                     fullDate: d.fullDate,
                     key: "등록가"
@@ -556,46 +601,90 @@ if (window.__priceCheckInitialized) {
             const salePts = DATA.map(function (d, i) {
                 return {
                     x: xToPx(i),
-                    y: yToPx(d.sale),
+                    y: d.sale == null ? null : yToPx(d.sale),
                     v: d.sale,
                     fullDate: d.fullDate,
                     key: "판매가"
                 };
             });
 
+            const allPts = DATA.map(function (d, i) {
+                let v = null;
+
+                if (d.list != null && d.sale != null) {
+                    v = (d.list + d.sale) / 2;
+                }
+                else if (d.list != null) {
+                    v = d.list;
+                }
+                else if (d.sale != null) {
+                    v = d.sale;
+                }
+
+                return {
+                    x: xToPx(i),
+                    y: v == null ? null : yToPx(v),
+                    v: v,
+                    fullDate: d.fullDate,
+                    key: "전체"
+                };
+            });
+
             hitPoints = [];
 
-            if ((mode === "all" || mode === "list") && hasListData()) {
-                hitPoints = hitPoints.concat(listPts
-                    .filter(function (p) { return Number(p.v || 0) > 0; })
-                    .map(function (p) {
-                        return {
-                            x: p.x,
-                            y: p.y,
-                            v: p.v,
-                            fullDate: p.fullDate,
-                            key: p.key,
-                            color: COLORS.green
-                        };
-                    }));
+            if (mode === "all" && hasAllData()) {
+                hitPoints = hitPoints.concat(
+                    allPts
+                        .filter(function (p) { return p.v != null; })
+                        .map(function (p) {
+                            return {
+                                x: p.x,
+                                y: p.y,
+                                v: p.v,
+                                fullDate: p.fullDate,
+                                key: p.key,
+                                color: COLORS.purple
+                            };
+                        })
+                );
+
+                drawLine(allPts, COLORS.purple, 3);
+                drawPoints(allPts, COLORS.purple);
+            }
+            else if (mode === "list" && hasListData()) {
+                hitPoints = hitPoints.concat(
+                    listPts
+                        .filter(function (p) { return p.v != null; })
+                        .map(function (p) {
+                            return {
+                                x: p.x,
+                                y: p.y,
+                                v: p.v,
+                                fullDate: p.fullDate,
+                                key: p.key,
+                                color: COLORS.green
+                            };
+                        })
+                );
 
                 drawLine(listPts, COLORS.green, 3);
                 drawPoints(listPts, COLORS.green);
             }
-
-            if ((mode === "all" || mode === "sale") && hasSaleData()) {
-                hitPoints = hitPoints.concat(salePts
-                    .filter(function (p) { return Number(p.v || 0) > 0; })
-                    .map(function (p) {
-                        return {
-                            x: p.x,
-                            y: p.y,
-                            v: p.v,
-                            fullDate: p.fullDate,
-                            key: p.key,
-                            color: COLORS.blue
-                        };
-                    }));
+            else if (mode === "sale" && hasSaleData()) {
+                hitPoints = hitPoints.concat(
+                    salePts
+                        .filter(function (p) { return p.v != null; })
+                        .map(function (p) {
+                            return {
+                                x: p.x,
+                                y: p.y,
+                                v: p.v,
+                                fullDate: p.fullDate,
+                                key: p.key,
+                                color: COLORS.blue
+                            };
+                        })
+                );
 
                 drawLine(salePts, COLORS.blue, 3);
                 drawPoints(salePts, COLORS.blue);
@@ -631,7 +720,7 @@ if (window.__priceCheckInitialized) {
 
         tabs.forEach(function (btn) {
             btn.addEventListener("click", function () {
-                const nextMode = btn.dataset.mode || "list";
+                const nextMode = btn.dataset.mode || "all";
                 hideAutoComplete();
                 goPriceSearch(window.priceSortType || "latest", nextMode);
             });

@@ -415,7 +415,6 @@
             a.FILE_PATH   AS filePath
         FROM ADS a
         WHERE a.STATUS = 'CONFIRM'
-          AND SYSDATE BETWEEN a.START_DATE AND a.END_DATE
         ORDER BY a.APPROVED_AT DESC
     </select>
 
@@ -501,18 +500,27 @@
 <!-- 미처리 신고+문의 건수 -->
 <select id="countPendingReportsAndInquiries" resultType="int">
     SELECT
-        (SELECT COUNT(*) FROM REPORTS WHERE REPORT_STATUS NOT IN ('처리완료', '기각')) +
+        (SELECT COUNT(*) FROM REPORTS WHERE REPORT_STATUS NOT IN ('완료')) +
         (SELECT COUNT(*) FROM INQUIRIES WHERE INQUIRY_STATUS != '답변완료' AND IS_FAQ = 'N')
     FROM DUAL
 </select>
 
-<!-- 월별 광고 신청 건수 (최근 6개월) -->
+<!-- 월별 광고 신청 건수 (최근 6개월, 데이터 없는 달도 0으로 표시) -->
 <select id="getAdMonthlyStats" resultType="map">
-    SELECT TO_CHAR(CREATED_AT, 'YYYY-MM') AS MONTH_LABEL, COUNT(*) AS CNT
-    FROM ADS
-    WHERE CREATED_AT >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
-    GROUP BY TO_CHAR(CREATED_AT, 'YYYY-MM')
-    ORDER BY MONTH_LABEL ASC
+    SELECT TO_CHAR(m.dt, 'YYYY-MM') AS MONTH_LABEL,
+           NVL(a.cnt, 0)            AS CNT
+    FROM (
+        SELECT ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -(LEVEL - 1)) AS dt
+        FROM DUAL CONNECT BY LEVEL &lt;= 6
+    ) m
+    LEFT JOIN (
+        SELECT TRUNC(CREATED_AT, 'MM') AS dt, COUNT(*) AS cnt
+        FROM ADS
+        WHERE CREATED_AT IS NOT NULL
+          AND CREATED_AT >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
+        GROUP BY TRUNC(CREATED_AT, 'MM')
+    ) a ON m.dt = a.dt
+    ORDER BY m.dt ASC
 </select>
 
 <!-- 광고 승인 대기 건수 -->
@@ -559,7 +567,7 @@
     ORDER BY CNT DESC
 </select>
 
-    <!-- 리뷰 목록 페이징 -->
+    <!-- 리뷰 목록 페이징 (filter/rating/keyword 지원, 금지어 의심 flagged 자동 감지) -->
     <select id="getReviewList" parameterType="map" resultType="com.spring.app.admin.domain.ReviewAdminDTO">
         SELECT * FROM (
             SELECT a.*, ROWNUM AS rn FROM (
@@ -570,20 +578,140 @@
                        r.REVIEW_CONTENT  as reviewContent,
                        r.ONE_LINE_CAT    as oneLineCat,
                        r.CREATED_AT      as createdAt,
-                       0                 as flagged
+                       CASE WHEN (
+                           LOWER(r.REVIEW_CONTENT) LIKE '%욕설%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%바보%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%멍청%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%쓰레기%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%개새%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%병신%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%씨발%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%fuck%'
+                        OR LOWER(r.REVIEW_CONTENT) LIKE '%shit%'
+                        OR LOWER(r.ONE_LINE_CAT)   LIKE '%욕설%'
+                        OR LOWER(r.ONE_LINE_CAT)   LIKE '%쓰레기%'
+                       ) THEN 1 ELSE 0 END as flagged
                 FROM REVIEWS r
                 JOIN MEMBER m ON r.WRITER_EMAIL = m.EMAIL
-                <if test="keyword != null and keyword != ''">
-                WHERE (LOWER(m.NICKNAME) LIKE '%' || LOWER(#{keyword}) || '%'
-                   OR LOWER(r.REVIEW_CONTENT) LIKE '%' || LOWER(#{keyword}) || '%')
-                </if>
+                <where>
+                    <if test="keyword != null and keyword != ''">
+                        (LOWER(m.NICKNAME) LIKE '%' || LOWER(#{keyword}) || '%'
+                         OR LOWER(r.REVIEW_CONTENT) LIKE '%' || LOWER(#{keyword}) || '%')
+                    </if>
+                    <if test="filter == 'suspect'">
+                        AND (LOWER(r.REVIEW_CONTENT) LIKE '%욕설%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%바보%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%멍청%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%쓰레기%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%개새%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%병신%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%씨발%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%fuck%'
+                          OR LOWER(r.REVIEW_CONTENT) LIKE '%shit%'
+                          OR LOWER(r.ONE_LINE_CAT)   LIKE '%욕설%'
+                          OR LOWER(r.ONE_LINE_CAT)   LIKE '%쓰레기%')
+                    </if>
+                    <if test="filter == 'lowRating'">
+                        AND r.RATING &lt;= 2
+                    </if>
+                    <if test="filter == 'recent'">
+                        AND r.CREATED_AT &gt;= SYSDATE - 7
+                    </if>
+                    <if test="rating != null and rating != ''">
+                        AND r.RATING = #{rating}
+                    </if>
+                </where>
                 ORDER BY r.CREATED_AT DESC
             ) a WHERE ROWNUM &lt;= #{end}
         ) WHERE rn &gt; #{start}
     </select>
 
+    <!-- 필터 조건 포함 리뷰 수 -->
+    <select id="countReviewsFiltered" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM REVIEWS r
+        JOIN MEMBER m ON r.WRITER_EMAIL = m.EMAIL
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (LOWER(m.NICKNAME) LIKE '%' || LOWER(#{keyword}) || '%'
+                 OR LOWER(r.REVIEW_CONTENT) LIKE '%' || LOWER(#{keyword}) || '%')
+            </if>
+            <if test="filter == 'suspect'">
+                AND (LOWER(r.REVIEW_CONTENT) LIKE '%욕설%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%바보%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%멍청%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%쓰레기%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%개새%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%병신%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%씨발%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%fuck%'
+                  OR LOWER(r.REVIEW_CONTENT) LIKE '%shit%'
+                  OR LOWER(r.ONE_LINE_CAT)   LIKE '%욕설%'
+                  OR LOWER(r.ONE_LINE_CAT)   LIKE '%쓰레기%')
+            </if>
+            <if test="filter == 'lowRating'">
+                AND r.RATING &lt;= 2
+            </if>
+            <if test="filter == 'recent'">
+                AND r.CREATED_AT &gt;= SYSDATE - 7
+            </if>
+            <if test="rating != null and rating != ''">
+                AND r.RATING = #{rating}
+            </if>
+        </where>
+    </select>
+
     <select id="countReviews" resultType="int">
         SELECT COUNT(*) FROM REVIEWS
+    </select>
+
+    <!-- 금지어 의심 리뷰 수 -->
+    <select id="countSuspectReviews" resultType="int">
+        SELECT COUNT(*) FROM REVIEWS r
+        WHERE LOWER(r.REVIEW_CONTENT) LIKE '%욕설%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%바보%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%멍청%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%쓰레기%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%개새%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%병신%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%씨발%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%fuck%'
+           OR LOWER(r.REVIEW_CONTENT) LIKE '%shit%'
+           OR LOWER(r.ONE_LINE_CAT)   LIKE '%욕설%'
+           OR LOWER(r.ONE_LINE_CAT)   LIKE '%쓰레기%'
+    </select>
+
+    <!-- 낮은 별점(1~2점) 리뷰 수 -->
+    <select id="countLowRatingReviews" resultType="int">
+        SELECT COUNT(*) FROM REVIEWS WHERE RATING &lt;= 2
+    </select>
+
+    <!-- 최근 7일 리뷰 수 -->
+    <select id="countRecentReviews" resultType="int">
+        SELECT COUNT(*) FROM REVIEWS WHERE CREATED_AT &gt;= SYSDATE - 7
+    </select>
+
+    <!-- 일별 리뷰 등록 현황 (최근 7일) -->
+    <select id="getDailyReviewCounts" resultType="map">
+        SELECT TO_CHAR(d.dt, 'MM/DD') as label, NVL(cnt, 0) as cnt
+        FROM (
+            SELECT TRUNC(SYSDATE) - (LEVEL - 1) AS dt
+            FROM DUAL CONNECT BY LEVEL &lt;= 7
+        ) d
+        LEFT JOIN (
+            SELECT TRUNC(CREATED_AT) AS dt, COUNT(*) AS cnt
+            FROM REVIEWS
+            WHERE CREATED_AT &gt;= TRUNC(SYSDATE) - 6
+            GROUP BY TRUNC(CREATED_AT)
+        ) r ON d.dt = r.dt
+        ORDER BY d.dt ASC
+    </select>
+
+    <!-- 별점 분포 -->
+    <select id="getRatingDistribution" resultType="map">
+        SELECT RATING as rating, COUNT(*) as cnt
+        FROM REVIEWS
+        GROUP BY RATING
+        ORDER BY RATING DESC
     </select>
 
     <delete id="deleteReview" parameterType="int">
@@ -647,6 +775,8 @@
            r.REPORT_STATUS   as reportStatus,
            mr.USER_NO        as reporterUserNo,
            mr.USER_NAME      as reporterName,
+           mr.SUSPENDED      as reporterSuspended,
+           mr.STATUS         as reporterStatus,
            mt.USER_NO        as targetUserNo,
            mt.USER_NAME      as targetName,
            mt.SUSPENDED      as targetSuspended,

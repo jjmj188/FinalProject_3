@@ -2,191 +2,302 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>문의 내역 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 문의 관리</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin/sideBar.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        .badge-pending { background-color: #f6c23e; color:#fff; }
-        .badge-completed { background-color: #1cc88a; color:#fff; }
-        .text-truncate-custom { max-width: 250px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .stat-card { background: white; border-radius: 12px; padding: 20px 24px; border-left: 5px solid; box-shadow: 0 0.15rem 1.75rem rgba(58,59,69,.08); }
-        .stat-card.red { border-color: #e74a3b; }
-        .stat-card.green { border-color: #1cc88a; }
-        .stat-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #858796; letter-spacing: .05em; }
-        .stat-value { font-size: 1.5rem; font-weight: 800; color: #2e3750; }
+        body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; font-size: 14px; color: #333; }
+        .main-content { flex: 1; padding: 30px; background-color: #f8f9fc; min-height: 100vh; }
+
+        /* stat cards */
+        .stat-card {
+            background: white; border-radius: 14px; padding: 20px 22px;
+            border-left: 5px solid; box-shadow: 0 2px 12px rgba(0,0,0,.07);
+            transition: transform .2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card.red    { border-color: #e74a3b; }
+        .stat-card.green  { border-color: #1cc88a; }
+        .stat-card.blue   { border-color: #4e73df; }
+        .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #858796; letter-spacing: .06em; margin-bottom: 6px; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+
+        /* FAQ 키워드 */
+        .faq-section {
+            background: white; border-radius: 14px; padding: 16px 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07); margin-bottom: 20px;
+        }
+        .faq-title { font-size: 12px; font-weight: 700; color: #858796; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+        .faq-tag {
+            display: inline-block; background: #eff6ff; color: #2563eb;
+            border: 1px solid #bfdbfe; border-radius: 20px;
+            font-size: 12px; font-weight: 600; padding: 3px 12px;
+            margin: 2px 3px 2px 0;
+        }
+
+        /* 필터 바 */
+        .filter-bar {
+            background: white; border-radius: 14px; padding: 14px 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07); margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        /* 테이블 카드 */
+        .table-card {
+            background: white; border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden;
+        }
+        .table thead th {
+            background: #f8f9fc; color: #858796; font-size: .78rem;
+            text-transform: uppercase; letter-spacing: .05em;
+            border-bottom: 2px solid #e3e6f0; font-weight: 700;
+            padding: 12px 14px;
+        }
+        .table tbody tr { border-bottom: 1px solid #f1f3f9; transition: background .12s; }
+        .table tbody tr:hover { background: #f8f9ff; }
+        .table tbody td { padding: 12px 14px; vertical-align: middle; font-size: .875rem; }
+
+        /* 상태 배지 */
+        .badge-pending   { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: .75rem; white-space: nowrap; display: inline-block; }
+        .badge-completed { background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: .75rem; white-space: nowrap; display: inline-block; }
+
+        /* 답변 버튼 */
+        .btn-answer {
+            font-size: .75rem; padding: 4px 14px; border-radius: 20px;
+            border: 1.5px solid #d1d5db; background: #fff; color: #555;
+            font-weight: 600; transition: all .15s; cursor: pointer;
+        }
+        .btn-answer:hover { background: #2e3750; color: #fff; border-color: #2e3750; }
+        .btn-answered {
+            font-size: .75rem; padding: 4px 14px; border-radius: 20px;
+            border: 1.5px solid #d1fae5; background: #f0fdf4; color: #065f46;
+            font-weight: 600; cursor: pointer;
+        }
+
+        /* 페이지네이션 */
+        .page-link { border-radius: 6px !important; margin: 0 2px; }
+        .page-item.active .page-link { background: #4e73df; border-color: #4e73df; }
+
+        /* 모달 */
+        .modal-header { background: linear-gradient(135deg, #2e3750, #4e73df); color: #fff; border-radius: 12px 12px 0 0; }
+        .modal-header .btn-close { filter: invert(1); }
+        .modal-content { border-radius: 14px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+        .inquiry-box {
+            background: #f8f9fc; border: 1px solid #e3e6f0; border-radius: 10px;
+            padding: 14px 16px; font-size: .875rem; color: #333; line-height: 1.7;
+        }
+        .inquiry-box.title-box { font-weight: 700; font-size: 1rem; color: #2e3750; }
+        .modal-section-label { font-size: .75rem; font-weight: 700; color: #858796; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+        .answer-textarea {
+            border: 2px solid #e3e6f0; border-radius: 10px; padding: 12px 14px;
+            font-size: .875rem; line-height: 1.7; resize: vertical;
+            transition: border-color .15s;
+        }
+        .answer-textarea:focus { border-color: #4e73df; box-shadow: 0 0 0 3px rgba(78,115,223,.1); outline: none; }
+        .btn-save { background: linear-gradient(135deg, #4e73df, #36b9cc); color: #fff; border: none; border-radius: 8px; padding: 8px 24px; font-weight: 700; transition: opacity .15s; }
+        .btn-save:hover { opacity: .9; color: #fff; }
     </style>
 </head>
 <body class="d-flex">
-    <aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
-    <main class="main-content">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold mb-0">고객 문의 관리</h4>
-                <a href="http://localhost:9090/inquiry/list" target="_blank" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-box-arrow-up-right me-1"></i>게시판 서비스 바로가기
-                </a>
-            </div>
+<aside th:replace="~{admin/admin_sidebar :: adminSidebar}"></aside>
 
-            <!-- 대시보드 카드 -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <div class="stat-card red">
-                        <div class="stat-label mb-2"><i class="bi bi-clock me-1"></i>미답변</div>
-                        <div class="stat-value text-danger" th:text="${pendingCount != null ? pendingCount : 0}">0</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="stat-card green">
-                        <div class="stat-label mb-2"><i class="bi bi-check2-circle me-1"></i>답변완료</div>
-                        <div class="stat-value" style="color:#1cc88a;" th:text="${answeredCount != null ? answeredCount : 0}">0</div>
-                    </div>
-                </div>
-            </div>
+<main class="main-content">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="fw-bold mb-0"><i class="bi bi-chat-left-text-fill text-primary me-2"></i>고객 문의 관리</h4>
+            <small class="text-muted">문의 내역 확인 및 답변 처리</small>
+        </div>
+        <a href="http://localhost:9090/inquiry/list" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            <i class="bi bi-box-arrow-up-right me-1"></i>게시판 바로가기
+        </a>
+    </div>
 
-            <!-- FAQ 키워드 태그 -->
-            <div class="mb-4" th:if="${faqKeywords != null and not #lists.isEmpty(faqKeywords)}">
-                <div class="fw-bold small text-muted mb-2"><i class="bi bi-tags me-1"></i>FAQ 키워드</div>
-                <span th:each="kw : ${faqKeywords}"
-                      class="badge bg-light text-dark border me-1 mb-1 py-1 px-2"
-                      th:text="${kw}"></span>
-            </div>
-
-            <!-- 필터 폼 -->
-            <form method="get" th:action="@{/admin/inquiry}" class="mb-3 d-flex gap-2 align-items-center">
-                <label class="fw-bold me-2">상태:</label>
-                <select name="status" class="form-select form-select-sm" style="width:150px;" onchange="this.form.submit()">
-                    <option value="ALL" th:selected="${selectedStatus == 'ALL'}">전체</option>
-                    <option value="대기" th:selected="${selectedStatus == '대기'}">대기</option>
-                    <option value="답변완료" th:selected="${selectedStatus == '답변완료'}">답변완료</option>
-                </select>
-                <span class="text-muted small">전체 <strong th:text="${totalCount}"></strong>건</span>
-            </form>
-
-            <div class="dashboard-card">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width:80px;">번호</th>
-                                <th style="width:130px;">문의 날짜</th>
-                                <th style="width:200px;">이메일</th>
-                                <th>제목</th>
-                                <th style="width:100px;">상태</th>
-                                <th style="width:100px;">관리</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:if="${#lists.isEmpty(inquiryList)}">
-                                <td colspan="6" class="text-center text-muted">문의가 없습니다.</td>
-                            </tr>
-                            <tr th:each="inquiry : ${inquiryList}">
-                                <td th:text="${inquiry.inquiryId}"></td>
-                                <td th:text="${#dates.format(inquiry.createdAt, 'yyyy-MM-dd')}"></td>
-                                <td th:text="${inquiry.memberEmail}"></td>
-                                <td>
-                                    <span class="text-truncate-custom" th:text="${inquiry.title}"></span>
-                                </td>
-                                <td>
-                                    <span class="badge"
-                                          th:classappend="${inquiry.inquiryStatus == '답변완료' ? 'badge-completed' : 'badge-pending'}"
-                                          th:text="${inquiry.inquiryStatus}"></span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-dark"
-                                            th:attr="data-id=${inquiry.inquiryId},
-                                                     data-title=${inquiry.title},
-                                                     data-content=${inquiry.content},
-                                                     data-answer=${inquiry.adminAnswer}"
-                                            onclick="openInquiryModal(this)">답변</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- 페이징 -->
-                <nav th:if="${totalPages > 1}" aria-label="Page navigation">
-                    <ul class="pagination justify-content-center mt-3">
-                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/inquiry(page=${currentPage-1}, status=${selectedStatus})}">이전</a>
-                        </li>
-                        <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}"
-                            th:classappend="${p == currentPage} ? 'active'">
-                            <a class="page-link" th:href="@{/admin/inquiry(page=${p}, status=${selectedStatus})}" th:text="${p}"></a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-                            <a class="page-link" th:href="@{/admin/inquiry(page=${currentPage+1}, status=${selectedStatus})}">다음</a>
-                        </li>
-                    </ul>
-                </nav>
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card blue">
+                <div class="stat-label"><i class="bi bi-collection me-1"></i>전체 문의</div>
+                <div class="stat-value text-primary" th:text="${totalCount != null ? totalCount : 0}">0</div>
             </div>
         </div>
-    </main>
-
-    <!-- 문의 답변 모달 -->
-    <div class="modal fade" id="inquiryModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">문의 상세 및 답변</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">제목</label>
-                        <div id="modalTitle" class="p-2 bg-light border rounded"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">문의 내용</label>
-                        <div id="modalContent" class="p-3 bg-light border rounded" style="min-height:80px;"></div>
-                    </div>
-                    <hr>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">답변 작성</label>
-                        <textarea id="modalAnswer" class="form-control" rows="5" placeholder="답변 내용을 입력하세요."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary" onclick="saveAnswer()">답변 저장</button>
-                </div>
+        <div class="col-md-4">
+            <div class="stat-card red">
+                <div class="stat-label"><i class="bi bi-clock me-1"></i>미답변</div>
+                <div class="stat-value text-danger" th:text="${pendingCount != null ? pendingCount : 0}">0</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card green">
+                <div class="stat-label"><i class="bi bi-check2-circle me-1"></i>답변완료</div>
+                <div class="stat-value" style="color:#1cc88a;" th:text="${answeredCount != null ? answeredCount : 0}">0</div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const BASE = '/finalProject_3';
-        let currentInquiryId = null;
-        let inquiryModalInst = null;
+    <!-- FAQ 키워드 -->
+    <div class="faq-section" th:if="${faqKeywords != null and not #lists.isEmpty(faqKeywords)}">
+        <div class="faq-title"><i class="bi bi-tags me-1"></i>FAQ 주요 키워드</div>
+        <span th:each="kw : ${faqKeywords}" class="faq-tag" th:text="${kw}"></span>
+    </div>
 
-        function openInquiryModal(btn) {
-            currentInquiryId = btn.dataset.id;
-            document.getElementById('modalTitle').innerText = btn.dataset.title || '';
-            document.getElementById('modalContent').innerText = btn.dataset.content || '';
-            document.getElementById('modalAnswer').value = btn.dataset.answer || '';
-            inquiryModalInst = new bootstrap.Modal(document.getElementById('inquiryModal'));
-            inquiryModalInst.show();
-        }
+    <!-- 필터 바 -->
+    <div class="filter-bar">
+        <form method="get" th:action="@{/admin/inquiry}" class="d-flex align-items-center gap-3">
+            <span class="fw-bold small text-muted">상태 필터</span>
+            <div class="d-flex gap-2">
+                <a th:href="@{/admin/inquiry(status='ALL')}"
+                   th:classappend="${selectedStatus=='ALL'} ? ' active'"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:style="${selectedStatus=='ALL'} ? 'background:#4e73df;color:#fff;border:none;' : 'background:#fff;color:#555;border:1.5px solid #d1d5db;'">전체</a>
+                <a th:href="@{/admin/inquiry(status='대기')}"
+                   th:classappend="${selectedStatus=='대기'} ? ' active'"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:style="${selectedStatus=='대기'} ? 'background:#e74a3b;color:#fff;border:none;' : 'background:#fff;color:#555;border:1.5px solid #d1d5db;'">⏳ 미답변</a>
+                <a th:href="@{/admin/inquiry(status='답변완료')}"
+                   th:classappend="${selectedStatus=='답변완료'} ? ' active'"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:style="${selectedStatus=='답변완료'} ? 'background:#1cc88a;color:#fff;border:none;' : 'background:#fff;color:#555;border:1.5px solid #d1d5db;'">✓ 답변완료</a>
+            </div>
+        </form>
+        <span class="text-muted small">조회 결과 <strong class="text-primary" th:text="${totalCount}">0</strong>건</span>
+    </div>
 
-        function saveAnswer() {
-            const answer = document.getElementById('modalAnswer').value.trim();
-            if (!answer) { alert('답변 내용을 입력하세요.'); return; }
-            fetch(BASE + '/admin/inquiry/answer', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'inquiryId=' + currentInquiryId + '&adminAnswer=' + encodeURIComponent(answer)
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    alert('답변이 저장되었습니다.');
-                    inquiryModalInst.hide();
-                    location.reload();
-                } else alert('저장 실패');
-            });
-        }
-    </script>
+    <!-- 테이블 -->
+    <div class="table-card">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th style="width:60px;">번호</th>
+                    <th style="width:120px;">날짜</th>
+                    <th style="width:180px;">이메일</th>
+                    <th>제목</th>
+                    <th style="width:120px;">상태</th>
+                    <th style="width:90px;" class="text-center">관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(inquiryList)}">
+                    <td colspan="6" class="text-center text-muted py-5">
+                        <i class="bi bi-inbox d-block mb-2" style="font-size:2rem;color:#d1d5db;"></i>
+                        문의가 없습니다.
+                    </td>
+                </tr>
+                <tr th:each="inquiry : ${inquiryList}">
+                    <td class="text-muted small" th:text="${inquiry.inquiryId}"></td>
+                    <td class="small text-muted" th:text="${#dates.format(inquiry.createdAt, 'yyyy-MM-dd')}"></td>
+                    <td class="small text-truncate" style="max-width:180px;" th:text="${inquiry.memberEmail}" th:title="${inquiry.memberEmail}"></td>
+                    <td>
+                        <span class="fw-semibold" style="max-width:320px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                              th:text="${inquiry.title}" th:title="${inquiry.title}"></span>
+                    </td>
+                    <td>
+                        <span th:class="${inquiry.inquiryStatus == '답변완료'} ? 'badge-completed' : 'badge-pending'"
+                              th:text="${inquiry.inquiryStatus == '답변완료'} ? '✓ 답변완료' : '⏳ 대기'"></span>
+                    </td>
+                    <td class="text-center">
+                        <button th:class="${inquiry.inquiryStatus == '답변완료'} ? 'btn-answered' : 'btn-answer'"
+                                th:attr="data-id=${inquiry.inquiryId},
+                                         data-title=${inquiry.title},
+                                         data-content=${inquiry.content},
+                                         data-answer=${inquiry.adminAnswer}"
+                                onclick="openInquiryModal(this)">
+                            <i th:class="${inquiry.inquiryStatus == '답변완료'} ? 'bi bi-pencil-square me-1' : 'bi bi-reply me-1'"></i>
+                            <span th:text="${inquiry.inquiryStatus == '답변완료'} ? '수정' : '답변'"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 페이징 -->
+        <div class="px-3 py-3" th:if="${totalPages > 1}">
+            <ul class="pagination justify-content-center pagination-sm mb-0">
+                <li class="page-item" th:classappend="${currentPage==1} ? 'disabled'">
+                    <a class="page-link shadow-none" th:href="@{/admin/inquiry(page=${currentPage-1},status=${selectedStatus})}">이전</a>
+                </li>
+                <li class="page-item" th:each="p : ${#numbers.sequence(1,totalPages)}"
+                    th:classappend="${p==currentPage} ? 'active'">
+                    <a class="page-link shadow-none"
+                       th:href="@{/admin/inquiry(page=${p},status=${selectedStatus})}"
+                       th:text="${p}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage==totalPages} ? 'disabled'">
+                    <a class="page-link shadow-none" th:href="@{/admin/inquiry(page=${currentPage+1},status=${selectedStatus})}">다음</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</main>
+
+<!-- 문의 답변 모달 -->
+<div class="modal fade" id="inquiryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-3 px-4">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0"><i class="bi bi-chat-left-text me-2"></i>문의 상세 및 답변</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <div class="modal-section-label">제목</div>
+                    <div id="modalTitle" class="inquiry-box title-box"></div>
+                </div>
+                <div class="mb-4">
+                    <div class="modal-section-label">문의 내용</div>
+                    <div id="modalContent" class="inquiry-box" style="min-height:90px;"></div>
+                </div>
+                <hr class="my-3" style="border-color:#e3e6f0;">
+                <div>
+                    <div class="modal-section-label"><i class="bi bi-pencil me-1"></i>답변 작성</div>
+                    <textarea id="modalAnswer" class="form-control answer-textarea" rows="5"
+                              placeholder="고객에게 전달할 답변을 입력하세요."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer px-4 py-3 border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-save rounded-pill px-4" onclick="saveAnswer()">
+                    <i class="bi bi-send me-1"></i>답변 저장
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const BASE = '/finalProject_3';
+    let currentInquiryId = null;
+    let inquiryModalInst = null;
+
+    function openInquiryModal(btn) {
+        currentInquiryId = btn.dataset.id;
+        document.getElementById('modalTitle').innerText   = btn.dataset.title   || '';
+        document.getElementById('modalContent').innerText = btn.dataset.content || '';
+        document.getElementById('modalAnswer').value      = btn.dataset.answer  || '';
+        inquiryModalInst = new bootstrap.Modal(document.getElementById('inquiryModal'));
+        inquiryModalInst.show();
+    }
+
+    function saveAnswer() {
+        const answer = document.getElementById('modalAnswer').value.trim();
+        if (!answer) { alert('답변 내용을 입력하세요.'); return; }
+        fetch(BASE + '/admin/inquiry/answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'inquiryId=' + currentInquiryId + '&adminAnswer=' + encodeURIComponent(answer)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                inquiryModalInst.hide();
+                location.reload();
+            } else alert('저장 실패');
+        });
+    }
+</script>
 </body>
 </html>

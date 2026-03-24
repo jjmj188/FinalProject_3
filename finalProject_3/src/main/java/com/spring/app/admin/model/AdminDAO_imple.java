@@ -319,6 +319,36 @@ public class AdminDAO_imple implements AdminDAO {
 	}
 
 	@Override
+	public int countReviewsFiltered(Map<String, Object> params) {
+		return sqlsession.selectOne(admin + ".countReviewsFiltered", params);
+	}
+
+	@Override
+	public int countSuspectReviews() {
+		return sqlsession.selectOne(admin + ".countSuspectReviews");
+	}
+
+	@Override
+	public int countLowRatingReviews() {
+		return sqlsession.selectOne(admin + ".countLowRatingReviews");
+	}
+
+	@Override
+	public int countRecentReviews() {
+		return sqlsession.selectOne(admin + ".countRecentReviews");
+	}
+
+	@Override
+	public List<Map<String, Object>> getDailyReviewCounts() {
+		return sqlsession.selectList(admin + ".getDailyReviewCounts");
+	}
+
+	@Override
+	public List<Map<String, Object>> getRatingDistribution() {
+		return sqlsession.selectList(admin + ".getRatingDistribution");
+	}
+
+	@Override
 	public void deleteReview(int reviewNo) {
 		sqlsession.delete(admin + ".deleteReview", reviewNo);
 	}

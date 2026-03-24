@@ -19,4 +19,6 @@ public class ReportAdminDTO {
     private String targetName;
     private int targetSuspended;
     private int targetStatus;
+    private int reporterSuspended;
+    private int reporterStatus;
 }

@@ -337,19 +337,61 @@ public class AdminService_imple implements AdminService {
 
 
 	@Override
-	public Map<String, Object> getReviewListPaged(int page, int size, String keyword) {
+	public Map<String, Object> getReviewListPaged(int page, int size, String keyword, String filter, String rating) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("start", (page - 1) * size);
 		params.put("end", page * size);
 		params.put("keyword", keyword);
-		int total = dao.countReviews();
-		int totalPages = (int) Math.ceil((double) total / size);
+		params.put("filter", filter);
+		params.put("rating", rating);
+		int filtered = dao.countReviewsFiltered(params);
+		int total    = dao.countReviews();
+		int totalPages = (int) Math.ceil((double) filtered / size);
 		if (totalPages == 0) totalPages = 1;
 		Map<String, Object> result = new HashMap<>();
-		result.put("list", dao.getReviewList(params));
-		result.put("total", total);
-		result.put("totalPages", totalPages);
+		result.put("list",          dao.getReviewList(params));
+		result.put("total",         total);
+		result.put("filteredTotal", filtered);
+		result.put("totalPages",    totalPages);
 		return result;
+	}
+
+	@Override
+	public Map<String, Object> getReviewStats() {
+		Map<String, Object> stats = new HashMap<>();
+		stats.put("suspectCount",   dao.countSuspectReviews());
+		stats.put("lowRatingCount", dao.countLowRatingReviews());
+		stats.put("recentCount",    dao.countRecentReviews());
+		return stats;
+	}
+
+	@Override
+	public Map<String, Object> getReviewChartData() {
+		List<Map<String, Object>> daily  = dao.getDailyReviewCounts();
+		List<Map<String, Object>> rating = dao.getRatingDistribution();
+
+		List<String>  dailyLabels = new java.util.ArrayList<>();
+		List<Integer> dailyData   = new java.util.ArrayList<>();
+		for (Map<String, Object> row : daily) {
+			dailyLabels.add(String.valueOf(row.get("LABEL")));
+			dailyData.add(((Number) row.get("CNT")).intValue());
+		}
+
+		// 별점 1~5점 순서로 정렬
+		int[] counts = new int[6];
+		for (Map<String, Object> row : rating) {
+			int r = ((Number) row.get("RATING")).intValue();
+			if (r >= 1 && r <= 5) counts[r] = ((Number) row.get("CNT")).intValue();
+		}
+		List<String>  ratingLabels = java.util.Arrays.asList("5점","4점","3점","2점","1점");
+		List<Integer> ratingData   = java.util.Arrays.asList(counts[5],counts[4],counts[3],counts[2],counts[1]);
+
+		Map<String, Object> chart = new HashMap<>();
+		chart.put("dailyLabels",  dailyLabels);
+		chart.put("dailyData",    dailyData);
+		chart.put("ratingLabels", ratingLabels);
+		chart.put("ratingData",   ratingData);
+		return chart;
 	}
 
 	@Override

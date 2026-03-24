@@ -35,10 +35,8 @@
   <!-- 주소찾기(외부 스크립트) -->
   <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 	
-  <!-- 카카오맵 --> 
-  <!-- 카카오맵 --> 
-  <script type="text/javascript"
-   src="//dapi.kakao.com/v2/maps/sdk.js?appkey=2924745e5a279ab2e0fd3d568d0916f1&libraries=services"></script>
+	<!-- 카카오맵 -->
+  <script th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoMapKey} + '&libraries=services'}"></script>
 
   <!-- 네이버스마트에디터: 필요하면 head에 두거나, 페이지별 bodyJs로 빼도 됨 -->
   <script th:src="@{/smarteditor/js/HuskyEZCreator.js}" charset="utf-8"></script>

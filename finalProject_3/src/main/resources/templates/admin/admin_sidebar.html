@@ -1,51 +1,79 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    </head>
+<head></head>
 <body>
 
     <aside th:fragment="adminSidebar" class="admin-sidebar flex-shrink-0">
+
+        <!-- 관리자 프로필 -->
         <div class="admin-profile">
-            <div class="admin-avatar"></div>
-            <p class="admin-name mb-0">관리자님 환영합니다</p>
+            <div class="admin-avatar"><i class="bi bi-person-fill"></i></div>
+            <p class="admin-name mb-0">관리자</p>
+            <span class="admin-badge">ADMIN</span>
         </div>
 
-        <nav class="nav flex-column pt-3 mt-1">
-            <a th:href="@{/admin/index}" class="nav-menu-item">메인페이지</a>
-            <a th:href="@{/admin/member}" class="nav-menu-item">회원관리</a>
-            <a th:href="@{/admin/product}" class="nav-menu-item">상품관리</a>
-            <a th:href="@{/admin/review}" class="nav-menu-item">리뷰관리</a>
-            <a th:href="@{/admin/transaction}" class="nav-menu-item">거래관리</a>
-            <a th:href="@{/admin/complaint}" class="nav-menu-item">신고관리</a>
-            <a th:href="@{/admin/inquiry}" class="nav-menu-item">문의내역</a>
-            <a th:href="@{/admin/accounting}" class="nav-menu-item">회계관리</a>
-            <a th:href="@{/admin/contents}" class="nav-menu-item">콘텐츠 및 운영</a>
+        <!-- 네비 -->
+        <nav class="nav flex-column sidebar-nav">
+            <div class="nav-section-label">대시보드</div>
+            <a th:href="@{/admin/index}" class="nav-menu-item" data-key="index">
+                <i class="bi bi-speedometer2 nav-icon"></i>메인페이지
+            </a>
+
+            <div class="nav-section-label">회원 · 상품</div>
+            <a th:href="@{/admin/member}" class="nav-menu-item" data-key="member">
+                <i class="bi bi-people-fill nav-icon"></i>회원관리
+            </a>
+            <a th:href="@{/admin/product}" class="nav-menu-item" data-key="product">
+                <i class="bi bi-box-seam-fill nav-icon"></i>상품관리
+            </a>
+            <a th:href="@{/admin/review}" class="nav-menu-item" data-key="review">
+                <i class="bi bi-star-fill nav-icon"></i>리뷰관리
+            </a>
+
+            <div class="nav-section-label">거래 · 신고</div>
+            <a th:href="@{/admin/transaction}" class="nav-menu-item" data-key="transaction">
+                <i class="bi bi-arrow-left-right nav-icon"></i>거래관리
+            </a>
+            <a th:href="@{/admin/complaint}" class="nav-menu-item" data-key="complaint">
+                <i class="bi bi-flag-fill nav-icon"></i>신고관리
+            </a>
+            <a th:href="@{/admin/inquiry}" class="nav-menu-item" data-key="inquiry">
+                <i class="bi bi-chat-dots-fill nav-icon"></i>문의내역
+            </a>
+
+            <div class="nav-section-label">운영</div>
+            <a th:href="@{/admin/accounting}" class="nav-menu-item" data-key="accounting">
+                <i class="bi bi-wallet2 nav-icon"></i>회계관리
+            </a>
+            <a th:href="@{/admin/contents}" class="nav-menu-item" data-key="contents">
+                <i class="bi bi-megaphone-fill nav-icon"></i>콘텐츠 및 운영
+            </a>
         </nav>
-        <div style="padding: 16px 12px; margin-top: auto; border-top: 1px solid rgba(255,255,255,.1);">
-            <a th:href="@{/}" style="display:flex; align-items:center; gap:8px; color:rgba(255,255,255,.6);
-               font-size:0.82rem; text-decoration:none; padding:8px 12px; border-radius:8px;
-               transition:all .2s;"
-               onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='#fff'"
-               onmouseout="this.style.background='';this.style.color='rgba(255,255,255,.6)'">
+
+        <!-- 하단 -->
+        <div class="sidebar-footer">
+            <a th:href="@{/}" class="sidebar-footer-link">
                 <i class="bi bi-box-arrow-left"></i> 메인 사이트로
             </a>
         </div>
     </aside>
 
     <script>
-    (function() {
+    document.addEventListener('DOMContentLoaded', function() {
         var path = window.location.pathname;
         var links = document.querySelectorAll('.nav-menu-item');
         links.forEach(function(link) {
             var href = link.getAttribute('href');
             if (!href) return;
-            // href에서 컨텍스트 경로 제거 후 비교
             var hrefPath = href.replace(/\?.*$/, '');
-            if (path === hrefPath || path.startsWith(hrefPath + '/') || path.startsWith(hrefPath + '?')) {
+            if (path === hrefPath
+                || path.startsWith(hrefPath + '/')
+                || path.startsWith(hrefPath + '_')
+                || path.startsWith(hrefPath + '?')) {
                 link.classList.add('active');
             }
         });
-    })();
+    });
     </script>
 
 </body>
