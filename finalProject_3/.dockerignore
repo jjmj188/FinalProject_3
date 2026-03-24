@@ -1,0 +1,10 @@
+.git
+.gitignore
+src/
+*.md
+*.log
+.gradle
+gradle/
+gradlew
+gradlew.bat
+Dockerfile
