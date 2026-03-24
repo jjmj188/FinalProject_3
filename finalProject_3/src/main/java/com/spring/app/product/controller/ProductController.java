@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +51,14 @@ public class ProductController {
     private final ProductService pservice;
     private final FileManager fileManager;
     private final ObjectMapper objectMapper;
+    
+    @Value("${kakao.map.key}")
+    private String kakaoMapKey;
+
+    @ModelAttribute("kakaoMapKey")
+    public String kakaoMapKey() {
+        return kakaoMapKey;
+    }
 
     @Value("${file.images-dir}")
     private String imagesDir;
