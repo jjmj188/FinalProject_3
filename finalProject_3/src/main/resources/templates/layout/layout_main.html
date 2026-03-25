@@ -62,6 +62,9 @@
     const match = document.cookie.match(/(?:^|; )accessToken=([^;]*)/);
     if (match) localStorage.setItem('accessToken', decodeURIComponent(match[1]));
   })();
+  document.querySelector('a[href*="/security/logout"]')?.addEventListener('click', function() {
+    localStorage.removeItem('accessToken');
+  });
 </script>
 
 <!-- 페이지별 JS (body 끝 전용) -->

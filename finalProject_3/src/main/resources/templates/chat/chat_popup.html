@@ -197,10 +197,6 @@
                 </div>
                 
                 <div id="chatOptionsMenu" class="chat-options-menu">
-                    <div class="menu-item" onclick="actionMute()">
-                        <div class="menu-icon">🔔</div>
-                        <span class="menu-text">알림끄기</span>
-                    </div>
                     <div class="menu-item" onclick="actionReport()">
                         <div class="menu-icon">⚠️</div>
                         <span class="menu-text">신고하기</span>
@@ -217,11 +213,11 @@
                     <div class="product-info">
                         <div class="price-row">
                             <span id="bannerPrice">가격 협의</span>
-                            <span class="status-badge" id="bannerStatus">판매중</span>
+                            <span class="status-badge" id="bannerStatus"></span>
                         </div>
                         <div class="name-row" id="bannerTitle">상품명을 불러오는 중...</div>
                     </div>
-                    <button class="btn-reserve" id="btnReserve" onclick="actionReserve()">예약잡기</button>
+                    <button class="btn-reserve" id="btnReserve" style="display:none;" onclick="actionReserve()">예약잡기</button>
                     <button class="btn-cancel-reserve" id="btnCancelReserve" style="display:none;" onclick="actionCancelReserve()">예약취소</button>
                     <button class="btn-safe-pay" id="btnSafePay" style="display:none;" onclick="actionSafePay()">안전결제</button>
                     <button class="btn-confirm-purchase-chat" id="btnConfirmPurchaseChat" style="display:none;" onclick="actionConfirmPurchaseChat()">구매확정</button>
@@ -433,8 +429,16 @@
             currentSellerEmail = sellerEmail;
             currentPayStatus = payStatus || null;
             currentTransactionId = transactionId || null;
+            // 상태/버튼 먼저 초기화 (깜빡임 방지)
+            document.getElementById('bannerStatus').innerText = '';
+            document.getElementById('bannerStatus').className = 'status-badge';
+            document.getElementById('btnReserve').style.display = 'none';
+            document.getElementById('btnCancelReserve').style.display = 'none';
+            document.getElementById('btnSafePay').style.display = 'none';
+            document.getElementById('btnConfirmPurchaseChat').style.display = 'none';
+
             document.getElementById('chatMainArea').style.visibility = 'visible';
-            
+
             document.getElementById('currentRoomNickname').innerText = targetUser;
             document.getElementById('btnUserProfile').href = ctxPath + '/product/product_user_profile?productNo=' + productNo;
             document.getElementById('bannerTitle').innerText = productName;
