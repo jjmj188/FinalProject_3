@@ -150,7 +150,7 @@ public class MyPageController {
             @RequestParam("productNo") int productNo,
             @RequestParam("productName") String productName,
             @RequestParam(value = "productPrice", required = false) Integer productPrice,
-            @RequestParam("tradeStatus") String tradeStatus,
+            @RequestParam(value = "tradeStatus", required = false) String tradeStatus,
             @RequestParam(value = "productDesc", required = false) String productDesc,
             @RequestParam(value = "categoryNo", required = false) Integer categoryNo,
             @RequestParam(value = "productCondition", required = false) String productCondition,

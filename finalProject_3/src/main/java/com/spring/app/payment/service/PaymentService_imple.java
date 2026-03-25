@@ -189,6 +189,7 @@ public class PaymentService_imple implements PaymentService {
             Map<String, Object> productMap = new HashMap<>();
             productMap.put("productNo", txn.getProductNo());
             productMap.put("tradeStatus", "예약중");
+            productMap.put("reservedRoomId", txn.getRoomId());
             paymentDAO.updateProductTradeStatus(productMap);
 
             @SuppressWarnings("unchecked")
