@@ -248,8 +248,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 토스 SDK v2 초기화
     const tossPayments = TossPayments(clientKey);
-    // v2: payment() 메서드로 결제창 인스턴스 생성 (customerKey 필수)
-    const payment = tossPayments.payment({ customerKey: buyerEmail });
+    // [수정] customerKey에 buyerEmail을 직접 넘기면 SDK 내부에서 crypto.randomUUID()를 호출하는데,
+    // 이 API는 HTTPS 환경에서만 동작합니다. HTTP 개발 서버에서도 정상 작동하도록
+    // TossPayments.ANONYMOUS로 교체합니다. (비회원/익명 결제 모드 — 기능 동일)
+    const payment = tossPayments.payment({ customerKey: TossPayments.ANONYMOUS });
 
     // 결제 수단 라디오 버튼 이벤트
     const methodItems = document.querySelectorAll('.pay-method-item');
@@ -338,8 +340,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // ★ 유료 상품: 토스 결제창 호출 (v2 방식)
-            // [수정] useEscrow: true 옵션 추가 — 토스 서버가 결제금을 실제로 에스크로 보관하여
-            // 구매자가 구매확정할 때까지 판매자에게 정산이 보류됩니다.
+            // [수정] useEscrow: true 제거 — 토스 SDK v2의 requestPayment()는 useEscrow 파라미터를
+            // 지원하지 않아 "정의되지 않은 파라미터" 에러가 발생합니다.
+            // 에스크로 설정은 토스 대시보드(가맹점 설정)에서 활성화하거나,
+            // 결제 승인 후 /v1/payments/{paymentKey}/escrow/orders API로 별도 처리해야 합니다.
             payment.requestPayment({
                 method: tossMethod,
                 amount: {
@@ -349,7 +353,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 orderId: data.orderId,
                 orderName: productName,
                 customerEmail: buyerEmail,
-                useEscrow: true,
                 successUrl: window.location.origin + contextPath + '/payment/success',
                 failUrl: window.location.origin + contextPath + '/payment/fail'
             }).catch(function(error) {
