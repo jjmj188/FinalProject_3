@@ -338,6 +338,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // ★ 유료 상품: 토스 결제창 호출 (v2 방식)
+            // [수정] useEscrow: true 옵션 추가 — 토스 서버가 결제금을 실제로 에스크로 보관하여
+            // 구매자가 구매확정할 때까지 판매자에게 정산이 보류됩니다.
             payment.requestPayment({
                 method: tossMethod,
                 amount: {
@@ -347,6 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 orderId: data.orderId,
                 orderName: productName,
                 customerEmail: buyerEmail,
+                useEscrow: true,
                 successUrl: window.location.origin + contextPath + '/payment/success',
                 failUrl: window.location.origin + contextPath + '/payment/fail'
             }).catch(function(error) {
