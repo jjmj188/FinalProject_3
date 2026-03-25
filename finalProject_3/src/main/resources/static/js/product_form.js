@@ -1272,52 +1272,7 @@
 
     if (!form) return;
 
-    form.addEventListener("submit", (e) => {
-      const titleEl = $("#pfTitle") || $("#pfName");
-      if (titleEl && isBlank(titleEl.value)) {
-        e.preventDefault();
-        alertAndFocus("제목(상품명)을 입력해 주세요.", titleEl);
-        return;
-      }
-
-      const descEl = $(".pf-textarea");
-      if (descEl && isBlank(descEl.value)) {
-        e.preventDefault();
-        alertAndFocus("상품 설명을 입력해 주세요.", descEl);
-        return;
-      }
-
-      const imgV = window.PF.Image?.validate?.();
-      if (imgV && imgV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(imgV.msg);
-        return;
-      }
-
-      const shipV = window.PF.Shipping?.validate?.();
-      if (shipV && shipV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(shipV.msg);
-        return;
-      }
-
-      const priceV = window.PF.Price?.validate?.();
-      if (priceV && priceV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(priceV.msg, window.PF.Price?.el);
-        return;
-      }
-
-      const meetToggle = $("#pfMeetToggle");
-      const tradeMethod = meetToggle?.checked ? "직거래" : "택배";
-
-      const meetV = window.PF.Meet?.validate?.(tradeMethod);
-      if (meetV && meetV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(meetV.msg);
-        return;
-      }
-    });
+   
   })();
 
   // =========================================================
