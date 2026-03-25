@@ -264,7 +264,12 @@ public class PaymentService_imple implements PaymentService {
      *   <li>캐시결제 → 판매자 CASH_BALANCE 직접 증가</li>
      *   <li>계좌이체 → SETTLEMENTS 테이블에 정산 대기 row 삽입
      *       (관리자가 수동 송금 후 '완료' 처리)</li>
+     *   <li>무료나눔(amount=0, USE_ESCROW=N) → 정산 없이 거래완료 처리</li>
      * </ul>
+     *
+     * <p>[수정] 기존에는 USE_ESCROW='Y' 거래만 처리하고 무료나눔은 누락됐으나,
+     * 이제 USE_ESCROW 값과 무관하게 amount=0 여부로 무료나눔을 판별해
+     * 동일 엔드포인트에서 일관되게 처리한다.</p>
      */
     @Override
     @Transactional
@@ -291,20 +296,33 @@ public class PaymentService_imple implements PaymentService {
             return result;
         }
 
-        // ── 2. TRANSACTIONS 거래완료 처리 (공통) ─────────────────────────────
+        // ── 2. 이미 구매확정된 거래 중복 처리 방지 ────────────────────────
+        if ("거래완료".equals(txn.getTradeStatus())) {
+            result.put("success", false);
+            result.put("message", "이미 구매확정된 거래입니다.");
+            return result;
+        }
+
+        // ── 3. TRANSACTIONS 거래완료 처리 (공통) ─────────────────────────────
+        //   [수정] updateEscrowConfirm SQL의 USE_ESCROW='Y' 조건 제거로 무료나눔도 처리 가능
         paymentDAO.updateEscrowConfirm(transactionId);
 
-        // ── 3. 상품 상태 → '판매완료' (공통) ─────────────────────────────────
+        // ── 4. 상품 상태 → '판매완료' (공통) ─────────────────────────────────
         Map<String, Object> productMap = new HashMap<>();
         productMap.put("productNo", txn.getProductNo());
         productMap.put("tradeStatus", "판매완료");
         paymentDAO.updateProductTradeStatus(productMap);
 
-        // ── 4. 결제 수단별 판매자 정산 처리 ─────────────────────────────────
+        // ── 5. 결제 수단별 판매자 정산 처리 ─────────────────────────────────
+        int amount = txn.getAmount() != null ? txn.getAmount() : 0;
         String paymentType = txn.getPaymentType();
 
-        if (TOSS_ESCROW_TYPES.contains(paymentType)) {
-            // ── 4-A. 토스 결제 ──────────────────────────────────────────────
+        // 무료나눔: amount=0 → 정산 불필요, 바로 완료
+        if (amount == 0) {
+            log.info("[정산-무료나눔] transactionId={} 정산 없이 거래완료 처리", transactionId);
+
+        } else if (TOSS_ESCROW_TYPES.contains(paymentType)) {
+            // ── 5-A. 토스 결제 ──────────────────────────────────────────────
             // 카드/가상계좌/간편결제: PAY_STATUS=DONE 승인 시점에 토스가 자동 정산 대기.
             // 별도 에스크로 API 호출 불필요. (/escrow/orders 는 결제 요청 시
             // useEscrow:true 옵션을 명시한 경우에만 사용 가능하므로,
@@ -313,23 +331,23 @@ public class PaymentService_imple implements PaymentService {
                     transactionId, paymentType);
 
         } else if ("캐시결제".equals(paymentType)) {
-            // ── 4-B. 캐시결제: 판매자 CASH_BALANCE 직접 증가 ────────────────
+            // ── 5-B. 캐시결제: 판매자 CASH_BALANCE 직접 증가 ────────────────
             Map<String, Object> cashMap = new HashMap<>();
             cashMap.put("email",  txn.getSellerEmail());
-            cashMap.put("amount", txn.getAmount());
+            cashMap.put("amount", amount);
             memberDAO.updateCashBalance(cashMap);
             log.info("[정산-캐시] transactionId={} seller={} amount={}원 캐시 지급 완료",
-                    transactionId, txn.getSellerEmail(), txn.getAmount());
+                    transactionId, txn.getSellerEmail(), amount);
 
         } else if ("계좌이체".equals(paymentType)) {
-            // ── 4-C. 계좌이체: SETTLEMENTS 테이블에 정산 대기 row 삽입 ───────
+            // ── 5-C. 계좌이체: SETTLEMENTS 테이블에 정산 대기 row 삽입 ───────
             Integer primaryAccountId = paymentDAO.selectPrimaryAccountId(txn.getSellerEmail());
 
             SettlementDTO settlement = new SettlementDTO();
             settlement.setTransactionId(transactionId);
             settlement.setSellerEmail(txn.getSellerEmail());
             settlement.setAccountId(primaryAccountId);   // 계좌 미등록 시 null
-            settlement.setAmount(txn.getAmount());
+            settlement.setAmount(amount);
 
             paymentDAO.insertSettlement(settlement);
 
@@ -338,7 +356,7 @@ public class PaymentService_imple implements PaymentService {
                         transactionId, txn.getSellerEmail());
             } else {
                 log.info("[정산-계좌이체] transactionId={} seller={} amount={}원 정산 대기 등록 (accountId={})",
-                        transactionId, txn.getSellerEmail(), txn.getAmount(), primaryAccountId);
+                        transactionId, txn.getSellerEmail(), amount, primaryAccountId);
             }
 
         } else {

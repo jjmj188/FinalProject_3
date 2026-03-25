@@ -34,6 +34,8 @@ import com.spring.app.product.domain.ProductMeetLocationDTO;
 import com.spring.app.product.domain.ProductShippingOptionDTO;
 import com.spring.app.product.service.ProductService;
 import com.spring.app.mypage.service.MyPageService;
+import com.spring.app.payment.service.PaymentService;
+import com.spring.app.payment.domain.TransactionDTO;
 import com.spring.app.security.domain.MemberDTO;
 import com.spring.app.security.service.MemberService;
 
@@ -48,6 +50,9 @@ public class MyPageController {
 
     @Autowired
     private MyPageService myPageService;
+
+    @Autowired
+    private PaymentService paymentService;
 
     @Autowired
     private ProductService productService;
@@ -296,22 +301,38 @@ public class MyPageController {
         return myPageService.getMyPurchases(principal.getName());
     }
 
+    /**
+     * 구매확정 API
+     *
+     * <p>채팅창 및 마이페이지에서 "구매확정" 버튼을 눌렀을 때 호출된다.
+     * 기존에는 TRADE_STATUS 업데이트만 수행했으나,
+     * 결제 수단별 판매자 정산(캐시 지급 / 계좌이체 정산 대기 등록)이 누락되어
+     * PaymentService.confirmEscrow()로 위임하도록 수정하였다.</p>
+     *
+     * <ul>
+     *   <li>유료 거래(USE_ESCROW=Y) : PAY_STATUS=DONE 검증 → 정산 처리 → 상품 판매완료</li>
+     *   <li>무료나눔(USE_ESCROW=N, amount=0) : 정산 없이 거래완료 처리</li>
+     * </ul>
+     */
     @PostMapping("/confirm-purchase")
     @ResponseBody
     public Map<String, Object> confirmPurchase(@RequestBody Map<String, Object> payload, Principal principal) {
         Map<String, Object> result = new HashMap<>();
         try {
             int transactionId = Integer.parseInt(payload.get("transactionId").toString());
-            int productNo = Integer.parseInt(payload.get("productNo").toString());
-            Map<String, Object> params = new HashMap<>();
-            params.put("transactionId", transactionId);
-            params.put("email", principal.getName());
-            params.put("productNo", productNo);
-            myPageService.confirmPurchase(params);
-            int productUpdated = myPageService.confirmPurchaseProduct(params);
-            result.put("success", productUpdated > 0);
+            String buyerEmail = principal.getName();
+
+            // PaymentService.confirmEscrow 에 위임:
+            //   - 구매자 본인 검증
+            //   - PAY_STATUS = 'DONE' 검증 (유료) 또는 무료나눔 분기
+            //   - 결제수단별 판매자 정산 (캐시/계좌이체/토스 자동)
+            //   - TRANSACTIONS.TRADE_STATUS = '거래완료'
+            //   - PRODUCTS.TRADE_STATUS = '판매완료'
+            result = paymentService.confirmEscrow(transactionId, buyerEmail);
+
         } catch (Exception e) {
             result.put("success", false);
+            result.put("message", "구매확정 처리 중 오류가 발생했습니다.");
         }
         return result;
     }

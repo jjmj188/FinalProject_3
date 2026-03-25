@@ -12,7 +12,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -49,14 +48,24 @@ pipeline {
         stage('Deploy to Server') {
             steps {
                 sshagent(['SERVER_SSH_KEY']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP '
-                            docker stop $CONTAINER_NAME || true
-                            docker rm $CONTAINER_NAME || true
-                            docker pull $DOCKER_IMAGE:latest
-                            docker run -d --restart always --name $CONTAINER_NAME -p 9080:9080 $DOCKER_IMAGE:latest
-                        '
-                    """
+                    sh '''
+      ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP \
+          "docker stop $CONTAINER_NAME || true && \
+           docker rm $CONTAINER_NAME || true && \
+           docker pull $DOCKER_IMAGE:latest && \
+           docker run -d --restart always --name $CONTAINER_NAME \
+           -p 9080:9080 \
+           -v /home/ubuntu/config/application.yml:/app/config/application.yml \
+           -v /home/ubuntu/secrets/serviceAccountKey.json:/home/ubuntu/secrets/serviceAccountKey.json \
+           -v /home/ubuntu/uploads/file_upload:/app/file_upload \
+           -v /home/ubuntu/uploads/file_photoupload:/app/file_photoupload \
+           -v /home/ubuntu/uploads/file_images:/app/file_images \
+           -v /home/ubuntu/uploads/file_profile:/app/file_profile \
+           -v /home/ubuntu/uploads/file_adminupload:/app/file_adminupload \
+           -v /home/ubuntu/uploads/file_reports:/app/file_reports \
+           -v /home/ubuntu/uploads/file_emailattachfile:/app/file_emailattachfile \
+           $DOCKER_IMAGE:latest"
+  '''
                 }
             }
         }

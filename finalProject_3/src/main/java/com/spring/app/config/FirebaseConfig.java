@@ -12,7 +12,7 @@ public class FirebaseConfig {
     @PostConstruct
     public void init() {
         try {
-            FileInputStream serviceAccount = new FileInputStream("src/main/resources/static/firebase/serviceAccountKey.json");
+            FileInputStream serviceAccount = new FileInputStream("/home/ubuntu/secrets/serviceAccountKey.json");
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     // Firebase 콘솔 -> 프로젝트 설정 -> 리얼타임 데이터베이스에서 확인 가능한 URL
