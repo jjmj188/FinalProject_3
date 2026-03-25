@@ -71,6 +71,7 @@
                T.PAY_STATUS        AS payStatus,
                T.APPROVED_AT       AS approvedAt,
                T.USE_ESCROW        AS useEscrow,
+               T.ROOM_ID           AS roomId,
                P.PRODUCT_NAME      AS productName,
                P.PRODUCT_PRICE     AS productPrice,
                (SELECT I.IMG_URL FROM PRODUCT_IMAGE I
