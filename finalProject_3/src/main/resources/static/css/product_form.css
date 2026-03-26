@@ -96,6 +96,7 @@ textarea { resize: none; }
 
 .pf-help {
   margin-top: 6px;
+  margin-bottom:12px;
   font-size: 12px;
   color: var(--pf-mute);
   font-weight: 600;
