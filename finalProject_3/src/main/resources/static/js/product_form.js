@@ -8,6 +8,7 @@
      지도/검색 UI(areaSearchWrap) 펼치기(2차 모달 제거)
    + placeName/fullAddress 분리 저장
    + AI 판매글 작성 기능 추가
+   + local / https / http 서버 모두 대응하는 위치 선택
    - AI 이미지 진단 기능 제외
 ========================================================= */
 
@@ -594,7 +595,7 @@
 
         const n = parseNumber(priceEl.value);
         if (n === null) return { ok: false, msg: "판매가격은 숫자만 입력해 주세요." };
-        if (n <= 0) return { ok: false, msg: "판매가격은 0원보다 커야 합니다." };
+        if (n <= 100) return { ok: false, msg: "판매가격은 100원보다 커야 합니다." };
         return { ok: true, value: n };
       }
     };
@@ -604,15 +605,6 @@
 
   // =========================================================
   // AI 판매글 작성
-  // - /ai/sell/description 호출
-  // - AI 이미지 진단 없음
-  // =========================================================
-  
-
-  // =========================================================
-  // AI 판매글 작성
-  // - /ai/sell/description 호출
-  // - AI 이미지 진단 없음
   // =========================================================
   const AiSellModule = (() => {
     const btn = $("#pfAiWriteBtn");
@@ -729,9 +721,6 @@
 
         const data = await res.json().catch(() => null);
 
-        console.log("AI 응답 status =", res.status);
-        console.log("AI 응답 data =", data);
-
         if (!res.ok || data?.success === false) {
           const msg =
             data?.message ||
@@ -748,9 +737,6 @@
         ).trim();
 
         const nextDesc = String(data.description ?? "").trim();
-
-        console.log("titleSuggestion =", nextTitle);
-        console.log("description =", nextDesc);
 
         if (!nextTitle && !nextDesc) {
           throw new Error("AI가 작성 결과를 반환하지 않았습니다.");
@@ -914,6 +900,8 @@
         searchEmpty.style.display = "flex";
       }
 
+      setSearchGuide("");
+
       if (resultUl) resultUl.innerHTML = "";
       if (kwInput) kwInput.value = "";
 
@@ -1045,6 +1033,37 @@
       });
 
       if (kwInput) kwInput.focus();
+    }
+
+    function setSearchGuide(text) {
+      let guide = $("#areaSearchGuide");
+
+      if (!guide && searchWrap) {
+        guide = document.createElement("p");
+        guide.id = "areaSearchGuide";
+        guide.className = "area-searchwrap__guide";
+        guide.style.display = "none";
+
+        const searchBox = searchWrap.querySelector(".area-searchwrap__search");
+        if (searchBox && searchBox.nextSibling) {
+          searchWrap.insertBefore(guide, searchBox.nextSibling);
+        } else {
+          searchWrap.appendChild(guide);
+        }
+      }
+
+      if (!guide) return;
+
+      const msg = String(text ?? "").trim();
+
+      if (!msg) {
+        guide.textContent = "";
+        guide.style.display = "none";
+        return;
+      }
+
+      guide.textContent = msg;
+      guide.style.display = "block";
     }
 
     let map = null;
@@ -1197,10 +1216,59 @@
       });
     }
 
-    function setMyLocation() {
+    function canUseBrowserGeo() {
+      const host = String(location.hostname || "").toLowerCase();
+
+      return (
+        window.isSecureContext === true ||
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host === "::1"
+      );
+    }
+
+    function getDefaultRegionKeyword() {
+      return "서울";
+    }
+
+    async function requestIpRegion() {
+      const ctxPath = getContextPath();
+      const res = await fetch(ctxPath + "/location/ip-region", {
+        method: "GET",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.success === false) {
+        throw new Error(data?.message || "IP 기반 접속 지역 조회에 실패했습니다.");
+      }
+
+      return data;
+    }
+
+    function applyKeywordAndSearch(keyword, guideText) {
+      openSearchUI();
+
+      const nextKeyword = String(keyword ?? "").trim();
+      if (kwInput) {
+        kwInput.value = nextKeyword;
+      }
+
+      setSearchGuide(guideText || "");
+
+      if (nextKeyword) {
+        searchKeyword();
+      } else if (kwInput) {
+        kwInput.focus();
+      }
+    }
+
+    function useBrowserGeolocation() {
       if (!navigator.geolocation) {
-        alert("이 브라우저는 위치 기능을 지원하지 않습니다.");
-        return;
+        throw new Error("이 브라우저는 위치 기능을 지원하지 않습니다.");
       }
 
       navigator.geolocation.getCurrentPosition(
@@ -1226,14 +1294,59 @@
             });
           });
         },
-        (err) => {
-          if (err.code === 1) alert("위치 권한이 거부되었습니다.");
-          else if (err.code === 2) alert("위치 정보를 가져올 수 없습니다.");
-          else if (err.code === 3) alert("위치 조회 시간이 초과되었습니다.");
-          else alert("위치 조회 중 오류가 발생했습니다.");
+        async (err) => {
+          console.error(err);
+
+          try {
+            const data = await requestIpRegion();
+            const keyword = String(data.keyword || "").trim() || getDefaultRegionKeyword();
+            const label = String(data.regionLabel || "").trim();
+
+            applyKeywordAndSearch(
+              keyword,
+              label
+                ? `브라우저 위치 권한을 사용할 수 없어 접속 지역 추정값(${label})으로 검색했어요. 정확한 위치는 직접 선택해 주세요.`
+                : "브라우저 위치 권한을 사용할 수 없어 접속 지역 추정값으로 검색했어요. 정확한 위치는 직접 선택해 주세요."
+            );
+          }
+          catch (ipErr) {
+            console.error(ipErr);
+            applyKeywordAndSearch(
+              getDefaultRegionKeyword(),
+              "위치를 자동으로 확인하지 못해 기본 지역으로 검색했어요. 정확한 위치는 직접 선택해 주세요."
+            );
+          }
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
+    }
+
+    async function setMyLocation() {
+      try {
+        if (canUseBrowserGeo()) {
+          useBrowserGeolocation();
+          return;
+        }
+
+        const data = await requestIpRegion();
+        const keyword = String(data.keyword || "").trim() || getDefaultRegionKeyword();
+        const label = String(data.regionLabel || "").trim();
+
+        applyKeywordAndSearch(
+          keyword,
+          label
+            ? `현재 접속 지역 추정: ${label} · 정확한 위치는 검색 결과에서 직접 선택해 주세요.`
+            : "현재 접속 지역 기준으로 검색했어요. 정확한 위치는 검색 결과에서 직접 선택해 주세요."
+        );
+      }
+      catch (err) {
+        console.error(err);
+
+        applyKeywordAndSearch(
+          getDefaultRegionKeyword(),
+          "접속 지역을 확인하지 못해 기본 지역으로 검색했어요. 정확한 위치는 직접 선택해 주세요."
+        );
+      }
     }
 
     list.addEventListener("click", (e) => {
@@ -1296,8 +1409,6 @@
       document.querySelector("form");
 
     if (!form) return;
-
-   
   })();
 
   // =========================================================

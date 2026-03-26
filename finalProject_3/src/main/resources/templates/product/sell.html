@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html
 	th:replace="~{layout/layout_main :: layout(~{::head}, ~{::main}, ~{::script})}"
@@ -8,140 +7,103 @@
 <link rel="stylesheet" th:href="@{/css/product_form.css}">
 <script defer th:src="@{/js/product_form.js}"></script>
 
-
-
 <script th:inline="javascript">
-	$(document)
-			.ready(
-					function() {
-						const ctxPath = /*[[@{/}]]*/"";
+	$(document).ready(function() {
+		const ctxPath = /*[[@{/}]]*/"";
+		const registerUrl = /*[[@{/product/sellRegister}]]*/"";
 
-						const registerUrl = /*[[@{/product/sellRegister}]]*/"";
+		$(document).on("submit", "#pfForm", function(e) {
+			e.preventDefault();
 
-						$(document)
-								.on(
-										"submit",
-										"#pfForm",
-										function(e) {
-											e.preventDefault();
+			const form = this;
+			const $btn = $("#pfSubmitBtn");
 
-											const form = this;
-											const $btn = $("#pfSubmitBtn");
+			if (!window.PF || !window.PF.Image) {
+				alert("이미지 모듈 초기화 실패(외부 JS 로드/요소 id 확인)");
+				return;
+			}
 
-											// ===== 1) 검증 =====
-											if (!window.PF || !window.PF.Image) {
-												alert("이미지 모듈 초기화 실패(외부 JS 로드/요소 id 확인)");
-												return;
-											}
+			const imgR = window.PF.Image.validate();
+			if (!imgR.ok) {
+				alert(imgR.msg);
+				return;
+			}
 
-											const imgR = window.PF.Image
-													.validate();
-											if (!imgR.ok) {
-												alert(imgR.msg);
-												return;
-											}
+			const tradeMethod = $("#pfMeetToggle").is(":checked") ? "직거래" : "택배";
 
-											const tradeMethod = $(
-													"#pfMeetToggle").is(
-													":checked") ? "직거래" : "택배";
+			if (tradeMethod === "택배" && window.PF.Shipping) {
+				const r = window.PF.Shipping.validate();
+				if (!r.ok) {
+					alert(r.msg);
+					return;
+				}
+				window.PF.Shipping.syncShipOptionsJson();
+			}
 
-											if (tradeMethod === "택배"
-													&& window.PF.Shipping) {
-												const r = window.PF.Shipping
-														.validate();
-												if (!r.ok) {
-													alert(r.msg);
-													return;
-												}
-												window.PF.Shipping
-														.syncShipOptionsJson();
-											}
+			if (window.PF.Shipping) {
+				const r = window.PF.Shipping.validate();
+				if (!r.ok) {
+					alert(r.msg);
+					return;
+				}
+				window.PF.Shipping.syncShipOptionsJson();
+			}
 
-											if (window.PF.Shipping) {
-												const r = window.PF.Shipping
-														.validate();
-												if (!r.ok) {
-													alert(r.msg);
-													return;
-												}
-												// ✅ hidden(name=shippingOptionsJson) 채워주기
-												window.PF.Shipping
-														.syncShipOptionsJson();
-											}
+			if (window.PF.Meet) {
+				const r = window.PF.Meet.validate(tradeMethod);
+				if (!r.ok) {
+					alert(r.msg);
+					return;
+				}
+			}
 
-											if (window.PF.Meet) {
-												const r = window.PF.Meet
-														.validate(tradeMethod);
-												if (!r.ok) {
-													alert(r.msg);
-													return;
-												}
-												// ✅ hidden(name=meetLocationsJson)은 PF.Meet 모듈이 저장함
-											}
+			const formData = new FormData(form);
+			window.PF.Image.appendToFormData(formData);
 
-											// ===== 2) FormData 구성 =====
-											const formData = new FormData(form);
+			$btn.prop("disabled", true).addClass("is-loading");
 
-											// ✅ product_form.js가 selectedFiles 기준으로 fd.delete("images") 후 다시 append 함
-											window.PF.Image
-													.appendToFormData(formData);
+			$.ajax({
+				url: registerUrl,
+				type: "post",
+				data: formData,
+				processData: false,
+				contentType: false,
+				dataType: "json",
+				success: function(json) {
+					$btn.prop("disabled", false).removeClass("is-loading");
 
-											// ===== 3) AJAX =====
-											$btn.prop("disabled", true)
-													.addClass("is-loading");
+					if (json && json.success) {
+						alert("등록 완료");
 
-											$
-													.ajax({
-														url : registerUrl,
-														type : "post",
-														data : formData,
-														processData : false,
-														contentType : false,
-														dataType : "json",
-														success : function(json) {
-															$btn
-																	.prop(
-																			"disabled",
-																			false)
-																	.removeClass(
-																			"is-loading");
+						const redirectUrl = json.redirectUrl
+							? json.redirectUrl
+							: (json.productNo ? ("/product/detail/" + json.productNo) : null);
 
-															if (json
-																	&& json.success) {
-																alert("등록 완료");
+						if (redirectUrl) {
+							location.href = ctxPath + "product/product_list";
+						}
+						else {
+							location.reload();
+						}
+					}
+					else {
+						const msg = (json && json.message)
+							? json.message
+							: "등록에 실패했습니다. 입력값을 확인해 주세요.";
+						alert("등록 실패: " + msg);
+					}
+				},
+				error: function(jqXHR) {
+					const msg = (jqXHR.responseJSON && jqXHR.responseJSON.message)
+						? jqXHR.responseJSON.message
+						: (jqXHR.responseText ? jqXHR.responseText : ("요청 실패(" + jqXHR.status + ")"));
 
-																const redirectUrl = json.redirectUrl ? json.redirectUrl
-																		: (json.productNo ? ("/product/detail/" + json.productNo)
-																				: null);
-
-																if (redirectUrl)
-																	location.href = ctxPath
-																			+ "product/product_list";
-																else
-																	location
-																			.reload();
-															} else {
-																const msg = (json && json.message) ? json.message
-																		: "등록에 실패했습니다. 입력값을 확인해 주세요.";
-																alert("등록 실패: "
-																		+ msg);
-															}
-														},
-														error : function(jqXHR,
-																textStatus,
-																errorThrown) {
-															const msg = (jqXHR.responseJSON && jqXHR.responseJSON.message) ? jqXHR.responseJSON.message
-																	: (jqXHR.responseText ? jqXHR.responseText
-																			: ("요청 실패("
-																					+ jqXHR.status + ")"));
-
-															alert("등록 실패: "
-																	+ msg);
-														}
-													});
-
-										});
-					});
+					$btn.prop("disabled", false).removeClass("is-loading");
+					alert("등록 실패: " + msg);
+				}
+			});
+		});
+	});
 </script>
 </head>
 
@@ -160,18 +122,17 @@
 		<form id="pfForm" class="pf-form" th:action="@{/product/sellRegister}"
 			method="post" enctype="multipart/form-data">
 
-			<input type="hidden" name="saleType" value="판매"> <input
-				type="hidden" name="tradeStatus" value="판매중">
+			<input type="hidden" name="saleType" value="판매">
+			<input type="hidden" name="tradeStatus" value="판매중">
 
 			<!-- 이미지 -->
 			<div class="pf-row">
 				<div class="pf-label">상품 이미지</div>
 				<div class="pf-field pf-field-upload">
-					<label class="pf-upload" for="pfImageInput"> <span
-						class="pf-upload-icon" aria-hidden="true">📷</span> <span
-						class="pf-upload-text">이미지 등록</span> <input id="pfImageInput"
-						class="pf-upload-input" type="file" name="images" accept="image/*"
-						multiple>
+					<label class="pf-upload" for="pfImageInput">
+						<span class="pf-upload-icon" aria-hidden="true">📷</span>
+						<span class="pf-upload-text">이미지 등록</span>
+						<input id="pfImageInput" class="pf-upload-input" type="file" name="images" accept="image/*" multiple>
 					</label>
 
 					<div class="pf-preview" id="pfPreviewWrap" aria-label="미리보기"></div>
@@ -184,14 +145,12 @@
 				<div class="pf-label">
 					상품명
 					<div class="pf-help">
-						<a class="pf-ship-setting" id="pfShipSettingLink" href="#">거래
-							제한 품목 안내 &gt;</a>
+						<a class="pf-ship-setting" id="pfShipSettingLink" href="#">거래 제한 품목 안내 &gt;</a>
 					</div>
 
 					<div id="pfShipModal" class="pf-modal" aria-hidden="true">
 						<div class="pf-modal-content">
-							<button type="button" class="pf-modal-close"
-								id="pfShipModalClose" aria-label="닫기">×</button>
+							<button type="button" class="pf-modal-close" id="pfShipModalClose" aria-label="닫기">×</button>
 							<img th:src="@{/images/transactionRestrictions.png}" alt="거래제한품목">
 						</div>
 					</div>
@@ -207,8 +166,7 @@
 			<div class="pf-row">
 				<div class="pf-label">카테고리</div>
 				<div class="pf-field pf-field-narrow">
-					<select class="pf-select" name="categoryNo" aria-label="카테고리"
-						required>
+					<select class="pf-select" name="categoryNo" aria-label="카테고리" required>
 						<option value="" disabled selected>카테고리를 선택해 주세요</option>
 						<option value="1">패션(수입명품 / 패션의류 / 패션잡화)</option>
 						<option value="2">육아(출산 / 유아동)</option>
@@ -217,8 +175,7 @@
 						<option value="5">취미(게임, 반려동물, 독서)</option>
 						<option value="6">여행(등산, 캠핑 등등)</option>
 						<option value="7">공구/산업용품</option>
-						<option value="8">디지털·전자기기(모바일 / 태블릿 / 노트북 / PC / 카메라 /
-							캠코더)</option>
+						<option value="8">디지털·전자기기(모바일 / 태블릿 / 노트북 / PC / 카메라 / 캠코더)</option>
 					</select>
 				</div>
 			</div>
@@ -234,18 +191,16 @@
 
 			<!-- 설명 -->
 			<div class="pf-row">
-				<div class="pf-label">
-					상품 설명
-					
-				</div>
+				<div class="pf-label">상품 설명</div>
 				<div class="pf-field">
 					<div class="pf-textarea-wrap">
-					
-					<div class="pf-help" >
-						<button type="button" class="pf-ai-btn" id="pfAiWriteBtn">AI
-							판매글 작성</button>
-					</div>
-					
+						<div class="pf-help">
+							<button type="button" class="pf-ai-btn" id="pfAiWriteBtn">AI 판매글 작성</button>
+						</div>
+
+						<div id="pfAiStatus" class="pf-ai-status" aria-live="polite"></div>
+						<div id="pfAiCautions" class="pf-ai-cautions"></div>
+
 						<textarea class="pf-textarea" name="productDesc" maxlength="5000"
 							placeholder="- 상품명(브랜드)
 - 사용 기간
@@ -263,15 +218,20 @@
 				<div class="pf-label">상품 상태</div>
 				<div class="pf-field">
 					<div class="pf-radio-row" role="radiogroup" aria-label="상품 상태">
-						<label class="pf-radio"> <input type="radio"
-							name="productCondition" value="상" checked /> <span
-							class="pf-dot" aria-hidden="true"></span> <span>상</span>
-						</label> <label class="pf-radio"> <input type="radio"
-							name="productCondition" value="중" /> <span class="pf-dot"
-							aria-hidden="true"></span> <span>중</span>
-						</label> <label class="pf-radio"> <input type="radio"
-							name="productCondition" value="하" /> <span class="pf-dot"
-							aria-hidden="true"></span> <span>하</span>
+						<label class="pf-radio">
+							<input type="radio" name="productCondition" value="상" checked />
+							<span class="pf-dot" aria-hidden="true"></span>
+							<span>상</span>
+						</label>
+						<label class="pf-radio">
+							<input type="radio" name="productCondition" value="중" />
+							<span class="pf-dot" aria-hidden="true"></span>
+							<span>중</span>
+						</label>
+						<label class="pf-radio">
+							<input type="radio" name="productCondition" value="하" />
+							<span class="pf-dot" aria-hidden="true"></span>
+							<span>하</span>
 						</label>
 					</div>
 				</div>
@@ -292,10 +252,10 @@
 
 						<div class="pf-trade-row">
 							<div class="pf-trade-left">
-								<label class="pf-check"> <input type="radio"
-									name="tradeMethod" id="pfShipToggle" value="택배" checked /> <span
-									class="pf-check-ui" aria-hidden="true"></span> <span
-									class="pf-check-text">택배거래</span>
+								<label class="pf-check">
+									<input type="radio" name="tradeMethod" id="pfShipToggle" value="택배" checked />
+									<span class="pf-check-ui" aria-hidden="true"></span>
+									<span class="pf-check-text">택배거래</span>
 								</label>
 							</div>
 						</div>
@@ -309,47 +269,44 @@
 							<div class="pf-ship-divider"></div>
 
 							<div class="pf-ship-pill">
-								<span class="pf-ship-pill-dot" aria-hidden="true"></span> 거래 성사
-								확률이 높아요
+								<span class="pf-ship-pill-dot" aria-hidden="true"></span> 거래 성사 확률이 높아요
 							</div>
 
 							<div class="pf-ship-option">
-								<label class="pf-radio"> <input type="radio"
-									name="pfShipFeeType" value="included" id="pfFeeIncluded" /> <span
-									class="pf-radio-ui" aria-hidden="true"></span> <span
-									class="pf-radio-body"> <span class="pf-radio-title">배송비
-											포함</span> <span class="pf-radio-desc">선택 시 상품에 ‘무료배송’으로
-											표시됩니다.</span>
-								</span>
+								<label class="pf-radio">
+									<input type="radio" name="pfShipFeeType" value="included" id="pfFeeIncluded" />
+									<span class="pf-radio-ui" aria-hidden="true"></span>
+									<span class="pf-radio-body">
+										<span class="pf-radio-title">배송비 포함</span>
+										<span class="pf-radio-desc">선택 시 상품에 ‘무료배송’으로 표시됩니다.</span>
+									</span>
 								</label>
 							</div>
 
 							<div class="pf-ship-option">
-								<label class="pf-radio"> <input type="radio"
-									name="pfShipFeeType" value="separate" id="pfFeeSeparate"
-									checked /> <span class="pf-radio-ui" aria-hidden="true"></span>
-									<span class="pf-radio-body"> <span
-										class="pf-radio-title">배송비 별도</span> <span
-										class="pf-radio-desc">상품가격과 별도로 배송비를 설정합니다.</span>
-								</span>
+								<label class="pf-radio">
+									<input type="radio" name="pfShipFeeType" value="separate" id="pfFeeSeparate" checked />
+									<span class="pf-radio-ui" aria-hidden="true"></span>
+									<span class="pf-radio-body">
+										<span class="pf-radio-title">배송비 별도</span>
+										<span class="pf-radio-desc">상품가격과 별도로 배송비를 설정합니다.</span>
+									</span>
 								</label>
 							</div>
 						</div>
 
-						<div class="pf-ship-fee-detail" id="pfShipFeeDetail"
-							aria-hidden="true">
+						<div class="pf-ship-fee-detail" id="pfShipFeeDetail" aria-hidden="true">
 							<div class="pf-ship-fee-head">
 								<h3 class="pf-ship-fee-title">배송 옵션 선택 + 배송비 입력</h3>
 							</div>
 
-							<p class="pf-ship-fee-sub">가능한 배송 방법만 체크하고, 체크한 항목만 배송비를 입력해
-								주세요.</p>
+							<p class="pf-ship-fee-sub">가능한 배송 방법만 체크하고, 체크한 항목만 배송비를 입력해 주세요.</p>
 
 							<div class="pf-ship-fee-block">
-								<label class="pf-check"> <input type="checkbox"
-									class="pf-ship-opt" data-type="일반택배" /> <span
-									class="pf-check-ui" aria-hidden="true"></span> <span
-									class="pf-check-text">일반택배</span>
+								<label class="pf-check">
+									<input type="checkbox" class="pf-ship-opt" data-type="일반택배" />
+									<span class="pf-check-ui" aria-hidden="true"></span>
+									<span class="pf-check-text">일반택배</span>
 								</label>
 								<div class="pf-ship-fee-desc">택배사나 편의점에서 접수해 문 앞까지 배송돼요.</div>
 								<input class="pf-input pf-ship-fee-input" type="text"
@@ -358,10 +315,10 @@
 							</div>
 
 							<div class="pf-ship-fee-block">
-								<label class="pf-check"> <input type="checkbox"
-									class="pf-ship-opt" data-type="CU반값" /> <span
-									class="pf-check-ui" aria-hidden="true"></span> <span
-									class="pf-check-text">CU 반값택배</span>
+								<label class="pf-check">
+									<input type="checkbox" class="pf-ship-opt" data-type="CU반값" />
+									<span class="pf-check-ui" aria-hidden="true"></span>
+									<span class="pf-check-text">CU 반값택배</span>
 								</label>
 								<div class="pf-ship-fee-desc">편의점 발송 → 지정 편의점 수령</div>
 								<input class="pf-input pf-ship-fee-input" type="text"
@@ -370,10 +327,10 @@
 							</div>
 
 							<div class="pf-ship-fee-block">
-								<label class="pf-check"> <input type="checkbox"
-									class="pf-ship-opt" data-type="GS반값" /> <span
-									class="pf-check-ui" aria-hidden="true"></span> <span
-									class="pf-check-text">GS 반값택배</span>
+								<label class="pf-check">
+									<input type="checkbox" class="pf-ship-opt" data-type="GS반값" />
+									<span class="pf-check-ui" aria-hidden="true"></span>
+									<span class="pf-check-text">GS 반값택배</span>
 								</label>
 								<div class="pf-ship-fee-desc">편의점 발송 → 지정 편의점 수령</div>
 								<input class="pf-input pf-ship-fee-input" type="text"
@@ -382,9 +339,7 @@
 							</div>
 						</div>
 
-						<!-- ✅ 서버로 보낼 JSON -->
-						<input type="hidden" id="pfShipOptionsJson"
-							name="shippingOptionsJson" value="[]">
+						<input type="hidden" id="pfShipOptionsJson" name="shippingOptionsJson" value="[]">
 					</section>
 
 					<!-- 직거래 -->
@@ -393,10 +348,10 @@
 
 						<div class="pf-trade-row">
 							<div class="pf-trade-left">
-								<label class="pf-check"> <input type="radio"
-									name="tradeMethod" id="pfMeetToggle" value="직거래" /> <span
-									class="pf-check-ui" aria-hidden="true"></span> <span
-									class="pf-check-text">만나서 직거래</span>
+								<label class="pf-check">
+									<input type="radio" name="tradeMethod" id="pfMeetToggle" value="직거래" />
+									<span class="pf-check-ui" aria-hidden="true"></span>
+									<span class="pf-check-text">만나서 직거래</span>
 								</label>
 							</div>
 
@@ -408,35 +363,29 @@
 							</div>
 						</div>
 
-						<input type="hidden" id="pfMeetLocations" name="meetLocationsJson"
-							value="[]">
+						<input type="hidden" id="pfMeetLocations" name="meetLocationsJson" value="[]">
 
 						<section class="area-modal" id="areaModal" aria-hidden="true">
 							<div class="area-modal__backdrop" data-area-close="true"></div>
 
-							<div class="area-modal__panel" role="dialog" aria-modal="true"
-								aria-labelledby="areaModalTitle">
+							<div class="area-modal__panel" role="dialog" aria-modal="true" aria-labelledby="areaModalTitle">
 								<div class="area-modal__header">
 									<h2 class="area-modal__title" id="areaModalTitle">거래 위치 설정</h2>
-									<button type="button" class="area-modal__close" aria-label="닫기"
-										data-area-close="true">×</button>
+									<button type="button" class="area-modal__close" data-area-close="true" aria-label="닫기">×</button>
 								</div>
 
 								<div class="area-modal__body">
 									<div class="area-modal__layout">
 
-										<!-- LEFT : 최근 검색한 지역 -->
+										<!-- LEFT : 최근 검색 지역 -->
 										<div class="area-modal__left">
 											<div class="area-list">
-												<div class="area-list__title">최근 검색한 동네</div>
-												<ul class="area-list__items" id="areaList">
-													<li style="padding: 10px 8px; opacity: .7;">최근 검색 기록이
-														없어요.</li>
-												</ul>
+												<div class="area-list__title">최근 검색 지역</div>
+												<ul class="area-list__items" id="areaList"></ul>
 											</div>
 										</div>
 
-										<!-- CENTER : 검색 / 현재 위치 / 검색 결과 -->
+										<!-- CENTER : 검색 / 접속 지역 기준 검색 / 검색 결과 -->
 										<div class="area-modal__center">
 											<div class="area-modal__actions">
 												<button type="button" class="area-search" id="areaSearchBtn">
@@ -444,25 +393,25 @@
 												</button>
 
 												<button type="button" class="area-geo" id="areaUseGeoBtn">
-													<i class="fa-solid fa-location-crosshairs"
-														aria-hidden="true"></i> 현재 내 위치 사용하기
+													<i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+													현재 접속 지역으로 찾기
 												</button>
 											</div>
 
-											<div class="area-searchwrap" id="areaSearchWrap"
-												aria-hidden="true">
+											<div class="area-searchwrap" id="areaSearchWrap" aria-hidden="true">
 												<div class="area-searchwrap__search">
-													<input type="text" id="areaKakaoKeyword"
-														placeholder="장소/동네/역 이름으로 검색" />
+													<input type="text" id="areaKakaoKeyword" placeholder="장소/동네/역 이름으로 검색" />
 													<button type="button" id="areaKakaoSearchBtn">검색</button>
 												</div>
+
+												<p class="area-searchwrap__guide" id="areaSearchGuide" style="display:none;"></p>
 
 												<ul id="areaKakaoResult" class="area-searchwrap__result"></ul>
 											</div>
 
 											<div class="area-search-empty" id="areaSearchEmpty">
 												<i class="fa-solid fa-map-location-dot"></i>
-												<div>검색어로 찾기를 누르면 검색창과 결과가 표시돼요.</div>
+												<div>검색어로 찾기 또는 접속 지역 기준 찾기를 누르면 검색창과 결과가 표시돼요.</div>
 											</div>
 										</div>
 
@@ -483,14 +432,11 @@
 							</div>
 						</section>
 					</section>
-
 				</div>
 			</div>
 
-			<div class="pf-footnote">판매 정보가 실제 상품과 다른 경우, 책임은 판매자에게 있음을
-				동의합니다.</div>
+			<div class="pf-footnote">판매 정보가 실제 상품과 다른 경우, 책임은 판매자에게 있음을 동의합니다.</div>
 			<button class="pf-submit" id="pfSubmitBtn" type="submit">판매하기</button>
-
 		</form>
 	</section>
 
