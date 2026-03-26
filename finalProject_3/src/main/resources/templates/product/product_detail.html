@@ -240,7 +240,8 @@
 <!-- 상품 상세페이지 -->
 <main th:attr="data-product-no=${product.productNo},
                data-login=${isLogin},
-               data-owner=${isOwner}">
+               data-owner=${isOwner},
+               data-trade-method=${product.tradeMethod}">
 
     <!-- 상품정보 -->
     <section class="pd-page">
@@ -433,13 +434,7 @@
                          data-target-id='map-place-' + ${stat.index}">
         </button>
 
-        <button type="button"
-                class="pd-route-btn"
-                th:attr="data-lat=${ml.latitude},
-                         data-lng=${ml.longitude},
-                         data-place=${ml.placeName != null ? ml.placeName : ml.fullAddress}">
-            길찾기
-        </button>
+   
 
        
     </div>
@@ -801,11 +796,21 @@
 
 <!-- 안전결제 이동 (독립 스크립트 — 다른 JS 에러에 영향받지 않음) -->
 <script th:inline="javascript">
-    function goToPayment(btn) {
-        const ctx = /*[[@{/}]]*/ "";
-        const productNo = btn.getAttribute("data-product-no");
-        location.href = ctx + "payment/checkout?productNo=" + encodeURIComponent(productNo);
+function goToPayment(btn) {
+    const mainEl = document.querySelector("main");
+    const tradeMethod = mainEl ? mainEl.getAttribute("data-trade-method") : "";
+
+    // 🔴 직거래 차단
+    if (tradeMethod === "직거래") {
+        alert("직거래 상품이므로 안전결제가 불가능합니다.");
+        return;
     }
+
+    const ctx = /*[[@{/}]]*/ "";
+    const productNo = btn.getAttribute("data-product-no");
+
+    location.href = ctx + "payment/checkout?productNo=" + encodeURIComponent(productNo);
+}
 </script>
 
 <script th:inline="javascript">
@@ -1304,7 +1309,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(function (error) {
                 isChatLoading = false;
                 console.error("방 생성 에러:", error);
-                alert("채팅방 생성 중 오류가 발생했습니다.");
             });
     }
 
@@ -1664,15 +1668,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    function goToPayment(btn) {
-        const productNo = btn ? btn.getAttribute("data-product-no") : "";
-        if (!productNo) {
-            alert("상품 정보가 없습니다.");
-            return;
-        }
 
-        location.href = ctxPath + "payment/checkout?productNo=" + encodeURIComponent(productNo);
-    }
 
     window.openProductReportModal = openProductReportModal;
     window.closeProductReportModal = closeProductReportModal;

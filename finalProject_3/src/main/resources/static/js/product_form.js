@@ -607,6 +607,13 @@
   // - /ai/sell/description 호출
   // - AI 이미지 진단 없음
   // =========================================================
+  
+
+  // =========================================================
+  // AI 판매글 작성
+  // - /ai/sell/description 호출
+  // - AI 이미지 진단 없음
+  // =========================================================
   const AiSellModule = (() => {
     const btn = $("#pfAiWriteBtn");
     if (!btn) return null;
@@ -630,6 +637,7 @@
     const categoryEl =
       $("#pfCategoryName") ||
       $("#pfCategoryText") ||
+      document.querySelector("select[name='categoryNo']") ||
       document.querySelector("select[name='categoryName']") ||
       document.querySelector("input[name='categoryName']");
 
@@ -659,7 +667,10 @@
     function renderCautions(cautions) {
       if (!cautionsWrap) return;
 
-      const list = Array.isArray(cautions) ? cautions.filter(x => String(x ?? "").trim() !== "") : [];
+      const list = Array.isArray(cautions)
+        ? cautions.filter(x => String(x ?? "").trim() !== "")
+        : [];
+
       cautionsWrap.innerHTML = "";
 
       if (list.length === 0) return;
@@ -684,10 +695,20 @@
         return;
       }
 
-      if (!priceEl || isBlank(priceEl.value)) {
-        alertAndFocus("판매가격을 먼저 입력해 주세요.", priceEl);
-        return;
-      }
+	  const isShare = document.querySelector("input[name='saleType']")?.value === "나눔";
+
+	  if (!isShare) {
+	    if (!priceEl || isBlank(priceEl.value)) {
+	      alertAndFocus("판매가격을 먼저 입력해 주세요.", priceEl);
+	      return;
+	    }
+
+	    const priceV = window.PF.Price?.validate?.();
+	    if (priceV && priceV.ok === false) {
+	      alertAndFocus(priceV.msg, window.PF.Price?.el);
+	      return;
+	    }
+	  }
 
       const priceV = window.PF.Price?.validate?.();
       if (priceV && priceV.ok === false) {
@@ -695,12 +716,12 @@
         return;
       }
 
-      const payload = {
-        productName: String(titleEl?.value ?? "").trim(),
-        categoryName: getCategoryName(),
-        productPrice: String(priceEl?.value ?? "").trim(),
-        productDesc: String(descEl?.value ?? "").trim()
-      };
+	  const payload = {
+	    productName: String(titleEl?.value ?? "").trim(),
+	    categoryName: getCategoryName(),
+	    productPrice: isShare ? "0" : String(priceEl?.value ?? "").trim(),
+	    productDesc: String(descEl?.value ?? "").trim()
+	  };
 
       const ctxPath = getContextPath();
       const url = ctxPath + "/ai/sell/description";
@@ -718,7 +739,10 @@
 
         const data = await res.json().catch(() => null);
 
-        if (!res.ok) {
+        console.log("AI 응답 status =", res.status);
+        console.log("AI 응답 data =", data);
+
+        if (!res.ok || data?.success === false) {
           const msg =
             data?.message ||
             `AI 판매글 작성 요청에 실패했습니다. (${res.status})`;
@@ -729,14 +753,23 @@
           throw new Error("AI 응답 형식이 올바르지 않습니다.");
         }
 
-        const nextTitle = String(data.titleSuggestion ?? "").trim();
+        const nextTitle = String(
+          data.titleSuggestion ?? data.title ?? ""
+        ).trim();
+
         const nextDesc = String(data.description ?? "").trim();
+
+        console.log("titleSuggestion =", nextTitle);
+        console.log("description =", nextDesc);
 
         if (!nextTitle && !nextDesc) {
           throw new Error("AI가 작성 결과를 반환하지 않았습니다.");
         }
 
-        if (titleEl && nextTitle) titleEl.value = nextTitle;
+        if (titleEl && nextTitle) {
+          titleEl.value = nextTitle;
+        }
+
         if (descEl && nextDesc) {
           descEl.value = nextDesc;
 
@@ -754,11 +787,13 @@
             }
           }, 2500);
         }
-      } catch (err) {
+      }
+      catch (err) {
         console.error(err);
         alert(err?.message || "AI 판매글 작성 중 오류가 발생했습니다.");
         if (statusEl) statusEl.textContent = "";
-      } finally {
+      }
+      finally {
         setBusy(false);
       }
     }
@@ -779,7 +814,6 @@
     const openBtn = $("#pfLocationBtn");
     const modal = $("#areaModal");
     const list = $("#areaList");
-    const useGeoBtn = $("#areaUseGeoBtn");
     const searchBtn = $("#areaSearchBtn");
     const chipsWrap = $("#pfLocChips");
     const hidden = $("#pfMeetLocations");
@@ -1201,12 +1235,20 @@
             });
           });
         },
-        (err) => {
-          if (err.code === 1) alert("위치 권한이 거부되었습니다.");
-          else if (err.code === 2) alert("위치 정보를 가져올 수 없습니다.");
-          else if (err.code === 3) alert("위치 조회 시간이 초과되었습니다.");
-          else alert("위치 조회 중 오류가 발생했습니다.");
-        },
+		(err) => {
+		  if (err.code === 1) {
+		    alert("위치 권한이 차단되었습니다.\n브라우저 설정에서 위치 권한을 허용하거나 HTTPS 환경에서 접속해주세요.");
+		  }
+		  else if (err.code === 2) {
+		    alert("위치 정보를 가져올 수 없습니다.");
+		  }
+		  else if (err.code === 3) {
+		    alert("위치 조회 시간이 초과되었습니다.");
+		  }
+		  else {
+		    alert("위치 조회 중 오류가 발생했습니다.");
+		  }
+		},
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
@@ -1231,7 +1273,7 @@
 
     waitForKakaoServices(() => {
       if (searchBtn) searchBtn.addEventListener("click", openSearchUI);
-      if (useGeoBtn) useGeoBtn.addEventListener("click", setMyLocation);
+      
 
       if (kwBtn) kwBtn.addEventListener("click", searchKeyword);
       if (kwInput) {
@@ -1272,52 +1314,7 @@
 
     if (!form) return;
 
-    form.addEventListener("submit", (e) => {
-      const titleEl = $("#pfTitle") || $("#pfName");
-      if (titleEl && isBlank(titleEl.value)) {
-        e.preventDefault();
-        alertAndFocus("제목(상품명)을 입력해 주세요.", titleEl);
-        return;
-      }
-
-      const descEl = $(".pf-textarea");
-      if (descEl && isBlank(descEl.value)) {
-        e.preventDefault();
-        alertAndFocus("상품 설명을 입력해 주세요.", descEl);
-        return;
-      }
-
-      const imgV = window.PF.Image?.validate?.();
-      if (imgV && imgV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(imgV.msg);
-        return;
-      }
-
-      const shipV = window.PF.Shipping?.validate?.();
-      if (shipV && shipV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(shipV.msg);
-        return;
-      }
-
-      const priceV = window.PF.Price?.validate?.();
-      if (priceV && priceV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(priceV.msg, window.PF.Price?.el);
-        return;
-      }
-
-      const meetToggle = $("#pfMeetToggle");
-      const tradeMethod = meetToggle?.checked ? "직거래" : "택배";
-
-      const meetV = window.PF.Meet?.validate?.(tradeMethod);
-      if (meetV && meetV.ok === false) {
-        e.preventDefault();
-        alertAndFocus(meetV.msg);
-        return;
-      }
-    });
+   
   })();
 
   // =========================================================

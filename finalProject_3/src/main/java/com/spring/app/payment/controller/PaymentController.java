@@ -198,6 +198,14 @@ public class PaymentController {
             return "payment/success";
         }
 
+        // 이미 승인 완료된 거래인지 먼저 확인 (팝업 결제 후 success URL 재진입 방지)
+        TransactionDTO existing = paymentService.getTransactionByOrderId(orderId);
+        if (existing != null && "DONE".equals(existing.getPayStatus())) {
+            model.addAttribute("transaction", existing);
+            model.addAttribute("paymentKey", paymentKey);
+            return "payment/success";
+        }
+
         // 유료 결제: 토스 결제 승인 처리
         String requestIp = request.getRemoteAddr();
         Map<String, Object> confirmResult = paymentService.confirmPayment(paymentKey, orderId, amount, requestIp);

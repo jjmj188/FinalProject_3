@@ -71,6 +71,7 @@
                T.PAY_STATUS        AS payStatus,
                T.APPROVED_AT       AS approvedAt,
                T.USE_ESCROW        AS useEscrow,
+               T.ROOM_ID           AS roomId,
                P.PRODUCT_NAME      AS productName,
                P.PRODUCT_PRICE     AS productPrice,
                (SELECT I.IMG_URL FROM PRODUCT_IMAGE I
@@ -134,12 +135,17 @@
 
     <!-- ===================== 에스크로 구매확인 ===================== -->
     <update id="updateEscrowConfirm" parameterType="int">
+        <!--
+            [수정] USE_ESCROW = 'Y' 조건 제거.
+            - 기존: 무료나눔(USE_ESCROW='N') 거래는 이 SQL에서 0건 업데이트되어 구매확정 불가
+            - 수정: PAY_STATUS = 'DONE' 조건만으로 충분히 보호되며, 무료/유료 모두 처리
+        -->
         UPDATE TRANSACTIONS
         SET TRADE_STATUS  = '거래완료',
             COMPLETE_DATE = SYSTIMESTAMP
         WHERE TRANSACTION_ID = #{transactionId}
-          AND USE_ESCROW = 'Y'
           AND PAY_STATUS = 'DONE'
+          AND TRADE_STATUS != '거래완료'
     </update>
 
     <!-- ===================== 무료나눔 거래 완료 ===================== -->

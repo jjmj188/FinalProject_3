@@ -124,7 +124,7 @@
         UPDATE PRODUCTS
         SET PRODUCT_NAME      = #{productName},
             PRODUCT_PRICE     = #{productPrice, jdbcType=NUMERIC},
-            TRADE_STATUS      = #{tradeStatus},
+            TRADE_STATUS      = CASE WHEN #{tradeStatus} IS NULL THEN TRADE_STATUS ELSE #{tradeStatus} END,
             PRODUCT_DESC      = #{productDesc, jdbcType=VARCHAR},
             CATEGORY_NO       = #{categoryNo, jdbcType=NUMERIC},
             PRODUCT_CONDITION = #{productCondition, jdbcType=VARCHAR},
