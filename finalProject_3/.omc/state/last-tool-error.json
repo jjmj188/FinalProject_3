@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"netstat -ano | findstr \\\"8000\\\\|8761\\\\|9080\\\" 2>/dev/null\",\"description\":\"포트 상태 확인\"}",
+  "error": "Exit code 1",
+  "timestamp": "2026-03-18T03:01:54.924Z",
+  "retry_count": 1
+}
