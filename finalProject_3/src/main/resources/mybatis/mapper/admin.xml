@@ -361,6 +361,8 @@
         a.CONTENT        AS content,
         a.START_DATE     AS startDate,
         a.END_DATE       AS endDate,
+        a.DURATION_WEEKS AS durationWeeks,
+        a.AMOUNT         AS amount,
         a.FILE_PATH        AS filePath,
         a.STATUS           AS status,
         a.REJECTED_REASON  AS rejectedReason,
