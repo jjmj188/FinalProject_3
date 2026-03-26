@@ -1,184 +1,106 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const bodyData = document.body.dataset || {};
+    const ctxPath = (bodyData.ctxPath || "/finalProject_3/").replace(/([^/])$/, "$1/");
 
-    let currentUserPosition = null;
+    let isChatLoading = false;
+    let isSubmittingProductReport = false;
+    let productReportSelectedFile = null;
+
+    const productReportData = {
+        "불법 행위": ["판매 금지 품목 게시", "장물 및 습득물 판매", "가품(이미테이션) 판매", "청소년 유해물 게시"],
+        "사기 피해": ["직거래 유도 후 잠적", "외부 채널 유도", "물품 정보 허위 기재", "택배 사기"],
+        "비매너 행위": ["노쇼(No-Show)", "무리한 가격 제안", "반말 및 욕설", "거래 확정 후 변심"],
+        "스팸성 홍보": ["전문 업자의 반복 게시", "홍보 및 광고", "도배 게시물", "낚시성 키워드 사용"],
+        "기타 사유": ["기타 사유 직접 입력"]
+    };
 
     function moveLogin() {
         alert("로그인이 필요합니다.");
-        location.href = "/finalProject_3/security/login";
+        location.href = ctxPath + "security/login";
     }
 
-    function toRad(value) {
-        return value * Math.PI / 180;
+    function getMainElement() {
+        return document.querySelector("main");
     }
 
-    function calculateDistanceKm(lat1, lng1, lat2, lng2) {
-        const R = 6371;
-        const dLat = toRad(lat2 - lat1);
-        const dLng = toRad(lng2 - lng1);
-
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLng / 2) * Math.sin(dLng / 2);
-
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+    function getMainData(name) {
+        const mainEl = getMainElement();
+        return mainEl ? mainEl.getAttribute(name) : "";
     }
 
-    function loadCurrentPosition(callback) {
-        if (currentUserPosition) {
-            callback(currentUserPosition);
+    function buildImageUrl(path, defaultUrl) {
+        if (!path || String(path).trim() === "") {
+            return defaultUrl;
+        }
+
+        const value = String(path).trim();
+
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            return value;
+        }
+
+        if (value.startsWith(ctxPath)) {
+            return value;
+        }
+
+        if (value.startsWith("/images/") || value.startsWith("/upload/")) {
+            return ctxPath.replace(/\/$/, "") + value;
+        }
+
+        if (value.startsWith("images/") || value.startsWith("upload/")) {
+            return ctxPath + value;
+        }
+
+        return ctxPath + "images/" + value;
+    }
+
+    function calcTempStyle(temp) {
+        let value = parseFloat(temp);
+
+        if (isNaN(value)) value = 0;
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+
+        let color = "#9ca3af";
+
+        if (value <= 12.5) {
+            color = "#9ca3af";
+        } else if (value <= 30) {
+            color = "#60a5fa";
+        } else if (value <= 36.5) {
+            color = "#2563eb";
+        } else if (value <= 50.5) {
+            color = "#22c55e";
+        } else if (value <= 65.5) {
+            color = "#eab308";
+        } else {
+            color = "#ef4444";
+        }
+
+        return {
+            percent: value,
+            color: color
+        };
+    }
+
+    function bindMainImageChange() {
+        const mainImg = document.getElementById("pdMainImage");
+        const thumbImgs = document.querySelectorAll(".pd-thumb img");
+
+        if (!mainImg || thumbImgs.length === 0) {
             return;
         }
 
-        if (!navigator.geolocation) {
-            alert("브라우저에서 위치 정보를 지원하지 않습니다.");
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            function (position) {
-                currentUserPosition = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                callback(currentUserPosition);
-            },
-            function () {
-                alert("현재 위치 권한이 필요합니다. 위치 접근을 허용해주세요.");
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 300000
-            }
-        );
-    }
-
-    function updateRouteDistanceTexts() {
-        if (!currentUserPosition) {
-            return;
-        }
-
-        const routeBtns = document.querySelectorAll(".pd-route-btn[data-lat][data-lng]");
-
-        routeBtns.forEach(function (btn) {
-            const lat = parseFloat(btn.dataset.lat);
-            const lng = parseFloat(btn.dataset.lng);
-            const index = btn.dataset.index;
-
-            if (isNaN(lat) || isNaN(lng) || index === undefined) {
-                return;
-            }
-
-            const target = document.getElementById("pd-route-distance-" + index);
-
-            if (!target) {
-                return;
-            }
-
-            const distKm = calculateDistanceKm(
-                currentUserPosition.lat,
-                currentUserPosition.lng,
-                lat,
-                lng
-            );
-
-            if (distKm < 1) {
-                target.textContent = "현재위치 기준 약 " + Math.round(distKm * 1000) + "m";
-            } else {
-                target.textContent = "현재위치 기준 약 " + distKm.toFixed(1) + "km";
-            }
-        });
-    }
-
-    function bindRouteButtons() {
-        const routeBtns = document.querySelectorAll(".pd-route-btn[data-lat][data-lng]");
-
-        if (routeBtns.length === 0) {
-            return;
-        }
-
-        routeBtns.forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                const destLat = parseFloat(btn.dataset.lat);
-                const destLng = parseFloat(btn.dataset.lng);
-                const place = btn.dataset.place || "거래 희망 위치";
-
-                if (isNaN(destLat) || isNaN(destLng)) {
-                    alert("거래 위치 좌표가 없습니다.");
-                    return;
-                }
-
-                loadCurrentPosition(function () {
-                    updateRouteDistanceTexts();
-
-                    const kakaoUrl =
-                        "https://map.kakao.com/link/to/" +
-                        encodeURIComponent(place) +
-                        "," +
-                        destLat +
-                        "," +
-                        destLng;
-
-                    window.open(kakaoUrl, "_blank");
-                });
-            });
-        });
-    }
-
-    function initCurrentLocationDistance() {
-        const routeBtns = document.querySelectorAll(".pd-route-btn[data-lat][data-lng]");
-
-        if (routeBtns.length === 0) {
-            return;
-        }
-
-        if (!navigator.geolocation) {
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            function (position) {
-                currentUserPosition = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                updateRouteDistanceTexts();
-            },
-            function () {
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 8000,
-                maximumAge: 300000
-            }
-        );
-    }
-
-    /* =========================
-       1. 대표 이미지 변경
-    ========================= */
-    const mainImg = document.getElementById("pdMainImage");
-    const thumbImgs = document.querySelectorAll(".pd-thumb img");
-
-    if (mainImg && thumbImgs.length > 0) {
         thumbImgs.forEach(function (img) {
             img.addEventListener("click", function () {
-                const nextSrc = img.src.includes("w=400")
-                    ? img.src.replace("w=400", "w=1200")
-                    : img.src;
-
-                mainImg.src = nextSrc;
-                mainImg.alt = img.alt.replace("썸네일", "상품 이미지");
+                const fullSrc = img.dataset.full || img.src;
+                mainImg.src = fullSrc;
+                mainImg.alt = (img.alt || "상품 이미지").replace("썸네일", "상품 이미지");
             });
         });
     }
 
-    /* =========================
-       2. 판매자 다른 물품 슬라이더
-    ========================= */
-    (function () {
+    function bindSimilarProductSlider() {
         const viewport = document.getElementById("locViewport");
         const prevBtn = document.getElementById("locPrevBtn");
         const nextBtn = document.getElementById("locNextBtn");
@@ -211,12 +133,9 @@ document.addEventListener("DOMContentLoaded", function () {
         window.addEventListener("load", updateBtns);
 
         updateBtns();
-    })();
+    }
 
-    /* =========================
-       3. 카카오 지도 + 거래희망장소 연동
-    ========================= */
-    (function () {
+    function bindKakaoMap() {
         const container = document.getElementById("locMapKakao");
         const pdLocationButtons = document.querySelectorAll(".pd-location[data-lat][data-lng]");
         const mapPlaceButtons = document.querySelectorAll(".loc-map-place[data-lat][data-lng]");
@@ -232,7 +151,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             kakao.maps.load(function () {
-
                 let defaultLat = 37.5665;
                 let defaultLng = 126.9780;
                 let defaultPlace = "위치 정보 없음";
@@ -322,86 +240,87 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (e) {
             console.warn("Kakao map load failed:", e);
         }
-    })();
+    }
 
-    /* =========================
-       4. 찜 하트 기능
-    ========================= */
-    $(document).on("click", ".pd-like", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const $btn = $(this);
-        const isLogin = String($btn.attr("data-login")) === "true";
-
-        if (!isLogin) {
-            moveLogin();
+    function bindWishlist() {
+        if (typeof window.jQuery === "undefined") {
             return;
         }
 
-        const productNo = $btn.attr("data-product-no");
+        $(document).on("click", ".pd-like", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-        $.ajax({
-            url: "/finalProject_3/product/wishlist/toggle",
-            type: "post",
-            data: { productNo: productNo },
-            dataType: "json",
-            success: function (json) {
-                if (!json.success) {
-                    alert(json.message || "찜 처리에 실패했습니다.");
-                    return;
-                }
+            const $btn = $(this);
+            const isLogin = String($btn.attr("data-login")) === "true";
 
-                const $icon = $btn.find("i");
-                const $wishCountText = $("#wishCountText");
-                let currentCount = parseInt($wishCountText.text(), 10);
+            if (!isLogin) {
+                moveLogin();
+                return;
+            }
 
-                if (isNaN(currentCount)) {
-                    currentCount = 0;
-                }
+            const productNo = $btn.attr("data-product-no");
 
-                if (json.wished) {
-                    $btn.addClass("is-active");
-                    $icon.removeClass("fa-regular").addClass("fa-solid");
-                    $wishCountText.text(currentCount + 1);
-                    alert("찜 성공");
-                } else {
-                    $btn.removeClass("is-active");
-                    $icon.removeClass("fa-solid").addClass("fa-regular");
-
-                    if (currentCount > 0) {
-                        $wishCountText.text(currentCount - 1);
+            $.ajax({
+                url: ctxPath + "product/wishlist/toggle",
+                type: "post",
+                data: { productNo: productNo },
+                dataType: "json",
+                success: function (json) {
+                    if (!json.success) {
+                        alert(json.message || "찜 처리에 실패했습니다.");
+                        return;
                     }
 
-                    alert("찜 취소");
-                }
-            },
-            error: function (request, status, error) {
-                console.log("찜 AJAX ERROR");
-                console.log("status =", request.status);
-                console.log("responseText =", request.responseText);
-                console.log("error =", error);
+                    const $icon = $btn.find("i");
+                    const wishCountTargets = document.querySelectorAll(".wish-count-text, #wishCountText");
+                    let currentCount = 0;
 
-                if (request.status === 401) {
-                    alert("로그인이 필요하거나 인증이 만료되었습니다.");
-                    moveLogin();
-                    return;
-                }
+                    if (wishCountTargets.length > 0) {
+                        const parsed = parseInt(wishCountTargets[0].textContent, 10);
+                        currentCount = isNaN(parsed) ? 0 : parsed;
+                    }
 
-                if (request.status === 403) {
-                    alert("접근 권한이 없습니다.");
-                    return;
-                }
+                    if (json.wished) {
+                        $btn.addClass("is-active");
+                        $icon.removeClass("fa-regular").addClass("fa-solid");
+                        wishCountTargets.forEach(function (el) {
+                            el.textContent = String(currentCount + 1);
+                        });
+                        alert("찜 성공");
+                    } else {
+                        $btn.removeClass("is-active");
+                        $icon.removeClass("fa-solid").addClass("fa-regular");
+                        wishCountTargets.forEach(function (el) {
+                            el.textContent = String(Math.max(0, currentCount - 1));
+                        });
+                        alert("찜 취소");
+                    }
+                },
+                error: function (request, status, error) {
+                    console.log("찜 AJAX ERROR");
+                    console.log("status =", request.status);
+                    console.log("responseText =", request.responseText);
+                    console.log("error =", error);
 
-                alert("찜 처리 중 오류가 발생했습니다.");
-            }
+                    if (request.status === 401) {
+                        alert("로그인이 필요하거나 인증이 만료되었습니다.");
+                        moveLogin();
+                        return;
+                    }
+
+                    if (request.status === 403) {
+                        alert("접근 권한이 없습니다.");
+                        return;
+                    }
+
+                    alert("찜 처리 중 오류가 발생했습니다.");
+                }
+            });
         });
-    });
+    }
 
-    /* =========================
-       5. 등록시간 표시
-    ========================= */
-    (function () {
+    function bindTimeAgo() {
         const elements = document.querySelectorAll(".time-ago");
 
         elements.forEach(function (el) {
@@ -434,12 +353,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 el.innerText = Math.floor(diff / 31536000) + "년전";
             }
         });
-    })();
+    }
 
-    /* =========================
-       6. 상품정보 더보기
-    ========================= */
-    (function () {
+    function bindProductInfoMoreButton() {
         const textBox = document.getElementById("pdinfoTextBox");
         const moreBtn = document.getElementById("pdinfoMoreBtn");
 
@@ -479,12 +395,9 @@ document.addEventListener("DOMContentLoaded", function () {
         window.addEventListener("resize", checkOverflow);
 
         checkOverflow();
-    })();
+    }
 
-    /* =========================
-       7. 매너온도 바 길이 + 색상
-    ========================= */
-    (function () {
+    function applyTemperatureBar() {
         const tempValueEl = document.getElementById("pdinfoTempValue");
         const barFill = document.getElementById("pdinfoBarFill");
 
@@ -492,42 +405,408 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let temp = parseFloat(tempValueEl.dataset.temp);
+        const tempStyle = calcTempStyle(tempValueEl.dataset.temp);
+        barFill.style.width = tempStyle.percent + "%";
+        barFill.style.backgroundColor = tempStyle.color;
+        tempValueEl.style.color = tempStyle.color;
+    }
 
-        if (isNaN(temp)) {
-            temp = 0;
+    function bindChatButton() {
+        const btn = document.getElementById("btnStartChat");
+
+        if (!btn) {
+            return;
         }
 
-        if (temp < 0) {
-            temp = 0;
+        btn.addEventListener("click", function () {
+            if (isChatLoading) {
+                return;
+            }
+
+            const isLogin = String(getMainData("data-login")) === "true";
+            const isOwner = String(getMainData("data-owner")) === "true";
+            const productNo = btn.dataset.productNo;
+            const sellerEmail = btn.dataset.sellerEmail;
+            const productName = btn.dataset.productName || "";
+
+            if (!isLogin) {
+                moveLogin();
+                return;
+            }
+
+            if (isOwner) {
+                alert("본인 상품은 채팅할 수 없습니다.");
+                return;
+            }
+
+            if (!productNo || !sellerEmail) {
+                alert("채팅 정보를 찾을 수 없습니다.");
+                return;
+            }
+
+            isChatLoading = true;
+
+            fetch(ctxPath + "chat/createOrGetRoom", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                },
+                body: new URLSearchParams({
+                    productNo: productNo,
+                    sellerEmail: sellerEmail
+                }).toString()
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error("채팅방 생성 실패");
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    isChatLoading = false;
+
+                    if (!data.success) {
+                        alert(data.message || "채팅방 이동에 실패했습니다.");
+                        return;
+                    }
+
+                    if (data.moveUrl) {
+                        location.href = data.moveUrl;
+                        return;
+                    }
+
+                    if (data.roomId) {
+                        location.href = ctxPath + "chat/chatroom?roomId=" + encodeURIComponent(data.roomId);
+                        return;
+                    }
+
+                    location.href = ctxPath + "chat/chatroomList";
+                })
+                .catch(function (error) {
+                    isChatLoading = false;
+                    console.error("채팅방 생성 에러:", error);
+                    alert(productName ? "[" + productName + "] 채팅방 이동 중 오류가 발생했습니다." : "채팅방 이동 중 오류가 발생했습니다.");
+                });
+        });
+    }
+
+    function loadProductDetailSellerProfile() {
+        const productNo = getMainData("data-product-no");
+
+        if (!productNo) {
+            return;
         }
 
-        if (temp > 100) {
-            temp = 100;
+        fetch(ctxPath + "product/seller/profile?productNo=" + encodeURIComponent(productNo), {
+            method: "GET"
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("판매자 정보 조회 실패");
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                if (!data.success || !data.seller) {
+                    return;
+                }
+
+                const seller = data.seller;
+
+                const sellerNameEl = document.getElementById("pdinfoSellerName");
+                const sellerImgEl = document.getElementById("pdinfoSellerImg");
+                const tempValueEl = document.getElementById("pdinfoTempValue");
+                const safePayCountEl = document.getElementById("pdinfoSafePayCount");
+                const reviewCountEl = document.getElementById("pdinfoReviewCount");
+                const tradeCountEl = document.getElementById("pdinfoTradeCount");
+
+                if (sellerNameEl) {
+                    sellerNameEl.textContent = seller.sellerName || "판매자";
+                }
+
+                if (sellerImgEl) {
+                    sellerImgEl.src = buildImageUrl(
+                        seller.sellerProfileImg,
+                        ctxPath + "images/default_profile.png"
+                    );
+                }
+
+                if (tempValueEl) {
+                    const temp = seller.mannerTemp != null ? seller.mannerTemp : 0;
+                    tempValueEl.dataset.temp = temp;
+                    tempValueEl.textContent = temp + "°C";
+                }
+
+                if (safePayCountEl) {
+                    safePayCountEl.textContent = seller.safePayCount != null ? seller.safePayCount : 0;
+                }
+
+                if (reviewCountEl) {
+                    reviewCountEl.textContent = seller.reviewCount != null ? seller.reviewCount : 0;
+                }
+
+                if (tradeCountEl) {
+                    tradeCountEl.textContent = seller.tradeCount != null ? seller.tradeCount : 0;
+                }
+
+                applyTemperatureBar();
+            })
+            .catch(function (error) {
+                console.error("판매자 정보 조회 에러:", error);
+            });
+    }
+
+    function openProductReportModal() {
+        const overlay = document.getElementById("productReportOverlay");
+        const panel = document.getElementById("productReportPanel");
+
+        if (overlay) {
+            overlay.classList.add("show");
         }
 
-        let color = "#9ca3af";
-
-        if (temp <= 12.5) {
-            color = "#9ca3af";
-        } else if (temp <= 30) {
-            color = "#60a5fa";
-        } else if (temp <= 36.5) {
-            color = "#2563eb";
-        } else if (temp <= 50.5) {
-            color = "#22c55e";
-        } else if (temp <= 65.5) {
-            color = "#eab308";
-        } else {
-            color = "#ef4444";
+        if (panel) {
+            panel.classList.add("show");
         }
 
-        barFill.style.width = temp + "%";
-        barFill.style.backgroundColor = color;
-        tempValueEl.style.color = color;
-    })();
+        backToProductReportStep1();
+        document.body.style.overflow = "hidden";
+    }
 
-    bindRouteButtons();
-    initCurrentLocationDistance();
+    function closeProductReportModal() {
+        const overlay = document.getElementById("productReportOverlay");
+        const panel = document.getElementById("productReportPanel");
+        const textEl = document.getElementById("productReportText");
+        const photoCountEl = document.getElementById("productReportPhotoCount");
+        const previewEl = document.getElementById("productReportPhotoPreview");
+        const fileInputEl = document.getElementById("productReportFileInput");
+        const charCountEl = document.getElementById("productReportCurrentCharCount");
 
+        if (overlay) {
+            overlay.classList.remove("show");
+        }
+
+        if (panel) {
+            panel.classList.remove("show");
+        }
+
+        if (textEl) {
+            textEl.value = "";
+        }
+
+        if (fileInputEl) {
+            fileInputEl.value = "";
+        }
+
+        if (charCountEl) {
+            charCountEl.textContent = "0";
+        }
+
+        if (photoCountEl) {
+            photoCountEl.textContent = "0/1";
+        }
+
+        if (previewEl) {
+            previewEl.innerHTML = "";
+        }
+
+        productReportSelectedFile = null;
+        backToProductReportStep1();
+        document.body.style.overflow = "";
+    }
+
+    function backToProductReportStep1() {
+        const step1 = document.getElementById("productReportStep1");
+        const step2 = document.getElementById("productReportStep2");
+
+        if (step1) {
+            step1.classList.add("is-active");
+        }
+
+        if (step2) {
+            step2.classList.remove("is-active");
+        }
+    }
+
+    function goProductReportStep2(mainCategory) {
+        const step1 = document.getElementById("productReportStep1");
+        const step2 = document.getElementById("productReportStep2");
+        const titleEl = document.getElementById("productReportMainTitle");
+        const selectEl = document.getElementById("productReportSubCategory");
+
+        if (step1) {
+            step1.classList.remove("is-active");
+        }
+
+        if (step2) {
+            step2.classList.add("is-active");
+        }
+
+        if (titleEl) {
+            titleEl.innerText = mainCategory;
+        }
+
+        if (selectEl) {
+            selectEl.innerHTML = "";
+
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "상세 신고 유형을 선택하세요";
+            selectEl.appendChild(defaultOption);
+
+            const subCategories = productReportData[mainCategory] || [];
+
+            subCategories.forEach(function (item) {
+                const option = document.createElement("option");
+                option.value = item;
+                option.textContent = item;
+                selectEl.appendChild(option);
+            });
+        }
+    }
+
+    function updateProductReportCharCount(textarea) {
+        const currentCountEl = document.getElementById("productReportCurrentCharCount");
+        if (!currentCountEl || !textarea) {
+            return;
+        }
+
+        currentCountEl.textContent = String(textarea.value.length);
+    }
+
+    function onProductReportFileSelected(input) {
+        const photoCountEl = document.getElementById("productReportPhotoCount");
+        const previewEl = document.getElementById("productReportPhotoPreview");
+
+        if (!input || !input.files || input.files.length === 0) {
+            productReportSelectedFile = null;
+
+            if (photoCountEl) {
+                photoCountEl.textContent = "0/1";
+            }
+
+            if (previewEl) {
+                previewEl.innerHTML = "";
+            }
+            return;
+        }
+
+        const file = input.files[0];
+
+        if (!file.type.startsWith("image/")) {
+            alert("이미지 파일만 첨부할 수 있습니다.");
+            input.value = "";
+            return;
+        }
+
+        productReportSelectedFile = file;
+
+        if (photoCountEl) {
+            photoCountEl.textContent = "1/1";
+        }
+
+        if (previewEl) {
+            previewEl.innerHTML = "";
+
+            const img = document.createElement("img");
+            img.style.width = "70px";
+            img.style.height = "70px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "8px";
+            img.style.border = "1px solid #ddd";
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            previewEl.appendChild(img);
+        }
+    }
+
+    function submitProductReport() {
+        if (isSubmittingProductReport) {
+            return;
+        }
+
+        const mainTypeEl = document.getElementById("productReportMainTitle");
+        const subTypeEl = document.getElementById("productReportSubCategory");
+        const contentEl = document.getElementById("productReportText");
+        const productNo = getMainData("data-product-no");
+
+        const mainType = mainTypeEl ? mainTypeEl.innerText : "";
+        const subType = subTypeEl ? subTypeEl.value : "";
+        const content = contentEl ? contentEl.value.trim() : "";
+
+        if (!subType) {
+            alert("상세 신고 유형을 선택해주세요.");
+            return;
+        }
+
+        if (!content) {
+            alert("신고 사유를 입력해주세요.");
+            return;
+        }
+
+        if (!productNo) {
+            alert("상품 정보가 올바르지 않습니다.");
+            return;
+        }
+
+        isSubmittingProductReport = true;
+
+        const formData = new FormData();
+        formData.append("productNo", productNo);
+        formData.append("reportMainCategory", mainType);
+        formData.append("reportSubCategory", subType);
+        formData.append("reportContent", content);
+
+        if (productReportSelectedFile) {
+            formData.append("image", productReportSelectedFile);
+        }
+
+        fetch(ctxPath + "product/report", {
+            method: "POST",
+            body: formData
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("신고 접수 실패");
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                isSubmittingProductReport = false;
+
+                if (data.success) {
+                    alert("신고가 정상적으로 접수되었습니다.");
+                    closeProductReportModal();
+                } else {
+                    alert(data.message || "신고 접수에 실패했습니다.");
+                }
+            })
+            .catch(function (error) {
+                isSubmittingProductReport = false;
+                console.error("상품 신고 에러:", error);
+                alert("신고 처리 중 오류가 발생했습니다.");
+            });
+    }
+
+    window.openProductReportModal = openProductReportModal;
+    window.closeProductReportModal = closeProductReportModal;
+    window.goProductReportStep2 = goProductReportStep2;
+    window.backToProductReportStep1 = backToProductReportStep1;
+    window.updateProductReportCharCount = updateProductReportCharCount;
+    window.onProductReportFileSelected = onProductReportFileSelected;
+    window.submitProductReport = submitProductReport;
+
+    bindMainImageChange();
+    bindSimilarProductSlider();
+    bindKakaoMap();
+    bindWishlist();
+    bindTimeAgo();
+    bindProductInfoMoreButton();
+    applyTemperatureBar();
+    bindChatButton();
+    loadProductDetailSellerProfile();
 });
