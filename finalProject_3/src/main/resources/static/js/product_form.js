@@ -607,6 +607,13 @@
   // - /ai/sell/description 호출
   // - AI 이미지 진단 없음
   // =========================================================
+  
+
+  // =========================================================
+  // AI 판매글 작성
+  // - /ai/sell/description 호출
+  // - AI 이미지 진단 없음
+  // =========================================================
   const AiSellModule = (() => {
     const btn = $("#pfAiWriteBtn");
     if (!btn) return null;
@@ -630,6 +637,7 @@
     const categoryEl =
       $("#pfCategoryName") ||
       $("#pfCategoryText") ||
+      document.querySelector("select[name='categoryNo']") ||
       document.querySelector("select[name='categoryName']") ||
       document.querySelector("input[name='categoryName']");
 
@@ -659,7 +667,10 @@
     function renderCautions(cautions) {
       if (!cautionsWrap) return;
 
-      const list = Array.isArray(cautions) ? cautions.filter(x => String(x ?? "").trim() !== "") : [];
+      const list = Array.isArray(cautions)
+        ? cautions.filter(x => String(x ?? "").trim() !== "")
+        : [];
+
       cautionsWrap.innerHTML = "";
 
       if (list.length === 0) return;
@@ -718,7 +729,10 @@
 
         const data = await res.json().catch(() => null);
 
-        if (!res.ok) {
+        console.log("AI 응답 status =", res.status);
+        console.log("AI 응답 data =", data);
+
+        if (!res.ok || data?.success === false) {
           const msg =
             data?.message ||
             `AI 판매글 작성 요청에 실패했습니다. (${res.status})`;
@@ -729,14 +743,23 @@
           throw new Error("AI 응답 형식이 올바르지 않습니다.");
         }
 
-        const nextTitle = String(data.titleSuggestion ?? "").trim();
+        const nextTitle = String(
+          data.titleSuggestion ?? data.title ?? ""
+        ).trim();
+
         const nextDesc = String(data.description ?? "").trim();
+
+        console.log("titleSuggestion =", nextTitle);
+        console.log("description =", nextDesc);
 
         if (!nextTitle && !nextDesc) {
           throw new Error("AI가 작성 결과를 반환하지 않았습니다.");
         }
 
-        if (titleEl && nextTitle) titleEl.value = nextTitle;
+        if (titleEl && nextTitle) {
+          titleEl.value = nextTitle;
+        }
+
         if (descEl && nextDesc) {
           descEl.value = nextDesc;
 
@@ -754,11 +777,13 @@
             }
           }, 2500);
         }
-      } catch (err) {
+      }
+      catch (err) {
         console.error(err);
         alert(err?.message || "AI 판매글 작성 중 오류가 발생했습니다.");
         if (statusEl) statusEl.textContent = "";
-      } finally {
+      }
+      finally {
         setBusy(false);
       }
     }
