@@ -485,7 +485,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(function (error) {
                     isChatLoading = false;
                     console.error("채팅방 생성 에러:", error);
-                    alert(productName ? "[" + productName + "] 채팅방 이동 중 오류가 발생했습니다." : "채팅방 이동 중 오류가 발생했습니다.");
                 });
         });
     }
