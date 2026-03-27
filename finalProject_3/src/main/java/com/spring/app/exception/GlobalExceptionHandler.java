@@ -3,6 +3,8 @@ package com.spring.app.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,31 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(Exception.class)
+    public Object handleGeneralException(Exception e,
+                                         HttpServletRequest request,
+                                         Model model) {
+        log.error("[GlobalExceptionHandler] Unhandled exception at {}: {}", request.getRequestURI(), e.getMessage(), e);
+
+        String xrw = request.getHeader("X-Requested-With");
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(xrw);
+        String accept = request.getHeader("Accept");
+        boolean wantsJson = accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE);
+        String contentType = request.getContentType();
+        boolean isJsonRequest = contentType != null && contentType.contains(MediaType.APPLICATION_JSON_VALUE);
+
+        if (isAjax || wantsJson || isJsonRequest) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("success", false);
+            body.put("message", "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        }
+        model.addAttribute("errorMessage", "서버 오류가 발생했습니다.");
+        return "error";
+    }
 
     @ExceptionHandler(BadWordException.class)
     public Object handleBadWordException(BadWordException e,

@@ -468,8 +468,33 @@
 <script>
     (function() {
     const ctxPath = document.getElementById('mypageCtxData').getAttribute('data-ctx') || '/';
+    function calcTempStyle(temp) {
+        let value = parseFloat(temp);
+        if (isNaN(value) || value < 0) value = 0;
+        if (value > 100) value = 100;
+        let color = '#9ca3af';
+        if (value >= 65.5) {
+            color = '#ef4444';
+        } else if (value >= 50.5) {
+            color = '#eab308';
+        } else if (value >= 36.5) {
+            color = '#22c55e';
+        } else if (value >= 30) {
+            color = '#2563eb';
+        } else if (value >= 12.5) {
+            color = '#60a5fa';
+        } else {
+            color = '#9ca3af';
+        }
+        return { percent: value, color: color };
+    }
+
     const mannerTempBar = document.getElementById('mannerTempBar');
-    if (mannerTempBar) mannerTempBar.style.width = (mannerTempBar.dataset.mt || 50) + '%';
+    if (mannerTempBar) {
+        const style = calcTempStyle(mannerTempBar.dataset.mt || 50);
+        mannerTempBar.style.width = style.percent + '%';
+        mannerTempBar.style.background = style.color;
+    }
     let currentProfileImg = document.getElementById('mypageProfileImg') ? document.getElementById('mypageProfileImg').getAttribute('src') : '';
     let editOriginalNickname = '';
     let editNicknameChecked = false;

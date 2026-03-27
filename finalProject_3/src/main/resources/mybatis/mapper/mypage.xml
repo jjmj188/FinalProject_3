@@ -125,7 +125,7 @@
         SET PRODUCT_NAME      = #{productName},
             PRODUCT_PRICE     = #{productPrice, jdbcType=NUMERIC},
             TRADE_STATUS      = CASE WHEN #{tradeStatus} IS NULL THEN TRADE_STATUS ELSE #{tradeStatus} END,
-            PRODUCT_DESC      = #{productDesc, jdbcType=VARCHAR},
+            PRODUCT_DESC      = #{productDesc, jdbcType=CLOB},
             CATEGORY_NO       = #{categoryNo, jdbcType=NUMERIC},
             PRODUCT_CONDITION = #{productCondition, jdbcType=VARCHAR},
             TRADE_METHOD      = #{tradeMethod, jdbcType=VARCHAR}
