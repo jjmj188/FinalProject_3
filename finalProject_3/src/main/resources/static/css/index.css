@@ -271,9 +271,9 @@
   }
 
   .best-deco-right {
-    left: calc(50% + 346px);
+    left: calc(50% + 348px);
     top: 260px;
-    transform: translateY(-110px);
+    transform: translateY(-108px);
   }
 
   .nb-wrap {
@@ -755,3 +755,548 @@
 .sps-badge.selling { background: #16a34a; }
 .sps-badge.reserved { background: #f59e0b; }
 .sps-badge.soldout { background: #6b7280; }
+
+
+
+/*==모바일==*/
+/* =========================
+   반응형
+   ========================= */
+
+/* 태블릿 */
+@media (max-width: 1024px) {
+
+  .scroll-indicator {
+    width: 48px;
+    height: 72px;
+    bottom: -36px;
+  }
+
+  .event-bg {
+    height: 680px;
+  }
+
+  .event-overlay {
+    padding-top: 300px;
+  }
+
+  .best-section,
+  .best-viewport {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .best-row {
+    padding: 0 50px 10px;
+  }
+
+  .best-track {
+    gap: 40px;
+    justify-content: center;
+  }
+
+  .best-card {
+    width: 220px;
+    height: 220px;
+  }
+
+  .best-card.is-center {
+    transform: scale(1.04);
+  }
+
+  .best-nav.prev {
+    left: 8px;
+  }
+
+  .best-nav.next {
+    right: 8px;
+  }
+
+  .best-deco-fixed {
+    width: 100px;
+  }
+
+  .best-deco-left {
+    left: 20px;
+    top: 10px;
+  }
+
+  .best-deco-right {
+    right: 20px;
+    left: auto;
+    top: 220px;
+    transform: translateY(-80px);
+  }
+
+  .nb-wrap {
+    width: min(100%, calc(100% - 40px));
+    margin: 50px auto 70px;
+  }
+
+  .nb-head {
+    margin-bottom: 40px;
+  }
+
+  .nb-head h2 {
+    font-size: 34px;
+  }
+
+  .nb-head p {
+    font-size: 15px;
+  }
+
+  .nb-top,
+  .nb-bottom {
+    gap: 28px;
+  }
+
+  .nb-copy .desc {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .nb-copy .cta {
+    font-size: 16px;
+    gap: 14px;
+  }
+
+  .nb-thumb-arch {
+    height: 320px;
+    border-radius: 160px 160px 0 0;
+  }
+
+  .nb-thumb-round {
+    height: 280px;
+  }
+
+  .nb-meta {
+    font-size: 16px;
+  }
+
+  .nb-badge {
+    width: 110px;
+    top: -20px;
+  }
+
+  .nb-badge-left {
+    left: -10px;
+  }
+
+  .nb-badge-right {
+    right: -20px;
+  }
+
+  .startdeal-section {
+    padding: 0 16px 70px;
+  }
+
+  .startdeal-wrap {
+    max-width: 100%;
+    height: auto;
+    min-height: 420px;
+    padding: 34px 28px;
+    border-radius: 20px;
+  }
+
+  .startdeal-left {
+    max-width: 100%;
+  }
+
+  .startdeal-title {
+    margin: 14px 0 40px;
+    font-size: 30px;
+  }
+
+  .startdeal-desc {
+    font-size: 14px;
+  }
+
+  .free-deal-slider {
+    height: auto;
+    padding: 40px 0 60px;
+  }
+
+  .free-deal-slider__wrap {
+    max-width: calc(100% - 40px);
+    margin: 90px auto 0;
+  }
+
+  .free-deal-slider__item {
+    flex: 0 0 calc((100% - 24px) / 2);
+    min-width: calc((100% - 24px) / 2);
+  }
+
+  .free-deal-card {
+    height: 280px;
+  }
+
+  .free-deal-slider__nav--prev {
+    left: -10px;
+  }
+
+  .free-deal-slider__nav--next {
+    right: -10px;
+  }
+}
+
+
+/* 모바일 */
+@media (max-width: 768px) {
+
+  .scroll-indicator {
+    width: 42px;
+    height: 64px;
+    bottom: -30px;
+  }
+
+  .scroll-indicator::before {
+    width: 10px;
+    height: 10px;
+  }
+
+  .event-bg {
+    height: 520px;
+  }
+
+  .event-overlay {
+    padding-top: 220px;
+  }
+
+  .best-row {
+    padding: 0 36px 10px;
+  }
+
+  .best-track {
+    gap: 20px;
+    padding: 14px 0;
+  }
+
+  .best-card {
+    width: 170px;
+    height: 170px;
+  }
+
+  .best-card.is-center {
+    transform: scale(1.02);
+  }
+
+  .best-event {
+    gap: 10px;
+    padding: 18px 14px;
+  }
+
+  .best-event-title {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .best-event-btn {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .best-nav {
+    width: 30px;
+    height: 30px;
+  }
+
+  .best-nav.prev {
+    left: 0;
+  }
+
+  .best-nav.next {
+    right: 0;
+  }
+
+  .best-deco-fixed {
+    display: none;
+  }
+
+  .nb-wrap {
+    width: calc(100% - 32px);
+    margin: 40px auto 56px;
+  }
+
+  .nb-float {
+    display: none;
+  }
+
+  .nb-head {
+    margin-bottom: 28px;
+  }
+
+  .nb-head h2 {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+
+  .nb-head p {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .nb-top,
+  .nb-bottom {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .nb-copy {
+    order: -1;
+    text-align: center;
+  }
+
+  .nb-copy .desc {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 18px;
+    white-space: normal;
+  }
+
+  .nb-copy .cta {
+    justify-content: center;
+    font-size: 15px;
+  }
+
+  .nb-thumb-arch {
+    height: 300px;
+    border-radius: 160px 160px 0 0;
+  }
+
+  .nb-thumb-round {
+    height: 240px;
+    border-radius: 20px;
+  }
+
+  .nb-meta {
+    font-size: 15px;
+    padding: 0 2px;
+  }
+
+  .nb-badge {
+    width: 100px;
+    top: -14px;
+  }
+
+  .nb-badge-left {
+    left: -6px;
+  }
+
+  .nb-badge-right {
+    right: -6px;
+  }
+
+  .startdeal-section {
+    padding: 0 14px 56px;
+  }
+
+  .startdeal-wrap {
+    padding: 24px 20px;
+    min-height: auto;
+    border-radius: 18px;
+  }
+
+  .startdeal-badge {
+    font-size: 11px;
+  }
+
+  .startdeal-title {
+    margin: 12px 0 24px;
+    font-size: 24px;
+    line-height: 1.3;
+  }
+
+  .startdeal-desc {
+    margin-bottom: 18px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .startdeal-btn {
+    height: 42px;
+    padding: 0 14px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+
+  .startdeal-pills {
+    gap: 8px;
+  }
+
+  .startdeal-pill {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .free-deal-slider {
+    padding: 30px 0 50px;
+  }
+
+  .free-deal-slider__wrap {
+    max-width: calc(100% - 32px);
+    margin: 70px auto 0;
+  }
+
+  .free-deal-slider__head {
+    padding: 0;
+    margin-bottom: 12px;
+  }
+
+  .free-deal-slider__title {
+    font-size: 18px;
+  }
+
+  .free-deal-slider__more {
+    font-size: 13px;
+  }
+
+  .free-deal-slider__track {
+    gap: 16px;
+  }
+
+  .free-deal-slider__item {
+    flex: 0 0 100%;
+    min-width: 100%;
+  }
+
+  .free-deal-card {
+    height: 280px;
+    border-radius: 12px;
+  }
+
+  .free-deal-card__body {
+    padding: 14px 14px 12px;
+  }
+
+  .free-deal-card__title {
+    font-size: 16px;
+  }
+
+  .free-deal-card__price {
+    font-size: 13px;
+  }
+
+  .free-deal-slider__nav {
+    width: 38px;
+    height: 38px;
+  }
+
+  .free-deal-slider__nav--prev {
+    left: 6px;
+  }
+
+  .free-deal-slider__nav--next {
+    right: 6px;
+  }
+
+  .free-deal-slider__empty {
+    min-height: 180px;
+    font-size: 14px;
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .sps-badge {
+    min-width: 58px;
+    height: 28px;
+    font-size: 11px;
+    padding: 0 10px;
+    top: 10px;
+    left: 10px;
+  }
+}
+
+
+/* 소형 모바일 */
+@media (max-width: 480px) {
+
+  .event-bg {
+    height: 460px;
+  }
+
+  .event-overlay {
+    padding-top: 190px;
+  }
+
+  .best-row {
+    padding: 0 28px 8px;
+  }
+
+  .best-track {
+    gap: 12px;
+  }
+
+  .best-card {
+    width: 140px;
+    height: 140px;
+  }
+
+  .best-event {
+    padding: 14px 10px;
+    gap: 8px;
+  }
+
+  .best-event-title {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  .best-event-btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .nb-head h2 {
+    font-size: 24px;
+  }
+
+  .nb-head p {
+    font-size: 13px;
+  }
+
+  .nb-thumb-arch {
+    height: 250px;
+    border-radius: 130px 130px 0 0;
+  }
+
+  .nb-thumb-round {
+    height: 210px;
+  }
+
+  .nb-meta {
+    font-size: 14px;
+  }
+
+  .startdeal-title {
+    font-size: 21px;
+  }
+
+  .startdeal-desc {
+    font-size: 12px;
+  }
+
+  .free-deal-slider__wrap {
+    max-width: calc(100% - 24px);
+  }
+
+  .free-deal-card {
+    height: 250px;
+  }
+
+  .free-deal-card__title {
+    font-size: 15px;
+  }
+
+  .free-deal-card__price {
+    font-size: 12px;
+  }
+
+  .free-deal-slider__nav {
+    width: 34px;
+    height: 34px;
+  }
+}

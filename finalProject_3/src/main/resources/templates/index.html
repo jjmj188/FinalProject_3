@@ -40,19 +40,20 @@
               <div class="best-track" id="bestTrack">
                 <!-- 승인된 광고가 있을 때 -->
                 <article class="best-card ad-card" th:each="ad : ${activeAds}">
-                  <div class="best-card-inner">
-                    <img th:if="${ad.filePath != null and !#strings.isEmpty(ad.filePath)}"
-                         th:src="@{${ad.filePath}}"
-                         alt=""
-                         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
-                    <a class="best-card-link" th:href="@{/ad/{id}(id=${ad.adId})}">
-                      <div class="best-event" style="position:relative;z-index:1;">
-                        <div class="best-event-title" th:text="${ad.brandName}"></div>
-                        <span class="best-event-btn">자세히보기 <i class="fa-solid fa-arrow-right"></i></span>
-                      </div>
-                    </a>
-                  </div>
-                </article>
+					  <div class="best-card-inner">
+					
+					    <div class="best-event" style="position:relative; z-index:1;">
+					      <div class="best-event-title" th:text="${ad.brandName}"></div>
+					
+					      <!-- 버튼만 이동 -->
+					      <a class="best-event-btn"
+					         th:href="@{/ad/{id}(id=${ad.adId})}">
+					        자세히보기 <i class="fa-solid fa-arrow-right"></i>
+					      </a>
+					    </div>
+					
+					  </div>
+					</article>
 
                 <!-- 광고가 없을 때 기본 카드 표시 -->
                 <th:block th:if="${#lists.isEmpty(activeAds)}">
