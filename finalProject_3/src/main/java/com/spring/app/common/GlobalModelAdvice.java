@@ -2,6 +2,7 @@ package com.spring.app.common;
 
 import com.spring.app.admin.service.AdminService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -10,6 +11,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class GlobalModelAdvice {
 
     private final AdminService adminService;
+
+    @Value("${kakao.map.key}")
+    private String kakaoMapKey;
+
+    @ModelAttribute("kakaoMapKey")
+    public String kakaoMapKey() {
+        return kakaoMapKey;
+    }
 
     @ModelAttribute("promoBanner")
     public String promoBanner() {
