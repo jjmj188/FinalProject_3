@@ -288,9 +288,9 @@
 							<span class="thumb-badge chip-sale-done" th:if="${p.tradeStatus == '판매완료'}">판매완료</span>
 
 							<button class="heart" type="button" aria-label="찜"
-								th:classappend="${p.wished == 1} ? ' on' : ''"
-								th:attr="data-product-no=${p.productNo}, data-login=${isLogin}">
-								<i th:class="${p.wished == 1} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+							    th:classappend="${p.wished} ? ' on' : ''"
+							    th:attr="data-product-no=${p.productNo}, data-login=${isLogin}">
+							    <i th:class="${p.wished} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
 							</button>
 
 							<img th:src="@{${p.imgUrl}}" alt="">

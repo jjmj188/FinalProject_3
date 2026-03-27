@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 marker.setMap(map);
 
                 const infoWindow = new kakao.maps.InfoWindow({
-                    content: '<div style="padding:6px 10px; font-size:12px;">' + defaultPlace + '</div>'
+                    content: '<div style="padding:6px 10px; font-size:12px;">' + defaultPlace + "</div>"
                 });
                 infoWindow.open(map, marker);
 
@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     marker.setPosition(position);
 
                     infoWindow.close();
-                    infoWindow.setContent('<div style="padding:6px 10px; font-size:12px;">' + place + '</div>');
+                    infoWindow.setContent('<div style="padding:6px 10px; font-size:12px;">' + place + "</div>");
                     infoWindow.open(map, marker);
 
                     setActiveMapPlaceButton(place);
@@ -220,7 +220,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         const lat = parseFloat(btn.dataset.lat);
                         const lng = parseFloat(btn.dataset.lng);
                         const place = btn.dataset.place || "거래 희망 위치";
-
                         moveMapTo(lat, lng, place, false);
                     });
                 });
@@ -230,7 +229,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         const lat = parseFloat(btn.dataset.lat);
                         const lng = parseFloat(btn.dataset.lng);
                         const place = btn.dataset.place || "거래 희망 위치";
-
                         moveMapTo(lat, lng, place, true);
                     });
                 });
@@ -405,88 +403,97 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const tempStyle = calcTempStyle(tempValueEl.dataset.temp);
-        barFill.style.width = tempStyle.percent + "%";
-        barFill.style.backgroundColor = tempStyle.color;
-        tempValueEl.style.color = tempStyle.color;
+        const tempInfo = calcTempStyle(tempValueEl.dataset.temp);
+
+        barFill.style.width = tempInfo.percent + "%";
+        barFill.style.backgroundColor = tempInfo.color;
+        tempValueEl.style.color = tempInfo.color;
     }
 
     function bindChatButton() {
-        const btn = document.getElementById("btnStartChat");
+        const chatBtn = document.getElementById("btnStartChat");
 
-        if (!btn) {
+        if (!chatBtn) {
             return;
         }
 
-        btn.addEventListener("click", function () {
-            if (isChatLoading) {
-                return;
-            }
+        chatBtn.addEventListener("click", function () {
+            const productNo = this.getAttribute("data-product-no");
+            const sellerEmail = this.getAttribute("data-seller-email");
+            const productName = this.getAttribute("data-product-name");
 
-            const isLogin = String(getMainData("data-login")) === "true";
-            const isOwner = String(getMainData("data-owner")) === "true";
-            const productNo = btn.dataset.productNo;
-            const sellerEmail = btn.dataset.sellerEmail;
-            const productName = btn.dataset.productName || "";
-
-            if (!isLogin) {
-                moveLogin();
-                return;
-            }
-
-            if (isOwner) {
-                alert("본인 상품은 채팅할 수 없습니다.");
-                return;
-            }
-
-            if (!productNo || !sellerEmail) {
-                alert("채팅 정보를 찾을 수 없습니다.");
-                return;
-            }
-
-            isChatLoading = true;
-
-            fetch(ctxPath + "chat/createOrGetRoom", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-                },
-                body: new URLSearchParams({
-                    productNo: productNo,
-                    sellerEmail: sellerEmail
-                }).toString()
-            })
-                .then(function (response) {
-                    if (!response.ok) {
-                        throw new Error("채팅방 생성 실패");
-                    }
-                    return response.json();
-                })
-                .then(function (data) {
-                    isChatLoading = false;
-
-                    if (!data.success) {
-                        alert(data.message || "채팅방 이동에 실패했습니다.");
-                        return;
-                    }
-
-                    if (data.moveUrl) {
-                        location.href = data.moveUrl;
-                        return;
-                    }
-
-                    if (data.roomId) {
-                        location.href = ctxPath + "chat/chatroom?roomId=" + encodeURIComponent(data.roomId);
-                        return;
-                    }
-
-                    location.href = ctxPath + "chat/chatroomList";
-                })
-                .catch(function (error) {
-                    isChatLoading = false;
-                    console.error("채팅방 생성 에러:", error);
-                });
+            startChat(productNo, sellerEmail, productName);
         });
+    }
+
+    function startChat(productNo, sellerEmail, productName) {
+        if (isChatLoading) {
+            return;
+        }
+
+        isChatLoading = true;
+
+        fetch(ctxPath + "api/chat/createRoom", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                productNo: parseInt(productNo, 10),
+                sellerEmail: sellerEmail
+            })
+        })
+            .then(function (response) {
+                if (response.status === 401 || response.status === 403) {
+                    isChatLoading = false;
+                    if (typeof window.toggleChatPopup === "function") {
+                        window.toggleChatPopup();
+                    }
+                    return null;
+                }
+                if (!response.ok) {
+                    throw new Error("서버 에러 발생");
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                if (!data) return;
+                isChatLoading = false;
+
+                if (data.success) {
+                    const modal = document.getElementById("chatModal");
+
+                    if (!modal || modal.style.display === "none" || modal.style.display === "") {
+                        if (typeof window.toggleChatPopup === "function") {
+                            window.toggleChatPopup();
+                        }
+                    }
+
+                    setTimeout(function () {
+                        if (typeof window.openChatRoom === "function") {
+                            window.openChatRoom(
+                                data.roomId,
+                                data.nickname || sellerEmail,
+                                productName,
+                                data.productImgUrl,
+                                data.productPrice,
+                                data.tradeStatus,
+                                sellerEmail,
+                                parseInt(productNo, 10),
+                                data.reservedRoomId,
+                                data.tradeMethod,
+                                data.saleType
+                            );
+                        }
+                    }, 300);
+                } else {
+                    alert(data.message || "채팅방 생성에 실패했습니다.");
+                }
+            })
+            .catch(function (error) {
+                isChatLoading = false;
+                console.error("방 생성 에러:", error);
+            });
     }
 
     function loadProductDetailSellerProfile() {
@@ -497,120 +504,81 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         fetch(ctxPath + "product/seller/profile?productNo=" + encodeURIComponent(productNo), {
-            method: "GET"
+            method: "GET",
+            headers: {
+                Accept: "application/json"
+            }
         })
             .then(function (response) {
                 if (!response.ok) {
-                    throw new Error("판매자 정보 조회 실패");
+                    throw new Error("판매자 정보를 불러오지 못했습니다.");
                 }
                 return response.json();
             })
             .then(function (data) {
-                if (!data.success || !data.seller) {
-                    return;
+                if (!data.success) {
+                    throw new Error(data.message || "판매자 정보를 불러오지 못했습니다.");
                 }
 
-                const seller = data.seller;
+                const seller = data.seller || {};
+
+                const sellerName = seller.sellerName || "판매자";
+                const sellerProfileImg = buildImageUrl(
+                    seller.sellerProfileImg,
+                    ctxPath + "images/default_profile.png"
+                );
+                const mannerTemp = seller.mannerTemp != null ? Number(seller.mannerTemp) : 36.5;
+                const safePayCount = seller.safePayCount != null ? seller.safePayCount : 0;
+                const reviewCount = seller.reviewCount != null ? seller.reviewCount : 0;
+                const tradeCount = seller.tradeCount != null ? seller.tradeCount : 0;
 
                 const sellerNameEl = document.getElementById("pdinfoSellerName");
                 const sellerImgEl = document.getElementById("pdinfoSellerImg");
                 const tempValueEl = document.getElementById("pdinfoTempValue");
-                const safePayCountEl = document.getElementById("pdinfoSafePayCount");
-                const reviewCountEl = document.getElementById("pdinfoReviewCount");
-                const tradeCountEl = document.getElementById("pdinfoTradeCount");
+                const tempBarFillEl = document.getElementById("pdinfoBarFill");
+                const safePayEl = document.getElementById("pdinfoSafePayCount");
+                const reviewEl = document.getElementById("pdinfoReviewCount");
+                const tradeEl = document.getElementById("pdinfoTradeCount");
 
                 if (sellerNameEl) {
-                    sellerNameEl.textContent = seller.sellerName || "판매자";
+                    sellerNameEl.textContent = sellerName;
                 }
 
                 if (sellerImgEl) {
-                    sellerImgEl.src = buildImageUrl(
-                        seller.sellerProfileImg,
-                        ctxPath + "images/default_profile.png"
-                    );
+                    sellerImgEl.src = sellerProfileImg;
                 }
 
                 if (tempValueEl) {
-                    const temp = seller.mannerTemp != null ? seller.mannerTemp : 0;
-                    tempValueEl.dataset.temp = temp;
-                    tempValueEl.textContent = temp + "°C";
+                    tempValueEl.textContent = mannerTemp.toFixed(1) + "°C";
+                    tempValueEl.setAttribute("data-temp", String(mannerTemp));
                 }
 
-                if (safePayCountEl) {
-                    safePayCountEl.textContent = seller.safePayCount != null ? seller.safePayCount : 0;
+                const tempInfo = calcTempStyle(mannerTemp);
+
+                if (tempBarFillEl) {
+                    tempBarFillEl.style.width = tempInfo.percent + "%";
+                    tempBarFillEl.style.backgroundColor = tempInfo.color;
                 }
 
-                if (reviewCountEl) {
-                    reviewCountEl.textContent = seller.reviewCount != null ? seller.reviewCount : 0;
+                if (tempValueEl) {
+                    tempValueEl.style.color = tempInfo.color;
                 }
 
-                if (tradeCountEl) {
-                    tradeCountEl.textContent = seller.tradeCount != null ? seller.tradeCount : 0;
+                if (safePayEl) {
+                    safePayEl.textContent = String(safePayCount);
                 }
 
-                applyTemperatureBar();
+                if (reviewEl) {
+                    reviewEl.textContent = String(reviewCount);
+                }
+
+                if (tradeEl) {
+                    tradeEl.textContent = String(tradeCount);
+                }
             })
             .catch(function (error) {
-                console.error("판매자 정보 조회 에러:", error);
+                console.error("상품상세 판매자 정보 로딩 오류:", error);
             });
-    }
-
-    function openProductReportModal() {
-        const overlay = document.getElementById("productReportOverlay");
-        const panel = document.getElementById("productReportPanel");
-
-        if (overlay) {
-            overlay.classList.add("show");
-        }
-
-        if (panel) {
-            panel.classList.add("show");
-        }
-
-        backToProductReportStep1();
-        document.body.style.overflow = "hidden";
-    }
-
-    function closeProductReportModal() {
-        const overlay = document.getElementById("productReportOverlay");
-        const panel = document.getElementById("productReportPanel");
-        const textEl = document.getElementById("productReportText");
-        const photoCountEl = document.getElementById("productReportPhotoCount");
-        const previewEl = document.getElementById("productReportPhotoPreview");
-        const fileInputEl = document.getElementById("productReportFileInput");
-        const charCountEl = document.getElementById("productReportCurrentCharCount");
-
-        if (overlay) {
-            overlay.classList.remove("show");
-        }
-
-        if (panel) {
-            panel.classList.remove("show");
-        }
-
-        if (textEl) {
-            textEl.value = "";
-        }
-
-        if (fileInputEl) {
-            fileInputEl.value = "";
-        }
-
-        if (charCountEl) {
-            charCountEl.textContent = "0";
-        }
-
-        if (photoCountEl) {
-            photoCountEl.textContent = "0/1";
-        }
-
-        if (previewEl) {
-            previewEl.innerHTML = "";
-        }
-
-        productReportSelectedFile = null;
-        backToProductReportStep1();
-        document.body.style.overflow = "";
     }
 
     function backToProductReportStep1() {
@@ -626,11 +594,80 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function goProductReportStep2(mainCategory) {
+    function updateProductReportCharCount(obj) {
+        const countEl = document.getElementById("productReportCurrentCharCount");
+
+        if (countEl && obj) {
+            countEl.innerText = obj.value.length;
+        }
+    }
+
+    function renderProductReportPhotoPreview() {
+        const preview = document.getElementById("productReportPhotoPreview");
+        const countEl = document.getElementById("productReportPhotoCount");
+
+        if (!preview || !countEl) {
+            return;
+        }
+
+        preview.innerHTML = "";
+
+        if (!productReportSelectedFile) {
+            countEl.textContent = "0/1";
+            return;
+        }
+
+        countEl.textContent = "1/1";
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const wrap = document.createElement("div");
+            wrap.style.cssText = "position:relative; width:60px; height:60px;";
+
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.style.cssText =
+                "width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #ddd;";
+
+            const del = document.createElement("button");
+            del.type = "button";
+            del.textContent = "✕";
+            del.style.cssText =
+                "position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; border:none; background:#e44; color:#fff; font-size:10px; cursor:pointer; padding:0; line-height:18px; text-align:center;";
+            del.onclick = function () {
+                productReportSelectedFile = null;
+                const input = document.getElementById("productReportFileInput");
+                if (input) {
+                    input.value = "";
+                }
+                renderProductReportPhotoPreview();
+            };
+
+            wrap.appendChild(img);
+            wrap.appendChild(del);
+            preview.appendChild(wrap);
+        };
+        reader.readAsDataURL(productReportSelectedFile);
+    }
+
+    function onProductReportFileSelected(input) {
+        if (!input || !input.files || input.files.length === 0) {
+            return;
+        }
+
+        productReportSelectedFile = input.files[0];
+        renderProductReportPhotoPreview();
+    }
+
+    function goProductReportStep2(typeName) {
         const step1 = document.getElementById("productReportStep1");
         const step2 = document.getElementById("productReportStep2");
         const titleEl = document.getElementById("productReportMainTitle");
-        const selectEl = document.getElementById("productReportSubCategory");
+        const subSelect = document.getElementById("productReportSubCategory");
+        const textEl = document.getElementById("productReportText");
+        const fileInputEl = document.getElementById("productReportFileInput");
+        const photoCountEl = document.getElementById("productReportPhotoCount");
+        const previewEl = document.getElementById("productReportPhotoPreview");
 
         if (step1) {
             step1.classList.remove("is-active");
@@ -641,86 +678,110 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (titleEl) {
-            titleEl.innerText = mainCategory;
+            titleEl.innerText = typeName;
         }
 
-        if (selectEl) {
-            selectEl.innerHTML = "";
+        if (subSelect) {
+            subSelect.innerHTML = "";
 
-            const defaultOption = document.createElement("option");
-            defaultOption.value = "";
-            defaultOption.textContent = "상세 신고 유형을 선택하세요";
-            selectEl.appendChild(defaultOption);
-
-            const subCategories = productReportData[mainCategory] || [];
-
-            subCategories.forEach(function (item) {
+            const subItems = productReportData[typeName] || [];
+            subItems.forEach(function (item) {
                 const option = document.createElement("option");
                 option.value = item;
-                option.textContent = item;
-                selectEl.appendChild(option);
+                option.text = item;
+                subSelect.appendChild(option);
             });
         }
-    }
 
-    function updateProductReportCharCount(textarea) {
-        const currentCountEl = document.getElementById("productReportCurrentCharCount");
-        if (!currentCountEl || !textarea) {
-            return;
+        if (textEl) {
+            textEl.value = "";
+            updateProductReportCharCount(textEl);
         }
 
-        currentCountEl.textContent = String(textarea.value.length);
-    }
+        productReportSelectedFile = null;
 
-    function onProductReportFileSelected(input) {
-        const photoCountEl = document.getElementById("productReportPhotoCount");
-        const previewEl = document.getElementById("productReportPhotoPreview");
-
-        if (!input || !input.files || input.files.length === 0) {
-            productReportSelectedFile = null;
-
-            if (photoCountEl) {
-                photoCountEl.textContent = "0/1";
-            }
-
-            if (previewEl) {
-                previewEl.innerHTML = "";
-            }
-            return;
+        if (fileInputEl) {
+            fileInputEl.value = "";
         }
-
-        const file = input.files[0];
-
-        if (!file.type.startsWith("image/")) {
-            alert("이미지 파일만 첨부할 수 있습니다.");
-            input.value = "";
-            return;
-        }
-
-        productReportSelectedFile = file;
 
         if (photoCountEl) {
-            photoCountEl.textContent = "1/1";
+            photoCountEl.textContent = "0/1";
         }
 
         if (previewEl) {
             previewEl.innerHTML = "";
-
-            const img = document.createElement("img");
-            img.style.width = "70px";
-            img.style.height = "70px";
-            img.style.objectFit = "cover";
-            img.style.borderRadius = "8px";
-            img.style.border = "1px solid #ddd";
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-
-            previewEl.appendChild(img);
         }
+    }
+
+    function openProductReportModal() {
+        const isLogin = getMainData("data-login") === "true";
+        const isOwner = getMainData("data-owner") === "true";
+
+        if (!isLogin) {
+            alert("로그인 후 신고할 수 있습니다.");
+            location.href = ctxPath + "security/login";
+            return;
+        }
+
+        if (isOwner) {
+            alert("본인 게시글은 신고할 수 없습니다.");
+            return;
+        }
+
+        const overlay = document.getElementById("productReportOverlay");
+        const panel = document.getElementById("productReportPanel");
+
+        if (!overlay || !panel) {
+            return;
+        }
+
+        overlay.classList.add("show");
+        panel.classList.add("show");
+        backToProductReportStep1();
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeProductReportModal() {
+        const overlay = document.getElementById("productReportOverlay");
+        const panel = document.getElementById("productReportPanel");
+        const textEl = document.getElementById("productReportText");
+        const countEl = document.getElementById("productReportCurrentCharCount");
+        const fileInputEl = document.getElementById("productReportFileInput");
+        const photoCountEl = document.getElementById("productReportPhotoCount");
+        const previewEl = document.getElementById("productReportPhotoPreview");
+
+        if (overlay) {
+            overlay.classList.remove("show");
+        }
+
+        if (panel) {
+            panel.classList.remove("show");
+        }
+
+        document.body.style.overflow = "";
+
+        if (textEl) {
+            textEl.value = "";
+        }
+
+        if (countEl) {
+            countEl.innerText = "0";
+        }
+
+        if (fileInputEl) {
+            fileInputEl.value = "";
+        }
+
+        if (photoCountEl) {
+            photoCountEl.textContent = "0/1";
+        }
+
+        if (previewEl) {
+            previewEl.innerHTML = "";
+        }
+
+        productReportSelectedFile = null;
+        backToProductReportStep1();
     }
 
     function submitProductReport() {
@@ -791,6 +852,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+
+
     window.openProductReportModal = openProductReportModal;
     window.closeProductReportModal = closeProductReportModal;
     window.goProductReportStep2 = goProductReportStep2;
@@ -798,6 +861,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.updateProductReportCharCount = updateProductReportCharCount;
     window.onProductReportFileSelected = onProductReportFileSelected;
     window.submitProductReport = submitProductReport;
+    window.goToPayment = goToPayment;
 
     bindMainImageChange();
     bindSimilarProductSlider();
