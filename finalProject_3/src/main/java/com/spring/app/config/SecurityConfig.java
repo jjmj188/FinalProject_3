@@ -92,6 +92,9 @@ public class SecurityConfig {
                 
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
 
+                // 광고 신청은 일반 회원도 가능
+                .requestMatchers("/admin/ad", "/admin/ad/register", "/admin/ad/select").authenticated()
+
                 // 관리자 권한
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
