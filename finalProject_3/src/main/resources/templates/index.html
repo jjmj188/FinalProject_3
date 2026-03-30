@@ -39,19 +39,21 @@
             <div class="best-viewport" id="bestViewport">
               <div class="best-track" id="bestTrack">
                 <!-- 승인된 광고가 있을 때 -->
-                <article class="best-card ad-card" th:each="ad : ${activeAds}">
+                <article class="best-card ad-card"
+         th:each="ad, stat : ${activeAds}"
+         th:if="${stat.index < 3}">
 					  <div class="best-card-inner">
-
+					
 					    <div class="best-event" style="position:relative; z-index:1;">
 					      <div class="best-event-title" th:text="${ad.brandName}"></div>
-
+					
 					      <!-- 버튼만 이동 -->
 					      <a class="best-event-btn"
 					         th:href="@{/ad/{id}(id=${ad.adId})}">
 					        자세히보기 <i class="fa-solid fa-arrow-right"></i>
 					      </a>
 					    </div>
-
+					
 					  </div>
 					</article>
 
