@@ -151,6 +151,7 @@ public interface AdminDAO {
 	long getThisMonthTradeVolume();
 	long getThisMonthRefundAmount();
 	List<Map<String, Object>> getMonthlyAdRevenue();
+	List<Map<String, Object>> getWeeklyAdApplications();
 	List<Map<String, Object>> getAdRevenueList(Map<String, Object> params);
 	int countAdRevenue();
 
