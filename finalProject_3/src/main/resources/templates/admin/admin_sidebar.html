@@ -63,13 +63,8 @@
         var path = window.location.pathname;
         var links = document.querySelectorAll('.nav-menu-item');
         links.forEach(function(link) {
-            var href = link.getAttribute('href');
-            if (!href) return;
-            var hrefPath = href.replace(/\?.*$/, '');
-            if (path === hrefPath
-                || path.startsWith(hrefPath + '/')
-                || path.startsWith(hrefPath + '_')
-                || path.startsWith(hrefPath + '?')) {
+            var key = link.getAttribute('data-key');
+            if (key && path.indexOf('/admin/' + key) !== -1) {
                 link.classList.add('active');
             }
         });

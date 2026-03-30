@@ -229,7 +229,9 @@
             <div class="panel-box">
                 <div class="panel-title"><i class="bi bi-pie-chart-fill text-warning"></i>탈퇴 사유 분석</div>
                 <div class="chart-sm"><canvas id="exitChart"></canvas></div>
-                <div id="exitNoData" class="text-center text-muted small py-2" style="display:none;">탈퇴 회원이 없습니다.</div>
+                <div id="exitNoData" class="text-center text-muted small py-4" style="display:none;">
+                    <i class="bi bi-info-circle"></i> 탈퇴 사유 데이터가 없습니다.
+                </div>
             </div>
         </div>
     </div>
@@ -315,7 +317,9 @@
     // 탈퇴 사유 차트
     // 컨트롤러에서 해당 데이터 추가 필요: withdrawStats {labels, data}
     const withdrawStats = /*[[${withdrawStats}]]*/ {labels:[],data:[]};
-    if (withdrawStats && withdrawStats.labels && withdrawStats.labels.length > 0) {
+    const hasRealReason = withdrawStats && withdrawStats.labels && withdrawStats.labels.length > 0
+        && !(withdrawStats.labels.length === 1 && withdrawStats.labels[0] === '기타');
+    if (hasRealReason) {
         new Chart(document.getElementById('exitChart'), {
             type: 'doughnut',
             data: {

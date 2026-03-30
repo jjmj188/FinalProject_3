@@ -55,6 +55,36 @@
     LEFT JOIN MEMBER m ON a.USER_NO = m.USER_NO
     ORDER BY a.CREATED_AT DESC
 </select>
+
+<!-- 광고 목록 페이징 -->
+<select id="selectAdListPaged" parameterType="map" resultType="com.spring.app.admin.domain.AdDTO">
+    SELECT * FROM (
+        SELECT a2.*, ROWNUM AS rn FROM (
+            SELECT
+                a.AD_ID          as adId,
+                a.BRAND_NAME     as brandName,
+                m.USER_NAME      as managerName,
+                m.EMAIL          as companyEmail,
+                m.PHONE          as phone,
+                a.CONTENT        as content,
+                a.START_DATE     as startDate,
+                a.END_DATE       as endDate,
+                a.DURATION_WEEKS as durationWeeks,
+                a.AMOUNT         as amount,
+                a.STATUS         as status,
+                a.CREATED_AT     as createdAt,
+                a.APPROVED_AT    as approvedAt,
+                a.FILE_PATH      as filePath
+            FROM ADS a
+            LEFT JOIN MEMBER m ON a.USER_NO = m.USER_NO
+            ORDER BY a.CREATED_AT DESC
+        ) a2 WHERE ROWNUM &lt;= #{end}
+    ) WHERE rn &gt; #{start}
+</select>
+
+<select id="countAds" resultType="int">
+    SELECT COUNT(*) FROM ADS
+</select>
     
     <select id="getMemberById" parameterType="String" resultType="com.spring.app.security.domain.MemberDTO">
         SELECT
@@ -433,7 +463,7 @@
 		
 		<select id="getUserStats" parameterType="string" resultType="com.spring.app.admin.domain.StatDTO">
     <choose>
-        <when test="type == 'week'">
+        <when test="_parameter == 'week'">
             SELECT 
                 TO_CHAR(reg_date, 'MM/DD') as label, 
                 COUNT(*) as count
