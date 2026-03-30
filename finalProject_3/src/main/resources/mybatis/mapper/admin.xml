@@ -55,6 +55,36 @@
     LEFT JOIN MEMBER m ON a.USER_NO = m.USER_NO
     ORDER BY a.CREATED_AT DESC
 </select>
+
+<!-- 광고 목록 페이징 -->
+<select id="selectAdListPaged" parameterType="map" resultType="com.spring.app.admin.domain.AdDTO">
+    SELECT * FROM (
+        SELECT a2.*, ROWNUM AS rn FROM (
+            SELECT
+                a.AD_ID          as adId,
+                a.BRAND_NAME     as brandName,
+                m.USER_NAME      as managerName,
+                m.EMAIL          as companyEmail,
+                m.PHONE          as phone,
+                a.CONTENT        as content,
+                a.START_DATE     as startDate,
+                a.END_DATE       as endDate,
+                a.DURATION_WEEKS as durationWeeks,
+                a.AMOUNT         as amount,
+                a.STATUS         as status,
+                a.CREATED_AT     as createdAt,
+                a.APPROVED_AT    as approvedAt,
+                a.FILE_PATH      as filePath
+            FROM ADS a
+            LEFT JOIN MEMBER m ON a.USER_NO = m.USER_NO
+            ORDER BY a.CREATED_AT DESC
+        ) a2 WHERE ROWNUM &lt;= #{end}
+    ) WHERE rn &gt; #{start}
+</select>
+
+<select id="countAds" resultType="int">
+    SELECT COUNT(*) FROM ADS
+</select>
     
     <select id="getMemberById" parameterType="String" resultType="com.spring.app.security.domain.MemberDTO">
         SELECT
@@ -433,7 +463,7 @@
 		
 		<select id="getUserStats" parameterType="string" resultType="com.spring.app.admin.domain.StatDTO">
     <choose>
-        <when test="type == 'week'">
+        <when test="_parameter == 'week'">
             SELECT 
                 TO_CHAR(reg_date, 'MM/DD') as label, 
                 COUNT(*) as count
@@ -986,6 +1016,19 @@
           AND APPROVED_AT >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
         GROUP BY TO_CHAR(APPROVED_AT, 'MM'), TRUNC(APPROVED_AT, 'MM')
         ORDER BY TRUNC(APPROVED_AT, 'MM')
+    </select>
+
+    <!-- 회계관리: 주별 광고 신청 건수 (최근 8주) -->
+    <select id="getWeeklyAdApplications" resultType="map">
+        SELECT WEEK_LABEL, CNT FROM (
+            SELECT TO_CHAR(TRUNC(CREATED_AT, 'IW'), 'MM/DD') AS WEEK_LABEL,
+                   TRUNC(CREATED_AT, 'IW') AS WEEK_START,
+                   COUNT(*) AS CNT
+            FROM ADS
+            WHERE CREATED_AT >= TRUNC(SYSDATE, 'IW') - 7*7
+            GROUP BY TRUNC(CREATED_AT, 'IW'), TO_CHAR(TRUNC(CREATED_AT, 'IW'), 'MM/DD')
+            ORDER BY WEEK_START
+        )
     </select>
 
     <!-- 회계관리: 승인된 광고 수익 목록 (페이징) -->

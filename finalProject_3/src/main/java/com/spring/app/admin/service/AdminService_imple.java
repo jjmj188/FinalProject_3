@@ -686,6 +686,17 @@ public class AdminService_imple implements AdminService {
 		}
 		stats.put("monthlyLabels", labels);
 		stats.put("monthlyRevenues", revenues);
+
+		List<Map<String, Object>> weeklyRaw = dao.getWeeklyAdApplications();
+		List<String> weekLabels = new ArrayList<>();
+		List<Long> weekCounts = new ArrayList<>();
+		for (Map<String, Object> row : weeklyRaw) {
+			weekLabels.add(String.valueOf(row.get("WEEK_LABEL")) + "~");
+			weekCounts.add(((Number) row.get("CNT")).longValue());
+		}
+		stats.put("weeklyLabels", weekLabels);
+		stats.put("weeklyCounts", weekCounts);
+
 		return stats;
 	}
 

@@ -455,6 +455,11 @@ public class AdminDAO_imple implements AdminDAO {
 	}
 
 	@Override
+	public List<Map<String, Object>> getWeeklyAdApplications() {
+		return sqlsession.selectList(admin + ".getWeeklyAdApplications");
+	}
+
+	@Override
 	public List<Map<String, Object>> getAdRevenueList(Map<String, Object> params) {
 		return sqlsession.selectList(admin + ".getAdRevenueList", params);
 	}
