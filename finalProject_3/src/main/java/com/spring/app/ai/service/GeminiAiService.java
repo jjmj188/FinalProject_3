@@ -17,6 +17,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.spring.app.ai.dto.AiSellTextRequest;
 import com.spring.app.ai.dto.AiSellTextResponse;
 
+import javax.net.ssl.*;
+import java.security.cert.X509Certificate;
+
 @Service
 public class GeminiAiService {
 
@@ -27,7 +30,30 @@ public class GeminiAiService {
     private String textModel;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient = createUnsafeClient();
+
+    private HttpClient createUnsafeClient() {
+        try {
+
+            TrustManager[] trustAll = new TrustManager[]{
+                new X509TrustManager() {
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                }
+            };
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAll, new java.security.SecureRandom());
+
+            return HttpClient.newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public AiSellTextResponse generateSellDescription(AiSellTextRequest req) throws Exception {
 
