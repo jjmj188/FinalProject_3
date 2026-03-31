@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- logo -->
-<img src="[https://user-images.githubusercontent.com/80824750/208554611-f8277015-12e8-48d2-b2cc-d09d67f03c02.png](https://github.com/jjmj188/FinalProject_3/blob/main/finalProject_3/src/main/resources/static/images/logo.png)" width="400"/>
+<img src="https://raw.githubusercontent.com/jjmj188/FinalProject_3/main/finalProject_3/src/main/resources/static/images/logo.png" width="400"/>
 
 ### Back-end Git Reamd.me Template ✅
 
