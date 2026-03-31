@@ -57,16 +57,7 @@
 
 <br />
 
-## 🛠️ 프로젝트 아키텍쳐
-![no-image](https://user-images.githubusercontent.com/80824750/208294567-738dd273-e137-4bbf-8307-aff64258fe03.png)
-
-
-
-<br />
-
-
 ## 💁‍♂️ 프로젝트 팀원
-|Backend|Frontend|
 |:---:|:---:|
 | ![](https://github.com/yewon-Noh.png?size=120) | ![](https://github.com/SeongHo-C.png?size=120) |
 |[노예원](https://github.com/yewon-Noh)|[이성호](https://github.com/SeongHo-C)|
