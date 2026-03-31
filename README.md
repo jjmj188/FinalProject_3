@@ -12,14 +12,6 @@
 좋은 거래를 쉽게 발견할 수 있도록 돕는 데이터 기반 중고거래 플랫폼 입니다.
 <br />
 
-### 화면 구성
-|Screen #1|Screen #2|
-|:---:|:---:|
-|<img src="https://user-images.githubusercontent.com/80824750/208456048-acbf44a8-cd71-4132-b35a-500047adbe1c.gif" width="400"/>|<img src="https://user-images.githubusercontent.com/80824750/208456234-fb5fe434-aa65-4d7a-b955-89098d5bbe0b.gif" width="400"/>|
-
-### 프로토타입
-<img src="https://user-images.githubusercontent.com/80824750/208454673-0449e49c-57c6-4a6b-86cf-66c5b1e623dc.png">
-
 ### 📄 화면 설계서
 👉 [화면 설계서 보러가기](https://www.figma.com/design/3elTa5MZ25dqlrLrhep50n/final-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-3%ED%8C%80?node-id=0-1&t=WHLyiQ6VYw61t32R-1)
 
