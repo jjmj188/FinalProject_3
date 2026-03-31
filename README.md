@@ -20,7 +20,6 @@
 ## ⚙ 기술 스택
 
 ### Environment
-<img src="https://img.shields.io/badge/IntelliJ-000000?style=for-the-badge&logo=intellijidea&logoColor=white">
 
 ### Development
 <img src="https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white">
