@@ -29,4 +29,14 @@
 <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white">
 
 ## ⭐ 주요 기능
+
+## 💬 소감
+
+**정민정**
+
+**김태일**
+
+**양소라**
+
+**이시형**
  
