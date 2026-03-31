@@ -22,16 +22,10 @@
 
 <br />
 
-## 🗂️ APIs
-작성한 API는 아래에서 확인할 수 있습니다.
-
-👉🏻 [API 바로보기](/backend/APIs.md)
-
-
 <br />
 
 ## ⚙ 기술 스택
-> skills 폴더에 있는 아이콘을 이용할 수 있습니다.
+
 ### Back-end
 <div>
 <img src="https://img.shields.io/badge/AJAX-005571?style=flat&logo=ajax&logoColor=white"/>
