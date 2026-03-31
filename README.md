@@ -20,8 +20,8 @@
 ### 프로토타입
 <img src="https://user-images.githubusercontent.com/80824750/208454673-0449e49c-57c6-4a6b-86cf-66c5b1e623dc.png">
 
-### 피그마링크
-[<img src="https://img.shields.io/badge/Figma-Design-F24E1E?style=flat&logo=figma&logoColor=white"/>](https://www.figma.com/design/3elTa5MZ25dqlrLrhep50n/final-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-3%ED%8C%80?node-id=0-1&t=WHLyiQ6VYw61t32R-1)
+### 📄 화면 설계서
+👉 [화면 설계서 보러가기](https://www.figma.com/design/3elTa5MZ25dqlrLrhep50n/final-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-3%ED%8C%80?node-id=0-1&t=WHLyiQ6VYw61t32R-1)
 
 <br />
 
