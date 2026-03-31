@@ -13,4 +13,8 @@
 | ![](프로필이미지) | ![](프로필이미지) | ![](프로필이미지) | ![](프로필이미지) |
 | [@jjmj188](https://github.com/jjmj188) | [@taylorkim0904](https://github.com/taylorkim0904) | [@dorapizza1234](https://github.com/dorapizza1234) | [@dltlgud](https://github.com/dltlgud) |
 
+## 📌 프로젝트 동기
+
+## 💻 실제 화면
+
  
