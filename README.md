@@ -60,5 +60,4 @@
 
 | 정민정 (팀장) | 김태일 (팀원) | 양소라 (팀원) | 이시형 (팀원) |
 |:-------------:|:-------------:|:-------------:|:-------------:|
-| ![](프로필이미지) | ![](프로필이미지) | ![](프로필이미지) | ![](프로필이미지) |
-| [@jjmj188](https://github.com/jjmj188) | [@taylorkim0904](https://github.com/taylorkim0904) | [@dorapizza1234](https://github.com/dorapizza1234) | [@dltlgud](https://github.com/dltlgud) ||
+| <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/jjmj188">@jjmj188</a> | <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/taylorkim0904">@taylorkim0904</a> | <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/dorapizza1234">@dorapizza1234</a> | <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/dltlgud">@dltlgud</a> |
