@@ -3,7 +3,16 @@
 <!-- logo -->
 <img src="https://raw.githubusercontent.com/jjmj188/FinalProject_3/main/finalProject_3/src/main/resources/static/images/logo.png" width="400"/>
 
-### PICRO(중고거래 사이트)
+## PICRO(중고거래 사이트)
+중고거래 사이트(쌍용 최종프로젝트)
+좋은 거래를 쉽게 발견할 수 있도록 돕는 데이터 기반 중고거래 플랫폼 입니다.
+
+📅 개발 기간 : 2026.02.24 ~ 2026.03.30
+
+## 🔗 배포 주소
+
+서버 주소 : http://54.116.1.59:8000/finalProject_3/
+
 ### 🛠 Development
 
 <img src="https://img.shields.io/badge/AJAX-005571?style=flat&logo=ajax&logoColor=white"/>
