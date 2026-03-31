@@ -4,11 +4,6 @@
 <img src="https://raw.githubusercontent.com/jjmj188/FinalProject_3/main/finalProject_3/src/main/resources/static/images/logo.png" width="400"/>
 
 ### PICRO(중고거래 사이트)
-
-[<img src="https://img.shields.io/badge/readme-project-important?style=flat&logo=github&logoColor=white"/>]()
-[<img src="https://img.shields.io/badge/release-v1.0.0-yellow?style=flat&logo=github&logoColor=white"/>]()
-[<img src="https://img.shields.io/badge/프로젝트 기간-2024.01~2024.04-green?style=flat"/>]()
-
 ### 🛠 Development
 
 <img src="https://img.shields.io/badge/AJAX-005571?style=flat&logo=ajax&logoColor=white"/>
