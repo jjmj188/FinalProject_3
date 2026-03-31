@@ -11,6 +11,6 @@
 | 정민정(팀장) | 김태일(팀원) | 양소라(팀원) | 이시형(팀원) |
 |------|------|------|------|
 | ![](프로필이미지) | ![](프로필이미지) | ![](프로필이미지) | ![](프로필이미지) |
-| [@jjmj188](https://github.com/jjmj188) | [@jjmj188](https://github.com/jjmj188) | [@minseo12345](https://github.com/) | [@minseo12345](https://github.com/) |
+| [@jjmj188](https://github.com/jjmj188) | [@jjmj188](https://github.com/jjmj188) | [@jjmj188](https://github.com/jjmj188) | [@jjmj188](https://github.com/jjmj188) |
 
  
