@@ -58,6 +58,7 @@
 <br />
 
 ## 💁‍♂️ 프로젝트 팀원
-|:---:|:---:|
-| ![](https://github.com/yewon-Noh.png?size=120) | ![](https://github.com/SeongHo-C.png?size=120) |
-|[노예원](https://github.com/yewon-Noh)|[이성호](https://github.com/SeongHo-C)|
+| 정민정(팀장)                           | 김태일(팀원)                                       | 양소라(팀원)                                       | 이시형(팀원)                           |
+| -------------------------------------- | -------------------------------------------------- | -------------------------------------------------- | -------------------------------------- |
+| ![](프로필이미지)                      | ![](프로필이미지)                                  | ![](프로필이미지)                                  | ![](프로필이미지)                      |
+| [@jjmj188](https://github.com/jjmj188) | [@taylorkim0904](https://github.com/taylorkim0904) | [@dorapizza1234](https://github.com/dorapizza1234) | [@dltlgud](https://github.com/dltlgud) |
