@@ -59,12 +59,4 @@
 |:-------------:|:-------------:|:-------------:|:-------------:|
 | <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/jjmj188">@jjmj188</a> | <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/taylorkim0904">@taylorkim0904</a> | <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/dorapizza1234">@dorapizza1234</a> | <img src="프로필이미지" width="120"/> <br> <a href="https://github.com/dltlgud">@dltlgud</a> |
 
-## 👨‍💻 역할 분담
-
-| 이름 | 담당 기능 |
-|:---:|---|
-| **정민정** | 로고디자인<br>메인페이지<br>장터페이지(상품목록)<br>상품 시세 조회<br>판매자 정보 페이지<br>판매하기 / 나눔하기 (상품 등록)<br>인기 검색어<br>찜 기능<br>게시글 신고하기<br>지역 설정 |
-| **이시형** | 채팅방(거래)<br>채팅 신고하기<br>로그인 / 회원가입<br>챗봇<br>리뷰<br><br>**마이페이지**<br>내 정보<br>내 판매 상품<br>계좌 / 배송지 관리<br>후기 관리<br>찜 내역<br>신고 관리 |
-| **양소라** | **관리자 페이지**<br>회원 관리<br>상품 관리<br>리뷰 관리<br>구매 관리<br>거래 관리<br>회계 상태<br>문의 관리<br>광고 관리<br>공지사항 관리<br><br>알림함(마이페이지)<br>배포 |
-| **김태일** | 안전 결제 (토스페이)<br>구매 내역 (마이페이지) |
 
