@@ -65,20 +65,16 @@ public class AdminController {
                              @RequestParam(value = "page", defaultValue = "1") int page,
                              @RequestParam(value = "status", defaultValue = "") String status,
                              @RequestParam(value = "keyword", defaultValue = "") String keyword) {
-        int size = 20;
-        int totalMembers = adminService.getMemberCount(status, keyword);
-        int totalPages = (int) Math.ceil((double) totalMembers / size);
-        if (totalPages == 0) totalPages = 1;
-
-        model.addAttribute("members", adminService.getMemberList(page, size, status, keyword));
+        // 페이징 없이 전체 조회
+        model.addAttribute("members", adminService.getMemberList());
         model.addAttribute("newMembers", adminService.getNewMembersCount());
         model.addAttribute("suspendedMembers", adminService.getSuspendedMembersCount());
         model.addAttribute("totalMembers", adminService.getTotalMembersCount());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("currentPage", 1);
+        model.addAttribute("totalPages", 1);
         model.addAttribute("searchStatus", status);
         model.addAttribute("searchKeyword", keyword);
-        model.addAttribute("searchCount", totalMembers);
+        model.addAttribute("searchCount", adminService.getTotalMembersCount());
         model.addAttribute("monthNewMembers",  adminService.getMonthNewMembersCount());
         model.addAttribute("idleMembers",      adminService.getIdleMembersCount());
         model.addAttribute("withdrawnMembers", adminService.getWithdrawalsCount());
@@ -296,6 +292,8 @@ public class AdminController {
     public String getDashboard(
             @RequestParam(value="year", defaultValue="0") Integer year,
             @RequestParam(value="month", defaultValue="0") Integer month,
+            @RequestParam(value="page", defaultValue="1") int page,
+            @RequestParam(value="size", defaultValue="10") int size,
             Model model) {
 
         LocalDate now = LocalDate.now();
@@ -307,11 +305,15 @@ public class AdminController {
 
         List<List<LocalDate>> calendarWeeks = generateCalendar(firstDay);
 
-        List<AdDTO> adList = adminService.getAdList();
+        // 페이징 없이 전체 조회
+        List<AdDTO> allAds = adminService.getAdList();
         Map<String, Object> adStats = adminService.getAdMonthlyStats();
 
         model.addAttribute("calendarWeeks", calendarWeeks);
-        model.addAttribute("adList", adList);
+        model.addAttribute("adList", allAds);
+        model.addAttribute("totalCount", allAds.size());
+        model.addAttribute("totalPages", 1);
+        model.addAttribute("currentPage", 1);
         model.addAttribute("year", year);
         model.addAttribute("month", month);
         model.addAttribute("chartLabels", adStats.get("labels"));
@@ -586,11 +588,12 @@ public class AdminController {
                           @RequestParam(value = "page", defaultValue = "1") int page,
                           @RequestParam(value = "size", defaultValue = "20") int size,
                           @RequestParam(value = "status", defaultValue = "ALL") String status) {
-        Map<String, Object> data = adminService.getAdminInquiryListPaged(page, size, status);
-        model.addAttribute("inquiryList", data.get("list"));
-        model.addAttribute("totalCount", data.get("total"));
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", data.get("totalPages"));
+        // 페이징 없이 전체 조회
+        List<InquiryDTO> allInquiries = adminService.getAllInquiries();
+        model.addAttribute("inquiryList", allInquiries);
+        model.addAttribute("totalCount", allInquiries.size());
+        model.addAttribute("currentPage", 1);
+        model.addAttribute("totalPages", 1);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("pendingCount", adminService.countPendingInquiries());
         model.addAttribute("answeredCount", adminService.countAnsweredInquiries());
