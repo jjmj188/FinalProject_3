@@ -174,6 +174,17 @@ public class AdminDAO_imple implements AdminDAO {
 		return sqlsession.selectList(admin+".selectAdList");
 	}
 
+	// 광고 목록 페이징
+	@Override
+	public List<AdDTO> selectAdListPaged(Map<String, Object> params) {
+		return sqlsession.selectList(admin + ".selectAdListPaged", params);
+	}
+
+	@Override
+	public int countAds() {
+		return sqlsession.selectOne(admin + ".countAds");
+	}
+
 	//===========================================================
 	//광고 상세보기
 	@Override
@@ -245,10 +256,18 @@ public class AdminDAO_imple implements AdminDAO {
 	}
 
 	public List<InquiryDTO> getAllInquiries() {
-	   
 	    return sqlsession.selectList("admin.getAllInquiries");
 	}
 
+	@Override
+	public List<InquiryDTO> getUserInquiriesPaged(Map<String, Object> params) {
+	    return sqlsession.selectList("admin.getUserInquiriesPaged", params);
+	}
+
+	@Override
+	public int countUserInquiries() {
+	    return sqlsession.selectOne("admin.countUserInquiries");
+	}
 
     @Override
     public int getReportedProductCount() {

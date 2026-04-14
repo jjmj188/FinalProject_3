@@ -513,16 +513,38 @@
     </select>
 
     <select id="getAllInquiries" resultType="com.spring.app.admin.domain.InquiryDTO">
-        SELECT inquiry_id as inquiryId, 
-               title, 
-               member_email as memberEmail, 
-               created_at as createdAt, 
+        SELECT inquiry_id as inquiryId,
+               title,
+               member_email as memberEmail,
+               created_at as createdAt,
                inquiry_status as inquiryStatus,
                is_faq as isFaq,
                is_private as isPrivate
         FROM inquiries
         WHERE is_faq = 'N'
         ORDER BY created_at DESC
+    </select>
+
+    <!-- 사용자 문의 페이징 조회 -->
+    <select id="getUserInquiriesPaged" parameterType="map" resultType="com.spring.app.admin.domain.InquiryDTO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT inquiry_id as inquiryId,
+                       title,
+                       member_email as memberEmail,
+                       created_at as createdAt,
+                       inquiry_status as inquiryStatus,
+                       is_faq as isFaq,
+                       is_private as isPrivate
+                FROM inquiries
+                WHERE is_faq = 'N'
+                ORDER BY created_at DESC
+            ) a WHERE ROWNUM &lt;= #{end}
+        ) WHERE rn &gt; #{start}
+    </select>
+
+    <select id="countUserInquiries" resultType="int">
+        SELECT COUNT(*) FROM inquiries WHERE is_faq = 'N'
     </select>
 		
 		<select id="getReportedProductCount" resultType="int">

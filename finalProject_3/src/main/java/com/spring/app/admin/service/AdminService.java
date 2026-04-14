@@ -75,6 +75,7 @@ public interface AdminService {
 	 
 	//--------------------------------------------------------------------------------
 	 List<AdDTO> getAdList();//광고리스트 가져오기
+ Map<String, Object> getAdListPaged(int page, int size); // 광고 목록 페이징
 
 	 AdDTO getAd(Long adId);//광고 상세보여주기
 
@@ -98,6 +99,7 @@ public interface AdminService {
 	 List<InquiryDTO> getTop3FAQ();   // 상단고정
 
 	 List<InquiryDTO> getAllInquiries(); //문의 모든 리스트
+	 Map<String, Object> getUserInquiriesPaged(int page, int size); // 사용자 문의 페이징
 
 	 Map<String, Object> getAdMonthlyStats();
 	 int countPendingReportsAndInquiries();

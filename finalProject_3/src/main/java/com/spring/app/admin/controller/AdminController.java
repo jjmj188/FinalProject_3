@@ -65,16 +65,20 @@ public class AdminController {
                              @RequestParam(value = "page", defaultValue = "1") int page,
                              @RequestParam(value = "status", defaultValue = "") String status,
                              @RequestParam(value = "keyword", defaultValue = "") String keyword) {
-        // 페이징 없이 전체 조회
-        model.addAttribute("members", adminService.getMemberList());
+        int size = 20;
+        int totalMembers = adminService.getMemberCount(status, keyword);
+        int totalPages = (int) Math.ceil((double) totalMembers / size);
+        if (totalPages == 0) totalPages = 1;
+
+        model.addAttribute("members", adminService.getMemberList(page, size, status, keyword));
         model.addAttribute("newMembers", adminService.getNewMembersCount());
         model.addAttribute("suspendedMembers", adminService.getSuspendedMembersCount());
         model.addAttribute("totalMembers", adminService.getTotalMembersCount());
-        model.addAttribute("currentPage", 1);
-        model.addAttribute("totalPages", 1);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("searchStatus", status);
         model.addAttribute("searchKeyword", keyword);
-        model.addAttribute("searchCount", adminService.getTotalMembersCount());
+        model.addAttribute("searchCount", totalMembers);
         model.addAttribute("monthNewMembers",  adminService.getMonthNewMembersCount());
         model.addAttribute("idleMembers",      adminService.getIdleMembersCount());
         model.addAttribute("withdrawnMembers", adminService.getWithdrawalsCount());
@@ -305,15 +309,14 @@ public class AdminController {
 
         List<List<LocalDate>> calendarWeeks = generateCalendar(firstDay);
 
-        // 페이징 없이 전체 조회
-        List<AdDTO> allAds = adminService.getAdList();
+        Map<String, Object> adData = adminService.getAdListPaged(page, size);
         Map<String, Object> adStats = adminService.getAdMonthlyStats();
 
         model.addAttribute("calendarWeeks", calendarWeeks);
-        model.addAttribute("adList", allAds);
-        model.addAttribute("totalCount", allAds.size());
-        model.addAttribute("totalPages", 1);
-        model.addAttribute("currentPage", 1);
+        model.addAttribute("adList", adData.get("list"));
+        model.addAttribute("totalCount", adData.get("total"));
+        model.addAttribute("totalPages", adData.get("totalPages"));
+        model.addAttribute("currentPage", page);
         model.addAttribute("year", year);
         model.addAttribute("month", month);
         model.addAttribute("chartLabels", adStats.get("labels"));
@@ -588,12 +591,11 @@ public class AdminController {
                           @RequestParam(value = "page", defaultValue = "1") int page,
                           @RequestParam(value = "size", defaultValue = "20") int size,
                           @RequestParam(value = "status", defaultValue = "ALL") String status) {
-        // 페이징 없이 전체 조회
-        List<InquiryDTO> allInquiries = adminService.getAllInquiries();
-        model.addAttribute("inquiryList", allInquiries);
-        model.addAttribute("totalCount", allInquiries.size());
-        model.addAttribute("currentPage", 1);
-        model.addAttribute("totalPages", 1);
+        Map<String, Object> data = adminService.getAdminInquiryListPaged(page, size, status);
+        model.addAttribute("inquiryList", data.get("list"));
+        model.addAttribute("totalCount", data.get("total"));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", data.get("totalPages"));
         model.addAttribute("selectedStatus", status);
         model.addAttribute("pendingCount", adminService.countPendingInquiries());
         model.addAttribute("answeredCount", adminService.countAnsweredInquiries());
@@ -645,20 +647,22 @@ public class AdminController {
   //=========================================================================================================================
 	 // 사용자 문의내역 게시판 
 	
-	 @GetMapping("/user_inquiry") 
-	 public String inquiryList(Model model) {
-	     
-	     // 1. 데이터 가져오기
-	 List<InquiryDTO> faqList = adminService.getTop3FAQ();
-	 List<InquiryDTO> inquiryList = adminService.getAllInquiries();
-	
-	 // 2. 데이터 전달 (Null 방지)
-	 model.addAttribute("faqList", faqList != null ? faqList : new ArrayList<>());
-	 model.addAttribute("inquiryList", inquiryList != null ? inquiryList : new ArrayList<>());
-	
-	 // 3. 화면 리턴 (templates/admin/user_inquiry.html)
-	 return "admin/user_inquiry";
-	 }
+    @GetMapping("/user_inquiry")
+    public String inquiryList(Model model,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+
+        List<InquiryDTO> faqList = adminService.getTop3FAQ();
+        Map<String, Object> inquiryData = adminService.getUserInquiriesPaged(page, size);
+
+        model.addAttribute("faqList", faqList != null ? faqList : new ArrayList<>());
+        model.addAttribute("inquiryList", inquiryData.get("list"));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", inquiryData.get("totalPages"));
+        model.addAttribute("totalCount", inquiryData.get("total"));
+
+        return "admin/user_inquiry";
+    }
 	    
 	    //문의하기 글쓰기 페이지
 	 @GetMapping("/inquiry_write")

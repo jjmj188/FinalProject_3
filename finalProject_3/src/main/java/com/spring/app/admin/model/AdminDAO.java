@@ -64,6 +64,8 @@ public interface AdminDAO {
     int selectProductCount(Map<String, Object> params);//상품 카운트
 
 	List<AdDTO> selectAdList();//상품리스트 가져오기
+	List<AdDTO> selectAdListPaged(Map<String, Object> params); // 광고 목록 페이징
+	int countAds(); // 광고 전체 건수
 	
 	int getOnsaleProductCount(); //판매중인 상품만 가져오기
 	
@@ -90,7 +92,9 @@ public interface AdminDAO {
 	
 	//------------------------------------------------------------------
 	List<InquiryDTO> getTop3FAQ(); //상단고정 자주묻는질문 가져오기
-	List<InquiryDTO> getAllInquiries(); //모든 질문 
+	List<InquiryDTO> getAllInquiries(); //모든 질문
+	List<InquiryDTO> getUserInquiriesPaged(Map<String, Object> params); // 사용자 문의 페이징
+	int countUserInquiries(); // 사용자 문의 전체 건수
 	int getReportedProductCount();
 	List<Map<String, Object>> getDailyProductStats();
 	List<Map<String, Object>> getCategoryProdusctStats();
