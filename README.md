@@ -16,7 +16,7 @@
 
 👉 [화면 설계서 보러가기](https://www.figma.com/design/3elTa5MZ25dqlrLrhep50n/final-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-3%ED%8C%80?node-id=0-1&t=WHLyiQ6VYw61t32R-1)
 
-👉 [사이트 링크] http://54.116.1.59:8000/finalProject_3/
+👉 [사이트 링크]http://54.116.1.59:8000/finalProject_3/
 
 <br />
 
